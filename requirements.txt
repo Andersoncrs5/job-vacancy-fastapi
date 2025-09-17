@@ -11,3 +11,6 @@ fastapi-filter
 httpx
 fastapi_pagination
 email_validator
+pytest 
+pytest-asyncio 
+pytest-alembic
