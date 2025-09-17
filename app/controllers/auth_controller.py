@@ -43,7 +43,8 @@ async def resgiter(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
-    if user_service.exists_by_email(dto.email):
+    check: Final[bool] = await user_service.exists_by_email(dto.email)
+    if check :
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content=dict(ResponseBody[None](
