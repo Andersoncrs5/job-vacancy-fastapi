@@ -10,3 +10,4 @@ pytest
 fastapi-filter
 httpx
 fastapi_pagination
+email_validator
