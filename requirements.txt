@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+sqlalchemy
+asyncpg
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+pytest
+fastapi-filter
+httpx
+fastapi_pagination
