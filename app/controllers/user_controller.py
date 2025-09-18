@@ -1,0 +1,248 @@
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
+from app.configs.db.database import UserEntity
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Final
+from app.utils.res.response_body import ResponseBody
+from app.utils.res.responses_http import *
+from app.schemas.user_schemas import UserOUT, UpdateUserDTO
+from app.services.providers.user_service_provider import UserServiceProvider
+from app.dependencies.service_dependency import *
+from datetime import datetime
+
+router: Final[APIRouter] = APIRouter(
+    prefix="/api/v1/user", 
+    tags=["User"],
+    responses={
+        500: RESPONSE_500,
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404_USER,
+    },
+    deprecated=False,
+    )
+
+bearer_scheme: Final[HTTPBearer] = HTTPBearer()
+
+@router.delete(
+    '',
+    status_code=200,
+    response_model=ResponseBody[None],
+    description="endpoint to delete user"
+)
+async def delete(
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    ):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
+        if user is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        await user_service.delete(user)
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[None](
+                message="User deleted with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=None,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return JSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+  
+
+@router.get(
+    '',
+    status_code=200,
+    response_model=ResponseBody[UserOUT]
+)
+async def me(
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    ):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
+        if user is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        user_out: Final = user.to_user_out()
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="User found with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(user_out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return JSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+    
+
+@router.put(
+    "",
+    description="Endpoint to update user",
+    response_model=ResponseBody[UserOUT],
+    status_code=status.HTTP_200_OK,
+)
+async def update(
+    dto: UpdateUserDTO,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    ):
+    
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
+        if user is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        user_updated: Final[UserEntity] = await user_service.update(user,dto)
+
+        user_out: Final[UserOUT] = user_updated.to_user_out()
+
+        return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=dict(ResponseBody[dict](
+                    code=status.HTTP_200_OK,
+                    message="User updated with successfully",
+                    status=True,
+                    body=dict(user_out),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )        
+
+    except Exception as e:
+        return JSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
