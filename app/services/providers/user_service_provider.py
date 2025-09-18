@@ -20,6 +20,9 @@ class UserServiceProvider(UserServiceBase):
         if dto.name != None :
             user.name = dto.name
 
+        if dto.avatar_url != None :
+            user.avatar_url = dto.avatar_url
+
         if dto.password != None :
             user.password = hash_password(dto.password)
 
