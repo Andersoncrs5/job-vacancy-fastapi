@@ -8,6 +8,14 @@ class CategoryRepositoryBase(ABC):
         pass
 
     @abstractmethod
+    async def exists_by_slug(self, slug: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def exists_by_name(self, name: str) -> bool:
+        pass
+
+    @abstractmethod
     async def add(self, category: CategoryEntity) -> CategoryEntity:
         pass
 
@@ -20,5 +28,5 @@ class CategoryRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> list[CategoryEntity]:
+    async def get_all(self, is_active: bool) -> list[CategoryEntity]:
         pass
