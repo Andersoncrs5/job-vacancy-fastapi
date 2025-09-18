@@ -17,6 +17,7 @@ class CreateUserDTO(BaseModel):
 class UpdateUserDTO(BaseModel):
     name: str | None = Field(None, max_length=50, description="The name field should have size max of 50")
     password: str | None = Field(None, max_length=50, description="The password field should have size max of 50")
+    avatar_url: str | None = Field(None, max_length=255, description="The avatar_url field should have size max of 50")
 
 class LoginDTO(BaseModel):
     email: EmailStr = Field(..., min_length=8, max_length=150, description="The email field should be between 8 and 150")
