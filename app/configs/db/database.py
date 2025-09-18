@@ -35,3 +35,11 @@ class UserEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+    def to_user_out(self):
+        from app.schemas.user_schemas import UserOUT
+
+        return UserOUT(
+            id = self.id,
+            name = self.name,
+            email = self.email,
+        )
