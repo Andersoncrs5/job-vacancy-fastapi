@@ -12,6 +12,8 @@ class UserServiceProvider(UserServiceBase):
     async def create(self, dto: CreateUserDTO) -> UserEntity: 
         user_mapped: Final[UserEntity] = dto.to_user_entity()
 
+        user_mapped.password = hash_password(user_mapped.password)
+
         return await self.repository.add(user_mapped)
 
     async def update(self, user: UserEntity, dto: UpdateUserDTO) -> UserEntity:
