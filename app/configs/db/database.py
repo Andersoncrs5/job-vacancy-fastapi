@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final
-from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean
+from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer
 from datetime import datetime
 
 load_dotenv()
@@ -38,6 +38,7 @@ class UserEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     posts: Mapped[list["PostUserEntity"]] = relationship("PostUserEntity", back_populates="owner")
+    categories: Mapped[list["CategoryEntity"]] = relationship("CategoryEntity", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -47,6 +48,30 @@ class UserEntity(Base):
             name = self.name,
             email = self.email,
         )
+
+class CategoryEntity(Base):
+    __tablename__ = "posts_user"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    order: Mapped[int] = mapped_column(Integer, default=0)
+    
+    post_count: Mapped[int] = mapped_column(Integer, default=0)
+    job_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    icon_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    children: Mapped[list["CategoryEntity"]] = relationship("CategoryEntity", backref="parent", remote_side="CategoryEntity.id")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="categories")
 
 class PostUserEntity(Base):
     __tablename__ = "posts_user"
