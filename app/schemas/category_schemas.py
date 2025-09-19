@@ -13,8 +13,8 @@ class CategoryOUT(BaseModel):
     icon_url: str | None
     user_id: int
     parent_id: int | None
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | str
+    updated_at: datetime | str
 
     class Config:
         from_attributes = True
