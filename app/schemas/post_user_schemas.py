@@ -11,6 +11,9 @@ class PostUserOUT(BaseModel):
     created_at: datetime | str
     updated_at: datetime | str
 
+    class Config:
+        from_attributes = True
+
 class CreatePostUserDTO(BaseModel):
     title: str
     content: str
