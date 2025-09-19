@@ -73,7 +73,7 @@ class CategoryEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="categories")
 
-    def to_category_entity(self):
+    def to_category_out(self):
         from app.schemas.category_schemas import CategoryOUT
 
         return CategoryOUT(
