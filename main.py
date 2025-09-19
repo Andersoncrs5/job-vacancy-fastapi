@@ -1,6 +1,6 @@
 import logging
 from fastapi import FastAPI
-from app.controllers import auth_controller
+from app.controllers import auth_controller, user_controller, category_controller
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
 from typing import Final
@@ -28,3 +28,5 @@ app: Final[FastAPI] = FastAPI(
     )
 
 app.include_router(auth_controller.router)
+app.include_router(user_controller.router)
+app.include_router(category_controller.router)
