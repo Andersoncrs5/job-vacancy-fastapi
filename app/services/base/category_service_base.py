@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from app.configs.db.database import CategoryEntity
+from app.configs.db.database import CategoryEntity, UserEntity
 from app.schemas.category_schemas import CreateCategoryDTO, UpdateCategoryDTO
 from app.utils.filter.category_filter import CategoryFilter
 from app.utils.enums.sum_red import SumRedEnum
@@ -15,7 +15,7 @@ class CategoryServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def create(self, dto: CreateCategoryDTO) -> CategoryEntity:
+    async def create(self, user: UserEntity, dto: CreateCategoryDTO) -> CategoryEntity:
         pass
 
     @abstractmethod
@@ -35,7 +35,7 @@ class CategoryServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def exists_by_name(self, name: str) -> bool :
+    async def exists_by_name(self, name: str) -> bool:
         pass
 
     @abstractmethod
