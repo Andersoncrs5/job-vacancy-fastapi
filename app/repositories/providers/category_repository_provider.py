@@ -1,6 +1,7 @@
 from app.repositories.base.category_repository_base import CategoryRepositoryBase
 from app.configs.db.database import CategoryEntity
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.utils.filter.category_filter import CategoryFilter
 from sqlalchemy import select, func, Result, Select
 from typing import Final, Tuple
 
@@ -30,6 +31,15 @@ class CategoryRepositoryProvider(CategoryRepositoryBase):
 
     async def get_all(self, is_active: bool) -> list[CategoryEntity]:
         stmt: Final[Select[Tuple[CategoryEntity]]] = select(CategoryEntity).where(CategoryEntity.is_active == is_active)
+
+        result: Final = await self.db.execute(stmt)
+        all_categories: Final = result.scalars().all()
+        return list(all_categories)
+
+    async def get_all_filter(self, is_active: bool, filter: CategoryFilter) -> list[CategoryEntity]:
+        stmt = select(CategoryEntity).where(CategoryEntity.is_active == is_active)
+
+        stmt = filter.filter(stmt)
 
         result: Final = await self.db.execute(stmt)
         all_categories: Final = result.scalars().all()
