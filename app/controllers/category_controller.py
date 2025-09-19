@@ -8,6 +8,8 @@ from app.utils.res.responses_http import *
 from app.schemas.category_schemas import *
 from app.services.providers.user_service_provider import UserServiceProvider
 from app.dependencies.service_dependency import *
+from fastapi_pagination import Page, add_pagination, paginate
+from app.utils.filter.category_filter import CategoryFilter
 from datetime import datetime
 
 router: Final[APIRouter] = APIRouter(
@@ -22,6 +24,52 @@ router: Final[APIRouter] = APIRouter(
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=Page[CategoryOUT],
+)
+async def get_all(
+    category_filter: CategoryFilter = Depends(),
+    category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        categories: Final[list[CategoryEntity]] = await category_service.get_all_filter(True, category_filter)
+
+        return paginate(categories)
+
+    except Exception as e:
+        return JSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
 
 
 @router.put(
@@ -506,3 +554,4 @@ async def create(
                 ))
             )
   
+add_pagination(router)
