@@ -1,5 +1,6 @@
 from app.services.base.category_service_base import *
 from app.configs.db.database import CategoryEntity
+from fastapi import HTTPException, status
 from app.schemas.category_schemas import CreateCategoryDTO, UpdateCategoryDTO
 from app.utils.filter.category_filter import CategoryFilter
 from app.repositories.providers.category_repository_provider import CategoryRepositoryProvider
@@ -11,20 +12,31 @@ class CategoryServiceProvider(CategoryServiceBase):
         self.repository = repository
 
     async def update(self, category: CategoryEntity, dto: UpdateCategoryDTO) -> CategoryEntity:
-
-        if dto.name != None:
+        if dto.name is not None and dto.name != category.name:
+            check: Final[bool] = await self.repository.exists_by_name(dto.name)
+            if check:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Category with name '{dto.name}' already exists."
+                )
             category.name = dto.name
 
-        if dto.slug != None:
+        if dto.slug is not None and dto.slug != category.slug:
+            check_slug: Final[bool] = await self.repository.exists_by_slug(dto.slug)
+            if check_slug:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Category with slug '{dto.slug}' already exists."
+                )
             category.slug = dto.slug
 
-        if dto.description != None:
+        if dto.description is not None:
             category.description = dto.description
 
-        if dto.order != None:
+        if dto.order is not None:
             category.order = dto.order
 
-        if dto.icon_url != None:
+        if dto.icon_url is not None:
             category.icon_url = dto.icon_url
 
         return await self.repository.save(category)
@@ -73,8 +85,9 @@ class CategoryServiceProvider(CategoryServiceBase):
     async def get_all_filter(self, is_active: bool, filter: CategoryFilter) -> list[CategoryEntity]:
         return await self.repository.get_all_filter(is_active, filter)
 
-    async def create(self, dto: CreateCategoryDTO) -> CategoryEntity:
+    async def create(self, user: UserEntity, dto: CreateCategoryDTO) -> CategoryEntity:
         category_maped: Final = dto.to_category_entity()
+        category_maped.user_id = user.id
 
         category_created = await self.repository.add(category_maped)
 
