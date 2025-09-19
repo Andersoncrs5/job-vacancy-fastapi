@@ -1,4 +1,20 @@
 from pydantic import BaseModel
+from datetime import datetime
+
+class CategoryOUT(BaseModel):
+    id: int
+    name: str
+    slug: str
+    description: str | None
+    is_active: bool
+    order: int
+    post_count: int
+    job_count: int
+    icon_url: str | None
+    user_id: int
+    parent_id: int | None
+    created_at: datetime
+    updated_at: datetime
 
 class CreateCategoryDTO(BaseModel):
     name: str
