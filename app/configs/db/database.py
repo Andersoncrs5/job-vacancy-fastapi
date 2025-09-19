@@ -72,6 +72,7 @@ class CategoryEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="categories")
+    posts: Mapped[list["PostUserEntity"]] = relationship("PostUserEntity", back_populates="category")
 
     def to_category_out(self):
         from app.schemas.category_schemas import CategoryOUT
@@ -101,8 +102,10 @@ class PostUserEntity(Base):
     url_image: Mapped[str] = mapped_column(Text, nullable=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="posts")
+    category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts")
