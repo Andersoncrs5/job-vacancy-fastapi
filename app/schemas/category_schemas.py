@@ -16,6 +16,9 @@ class CategoryOUT(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    class Config:
+        from_attributes = True
+
 class CreateCategoryDTO(BaseModel):
     name: str
     slug: str
