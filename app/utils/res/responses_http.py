@@ -6,8 +6,18 @@ RESPONSE_401: Final[Dict] = {
     "model": ResponseBody[None]
 }
 
+RESPONSE_400: Final[Dict] = {
+    "description": "",
+    "model": ResponseBody[None]
+}
+
 RESPONSE_404_USER: Final[Dict] = {
     "description": "User not found",
+    "model": ResponseBody[None]
+}
+
+RESPONSE_404_CATEGORY: Final[Dict] = {
+    "description": "Category not found",
     "model": ResponseBody[None]
 }
 
