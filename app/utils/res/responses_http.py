@@ -11,6 +11,11 @@ RESPONSE_400: Final[Dict] = {
     "model": ResponseBody[None]
 }
 
+RESPONSE_400_ID_REQUIRED: Final[Dict] = {
+    "description": "Id is required",
+    "model": ResponseBody[None]
+}
+
 RESPONSE_404_USER: Final[Dict] = {
     "description": "User not found",
     "model": ResponseBody[None]
