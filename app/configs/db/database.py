@@ -50,7 +50,7 @@ class UserEntity(Base):
         )
 
 class CategoryEntity(Base):
-    __tablename__ = "posts_user"
+    __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
@@ -88,8 +88,8 @@ class CategoryEntity(Base):
             icon_url = self.icon_url,
             user_id = self.user_id,
             parent_id = self.parent_id,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
         )
 
 class PostUserEntity(Base):
