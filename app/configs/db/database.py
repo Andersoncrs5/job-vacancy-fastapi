@@ -99,7 +99,7 @@ class PostUserEntity(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    url_image: Mapped[str] = mapped_column(Text, nullable=True)
+    url_image: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
