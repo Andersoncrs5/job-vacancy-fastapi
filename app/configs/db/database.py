@@ -109,3 +109,17 @@ class PostUserEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="posts")
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts")
+
+    def to_out(self):
+        from app.schemas.post_user_schemas import PostUserOUT
+
+        return PostUserOUT(
+            id = self.id,
+            title = self.title,
+            content = self.content,
+            url_image = self.url_image,
+            user_id = self.user_id,
+            category_id = self.category_id,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
