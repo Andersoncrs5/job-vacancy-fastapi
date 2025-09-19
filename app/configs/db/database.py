@@ -73,6 +73,25 @@ class CategoryEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="categories")
 
+    def to_category_entity(self):
+        from app.schemas.category_schemas import CategoryOUT
+
+        return CategoryOUT(
+            id = self.id,
+            name = self.name,
+            slug = self.slug,
+            description = self.description,
+            is_active = self.is_active,
+            order = self.order,
+            post_count = self.post_count,
+            job_count = self.job_count,
+            icon_url = self.icon_url,
+            user_id = self.user_id,
+            parent_id = self.parent_id,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class PostUserEntity(Base):
     __tablename__ = "posts_user"
 
