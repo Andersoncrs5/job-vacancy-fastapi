@@ -1,4 +1,15 @@
 from pydantic import BaseModel
+from datetime import datetime
+
+class PostUserOUT(BaseModel):
+    id: int
+    title: str
+    content: str
+    url_image: str | None
+    user_id: int
+    category_id: int
+    created_at: datetime | str
+    updated_at: datetime | str
 
 class CreatePostUserDTO(BaseModel):
     title: str
