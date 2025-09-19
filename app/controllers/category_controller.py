@@ -22,12 +22,204 @@ router: Final[APIRouter] = APIRouter(
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
+
+
+@router.put(
+    '/{category_id}/toggle/status/is_active',
+    status_code=200,
+    response_model=ResponseBody[CategoryOUT],   
+    responses={
+        404: RESPONSE_404_CATEGORY,
+        400: RESPONSE_400_ID_REQUIRED,
+    }
+)
+async def toggle_change_is_status(
+    category_id: int,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if category_id is None or category_id <= 0:
+        return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
+        if category is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Category not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        category_updated: Final[CategoryEntity] = await category_service.toggle_is_active(category)
+
+        category_mapped: Final[CategoryOUT] = category_updated.to_category_out()
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Category status changed with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(category_mapped),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return JSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.put(
+    '/{category_id}',
+    status_code=200,
+    response_model=ResponseBody[CategoryOUT],   
+    responses={
+        404: RESPONSE_404_CATEGORY,
+        400: RESPONSE_400_ID_REQUIRED,
+    }
+)
+async def update(
+    category_id: int,
+    dto: UpdateCategoryDTO,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if category_id is None or category_id <= 0:
+        return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
+        if category is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Category not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        category_updated: Final[CategoryEntity] = await category_service.update(category, dto)
+
+        category_mapped: Final[CategoryOUT] = category_updated.to_category_out()
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Category updated with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(category_mapped),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return JSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
 @router.get(
     "/{category_id}",
     status_code=200,
     response_model=ResponseBody[CategoryOUT],   
     responses={
         404: RESPONSE_404_CATEGORY,
+        400: RESPONSE_400_ID_REQUIRED,
     }
 )
 async def get_by_id(
@@ -36,6 +228,20 @@ async def get_by_id(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
+    if category_id is None or category_id <= 0:
+        return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
@@ -84,6 +290,96 @@ async def get_by_id(
             ))
         )
 
+    except Exception as e:
+        return JSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.delete(
+    "/{category_id}",
+    status_code=200,
+    response_model=ResponseBody[None],   
+    responses={
+        404: RESPONSE_404_CATEGORY,
+        400: RESPONSE_400_ID_REQUIRED,
+    }
+)
+async def delete(
+    category_id: int,
+    category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if category_id is None or category_id <= 0:
+        return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
+        if category is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Category not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        await category_service.delete(category)
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[None](
+                message="Category deleted with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=None,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
 
     except Exception as e:
         return JSONResponse(
@@ -98,7 +394,7 @@ async def get_by_id(
                     path = None
                 ))
             )
-  
+    
 
 @router.post(
     '',
@@ -140,6 +436,21 @@ async def create(
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
                     message=f"Category name: {dto.name} already exists",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        check_slug: Final[bool] = await category_service.exists_by_slug(dto.slug)
+        if check_slug == True:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message=f"Category slug: {dto.slug} already exists",
                     status=False,
                     body=None,
                     timestamp=str(datetime.now()),
