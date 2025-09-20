@@ -1,0 +1,3 @@
+from app.repositories.base.enterprise_repository_base import EnterpriseRepositoryBase
+
+class EnterpriseRepositoryProvider(EnterpriseRepositoryBase):
