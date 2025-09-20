@@ -13,3 +13,12 @@ class IndustryOUT(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CreateIndustryDTO(BaseModel):
+    name: str
+    icon_url: str | None
+
+class UpdateIndustryDTO(BaseModel):
+    name: str | None
+    icon_url: str | None
+    is_active: bool | None
