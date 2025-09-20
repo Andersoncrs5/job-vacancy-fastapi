@@ -5,6 +5,10 @@ from app.utils.filter.enterprise_filter import EnterpriseFilter
 class EnterpriseRepositoryBase(ABC):
 
     @abstractmethod
+    async def exists_by_name(self, name: str) -> bool:
+        pass
+    
+    @abstractmethod
     async def add(self, enter: EnterpriseEntity) -> EnterpriseEntity:
         pass
     
