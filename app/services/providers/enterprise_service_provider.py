@@ -11,6 +11,9 @@ class EnterpriseServiceProvider(EnterpriseServiceBase):
     def __init__(self, repository: EnterpriseRepositoryProvider):
         self.repository = repository
 
+    async def exists_by_user_id(self, user_id: int) -> bool:
+        return await self.repository.exists_by_user_id(user_id)
+
     async def update(self, enter: EnterpriseEntity, dto: UpdateEnterpriseDTO) -> EnterpriseEntity:
         
         if dto.name != None and dto.name !=  enter.name:
