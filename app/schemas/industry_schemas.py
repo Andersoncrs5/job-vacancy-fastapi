@@ -20,6 +20,15 @@ class CreateIndustryDTO(BaseModel):
     description: str | None
     icon_url: str | None
 
+    def to_entity(self):
+        from app.configs.db.database import IndustryEntity
+
+        return IndustryEntity(
+            name = self.name,
+            description = self.description,
+            icon_url = self.icon_url,
+        )
+
 class UpdateIndustryDTO(BaseModel):
     name: str | None
     description: str | None
