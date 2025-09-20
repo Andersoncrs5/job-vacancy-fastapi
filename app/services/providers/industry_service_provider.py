@@ -6,13 +6,16 @@ from app.schemas.industry_schemas import CreateIndustryDTO, UpdateIndustryDTO
 from fastapi import HTTPException, status
 from app.utils.res.response_body import ResponseBody
 from datetime import datetime
+from typing import Final
 
 class IndustryServiceProvider(IndustryServiceBase):
     def __init__(self, repository: IndustryRepositoryProvider):
         self.repository = repository
 
-    async def update(self, industry: IndustryEntity, dto: UpdateIndustryDTO) -> IndustryEntity:
+    async def exists_by_name(self, name: str) -> bool:
+        return await self.repository.exists_by_name(name)
 
+    async def update(self, industry: IndustryEntity, dto: UpdateIndustryDTO) -> IndustryEntity:
         if dto.name is not None and dto.name != industry.name:
             check_name = await self.repository.exists_by_name(dto.name)
             if check_name :
@@ -47,7 +50,7 @@ class IndustryServiceProvider(IndustryServiceBase):
         return await self.repository.get_all_filter(filter)
 
     async def create(self, user: UserEntity, dto: CreateIndustryDTO) -> IndustryEntity:
-        industry = dto.to_entity()
+        industry: Final[IndustryEntity] = dto.to_entity()
         industry.user_id = user.id
 
         return await self.repository.add(industry)
