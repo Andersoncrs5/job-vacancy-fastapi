@@ -4,6 +4,10 @@ from app.configs.db.database import IndustryEntity
 class IndustryRepositoryBase(ABC):
 
     @abstractmethod
+    async def exists_by_name(self, name: str) -> bool:
+        pass
+
+    @abstractmethod
     async def get_by_id(self, id: int) -> IndustryEntity | None:
         pass
 
