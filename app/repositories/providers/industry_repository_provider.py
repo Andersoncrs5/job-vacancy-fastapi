@@ -1,6 +1,7 @@
 from app.repositories.base.industry_repository_base import IndustryRepositoryBase
 from sqlalchemy import select, func, Result, Select
 from typing import Final, Tuple
+from app.utils.filter.industry_filter import IndustryFilter
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.configs.db.database import IndustryEntity
 
@@ -34,6 +35,15 @@ class IndustryRepositoryProvider(IndustryRepositoryBase):
         result = await self.db.execute(stmt)
 
         return result.scalar_one_or_none()
+
+    async def get_all_filter(self, filter: IndustryFilter) -> list[IndustryEntity]:
+        stmt = select(IndustryEntity)
+
+        stmt = filter.filter(stmt)
+
+        result: Final = await self.db.execute(stmt)
+        all: Final = result.scalars().all()
+        return list(all)
 
     async def add(self, industry: IndustryEntity) -> IndustryEntity:
         self.db.add(industry)
