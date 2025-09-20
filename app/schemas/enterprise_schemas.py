@@ -15,3 +15,14 @@ class EnterpriseOUT(BaseModel):
     class Config:
         from_attributes = True
 
+class CreateEnterpriseDTO(BaseModel):
+    name: str
+    description: str | None
+    website_url: str | None
+    logo_url: str | None
+
+class UpdateEnterpriseDTO(BaseModel):
+    name: str | None
+    description: str | None
+    website_url: str | None
+    logo_url: str | None
