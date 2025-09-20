@@ -26,6 +26,10 @@ class IndustryServiceBase(ABC):
         pass
 
     @abstractmethod
+    async def exists_by_name(self, name: str) -> bool:
+        pass
+
+    @abstractmethod
     async def toggle_is_active(self, industry: IndustryEntity) -> IndustryEntity:
         pass
 
