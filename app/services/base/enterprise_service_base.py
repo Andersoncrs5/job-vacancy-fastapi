@@ -6,6 +6,10 @@ from app.utils.filter.enterprise_filter import EnterpriseFilter
 class EnterpriseServiceBase(ABC):
 
     @abstractmethod
+    async def exists_by_user_id(self, user_id: int) -> bool:
+        pass
+    
+    @abstractmethod
     async def get_all_filter(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
         pass
 
