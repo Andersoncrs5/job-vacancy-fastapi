@@ -21,6 +21,11 @@ RESPONSE_404_USER: Final[Dict] = {
     "model": ResponseBody[None]
 }
 
+RESPONSE_404_INDUSTRY: Final[Dict] = {
+    "description": "Industry not found",
+    "model": ResponseBody[None]
+}
+
 RESPONSE_404_POST_USER: Final[Dict] = {
     "description": "Post User not found",
     "model": ResponseBody[None]
