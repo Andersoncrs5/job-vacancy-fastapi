@@ -9,6 +9,16 @@ class EnterpriseRepositoryProvider(EnterpriseRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def exists_by_user_id(self, user_id: int) -> bool:
+        stmt = select(func.count(EnterpriseEntity.id)).where(EnterpriseEntity.user_id == user_id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def exists_by_name(self, name: str) -> bool:
         stmt = select(func.count(EnterpriseEntity.id)).where(EnterpriseEntity.name.ilike(f"%{name}%"))
 
