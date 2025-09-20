@@ -445,6 +445,20 @@ async def create(
                 ))
             )  
         
+        if category.is_active == False:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Category are not actived",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )  
+
         post_user_created: Final[PostUserEntity] = await post_user_service.create(user, category, dto)
 
         await category_service.sum_red_post_count(category, SumRedEnum.SUM)
