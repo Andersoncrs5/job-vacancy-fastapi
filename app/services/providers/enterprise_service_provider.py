@@ -1,0 +1,3 @@
+from app.services.base.enterprise_service_base import EnterpriseServiceBase
+
+class EnterpriseServiceProvider(EnterpriseServiceBase):
