@@ -108,6 +108,21 @@ class EnterpriseEntity(Base):
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="enterprise")
     industry: Mapped["IndustryEntity"] = relationship("IndustryEntity", back_populates="enterprises")
 
+    def to_out(self):
+        from app.schemas.enterprise_schemas import EnterpriseOUT
+
+        return EnterpriseOUT(
+            id = self.id,
+            name = self.name,
+            description = self.description,
+            website_url = self.website_url,
+            logo_url = self.logo_url,
+            user_id = self.user_id,
+            industry_id = self.industry_id,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class CategoryEntity(Base):
     __tablename__ = "categories"
 
