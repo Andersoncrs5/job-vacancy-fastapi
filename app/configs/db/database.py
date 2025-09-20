@@ -43,6 +43,7 @@ class UserEntity(Base):
 
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="owner", uselist=False)
 
+    favorite_post_user: Mapped[list["FavoritePostUser"]] = relationship("FavoritePostUser", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -70,8 +71,7 @@ class IndustryEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="industries")
-
-    enterprises: Mapped[list["EnterpriseEntity"]] = relationship("EnterpriseEntity", back_populates="industry")
+    
 
     def to_out(self):
         from app.schemas.industry_schemas import IndustryOUT
@@ -184,6 +184,8 @@ class PostUserEntity(Base):
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="posts")
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts")
 
+    favorite_post_user: Mapped[list["FavoritePostUser"]] = relationship("FavoritePostUser", back_populates="post_user")
+
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
 
@@ -197,3 +199,19 @@ class PostUserEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+
+class FavoritePostUser(Base):
+    __tablename__ = "favorite_posts_user"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+
+    post_user_id: Mapped[int] = mapped_column(ForeignKey("posts_user.id"))
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="favorite_post_user")
+    post_user: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="favorite_post_user")
+    
