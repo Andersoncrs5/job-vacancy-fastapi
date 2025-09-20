@@ -43,7 +43,7 @@ class UserEntity(Base):
 
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="owner", uselist=False)
 
-    favorite_post_user: Mapped[list["FavoritePostUser"]] = relationship("FavoritePostUser", back_populates="owner")
+    favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -184,7 +184,7 @@ class PostUserEntity(Base):
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="posts")
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts")
 
-    favorite_post_user: Mapped[list["FavoritePostUser"]] = relationship("FavoritePostUser", back_populates="post_user")
+    favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="post_user")
 
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
@@ -201,7 +201,7 @@ class PostUserEntity(Base):
         )
 
 
-class FavoritePostUser(Base):
+class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
 
     id: Mapped[int] = mapped_column(primary_key=True)
