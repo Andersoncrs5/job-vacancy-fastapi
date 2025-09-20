@@ -1,7 +1,7 @@
 from app.repositories.base.enterprise_repository_base import EnterpriseRepositoryBase
 from app.configs.db.database import EnterpriseEntity
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.utils.filter.enterprise_filter import EnterpriseFilter
 from typing import Final
 
@@ -9,10 +9,18 @@ class EnterpriseRepositoryProvider(EnterpriseRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_all_filter(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
-        stmt = select(EnterpriseEntity)
+    async def exists_by_name(self, name: str) -> bool:
+        stmt = select(func.count(EnterpriseEntity.id)).where(EnterpriseEntity.name.ilike(f"%{name}%"))
 
-        stmt = filter.filter(stmt)
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
+    async def get_all_filter(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
+        stmt = filter.filter(select(EnterpriseEntity))
 
         result: Final = await self.db.execute(stmt)
         all: Final = result.scalars().all()
