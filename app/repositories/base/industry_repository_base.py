@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from app.configs.db.database import IndustryEntity
+from app.utils.filter.industry_filter import IndustryFilter
 
 class IndustryRepositoryBase(ABC):
 
@@ -17,6 +18,10 @@ class IndustryRepositoryBase(ABC):
 
     @abstractmethod
     async def save(self, industry: IndustryEntity) -> IndustryEntity:
+        pass
+
+    @abstractmethod
+    async def get_all_filter(self, filter: IndustryFilter) -> list[IndustryEntity]:
         pass
 
     @abstractmethod
