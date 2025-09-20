@@ -1,0 +1,4 @@
+from app.repositories.base.favorite_posts_user_repository_base import FavoritePostUserRepositoryBase
+
+class FavoritePostUserRepositoryProvider(FavoritePostUserRepositoryBase):
+    
