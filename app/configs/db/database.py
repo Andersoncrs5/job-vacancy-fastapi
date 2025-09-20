@@ -57,7 +57,6 @@ class IndustryEntity(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-
     icon_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -68,6 +67,21 @@ class IndustryEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="industries")
+
+    def to_out(self):
+        from app.schemas.industry_schemas import IndustryOUT
+
+        return IndustryOUT(
+            id = self.id,
+            name = self.name,
+            description = self.description,
+            icon_url = self.icon_url,
+            is_active = self.is_active,
+            usage_count = self.usage_count,
+            user_id = self.user_id,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
 
 # class EnterpriseEntity(Base):
 #     __tablename__ = "users"
