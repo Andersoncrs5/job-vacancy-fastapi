@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
+from app.utils.enums.sum_red import SumRedEnum
 from app.utils.res.response_body import ResponseBody
 from app.utils.res.responses_http import *
 from app.schemas.post_user_schemas import *
@@ -35,6 +36,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 async def delete(
     post_user_id: int,
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
+    category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -86,6 +88,23 @@ async def delete(
             )  
         
         await post_user_service.delete(post_user)
+
+        category = await category_service.get_by_id(post_user.category_id)
+        if category is None:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Category not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )  
+
+        await category_service.sum_red_post_count(category, SumRedEnum.RED)
 
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -427,6 +446,8 @@ async def create(
             )  
         
         post_user_created: Final[PostUserEntity] = await post_user_service.create(user, category, dto)
+
+        await category_service.sum_red_post_count(category, SumRedEnum.SUM)
 
         post_user_out = post_user_created.to_out()
 
