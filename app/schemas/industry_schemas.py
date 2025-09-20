@@ -4,6 +4,7 @@ from datetime import datetime
 class IndustryOUT(BaseModel):
     id: int
     name: str
+    description: str | None
     icon_url: str | None
     is_active: bool
     usage_count: int
@@ -16,9 +17,11 @@ class IndustryOUT(BaseModel):
 
 class CreateIndustryDTO(BaseModel):
     name: str
+    description: str | None
     icon_url: str | None
 
 class UpdateIndustryDTO(BaseModel):
     name: str | None
+    description: str | None
     icon_url: str | None
     is_active: bool | None
