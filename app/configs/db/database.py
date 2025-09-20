@@ -39,6 +39,7 @@ class UserEntity(Base):
 
     posts: Mapped[list["PostUserEntity"]] = relationship("PostUserEntity", back_populates="owner")
     categories: Mapped[list["CategoryEntity"]] = relationship("CategoryEntity", back_populates="owner")
+    industries: Mapped[list["IndustryEntity"]] = relationship("IndustryEntity", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -48,6 +49,36 @@ class UserEntity(Base):
             name = self.name,
             email = self.email,
         )
+
+class IndustryEntity(Base):
+    __tablename__ = "industries"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
+
+    icon_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    usage_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="industries")
+
+# class EnterpriseEntity(Base):
+#     __tablename__ = "users"
+
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     name: Mapped[str] = mapped_column(String(50), nullable=False)
+
+#     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+#     website_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+#     logo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+#     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+#     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class CategoryEntity(Base):
     __tablename__ = "categories"
