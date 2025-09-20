@@ -21,6 +21,16 @@ class CreateEnterpriseDTO(BaseModel):
     website_url: str | None
     logo_url: str | None
 
+    def to_entity(self):
+        from app.configs.db.database import EnterpriseEntity
+
+        return EnterpriseEntity(
+            name = self.name,
+            description = self.description,
+            website_url = self.website_url,
+            logo_url = self.logo_url,
+        )
+
 class UpdateEnterpriseDTO(BaseModel):
     name: str | None
     description: str | None
