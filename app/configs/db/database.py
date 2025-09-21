@@ -207,7 +207,6 @@ class PostUserEntity(Base):
             updated_at = str(self.updated_at),
         )
 
-
 class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
 
