@@ -5,6 +5,10 @@ from app.utils.filter.industry_filter import IndustryFilter
 class IndustryRepositoryBase(ABC):
 
     @abstractmethod
+    async def exists_by_id(self, id: int) -> bool:
+        pass
+    
+    @abstractmethod
     async def exists_by_name(self, name: str) -> bool:
         pass
 

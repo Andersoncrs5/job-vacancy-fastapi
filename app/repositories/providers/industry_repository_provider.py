@@ -9,6 +9,16 @@ class IndustryRepositoryProvider(IndustryRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def exists_by_id(self, id: int) -> bool:
+        stmt = select(func.count(IndustryEntity.id)).where(IndustryEntity.id == id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def exists_by_name(self, name: str) -> bool:
         stmt = select(func.count(IndustryEntity.id)).where(IndustryEntity.name.ilike(f"%{name}%"))
 
