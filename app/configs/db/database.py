@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final
-from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer
+from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger
 from datetime import datetime
 from sqlalchemy.pool import NullPool
 
@@ -28,7 +28,7 @@ async def get_db():
 class UserEntity(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True, index=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -62,7 +62,7 @@ class UserEntity(Base):
 class IndustryEntity(Base):
     __tablename__ = "industries"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -71,7 +71,7 @@ class IndustryEntity(Base):
 
     usage_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
@@ -99,16 +99,16 @@ class IndustryEntity(Base):
 class EnterpriseEntity(Base):
     __tablename__ = "enterprises"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
 
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     website_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     logo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), unique=True)
 
-    industry_id: Mapped[int] = mapped_column(ForeignKey("industries.id"))
+    industry_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("industries.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -134,7 +134,7 @@ class EnterpriseEntity(Base):
 class CategoryEntity(Base):
     __tablename__ = "categories"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -146,8 +146,8 @@ class CategoryEntity(Base):
 
     icon_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    parent_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("categories.id"), nullable=True)
     children: Mapped[list["CategoryEntity"]] = relationship("CategoryEntity", backref="parent", remote_side="CategoryEntity.id")
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -178,13 +178,13 @@ class CategoryEntity(Base):
 class PostUserEntity(Base):
     __tablename__ = "posts_user"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     url_image: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("categories.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
@@ -211,11 +211,11 @@ class PostUserEntity(Base):
 class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
 
-    post_user_id: Mapped[int] = mapped_column(ForeignKey("posts_user.id"))
+    post_user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_user.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     
