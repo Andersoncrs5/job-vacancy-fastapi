@@ -26,6 +26,31 @@ router: Final[APIRouter] = APIRouter(
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
 @router.get(
+    "/{email}/exists/email",
+    status_code=200,
+    response_model=ResponseBody[bool],
+)
+async def exists_by_email(
+    email: str,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+):
+    check: Final[bool] = await user_service.exists_by_email(email)
+    
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=dict(ResponseBody[bool](
+            message="",
+            code=status.HTTP_200_OK,
+            status=True,
+            body=check,
+            timestamp=str(datetime.now()),
+            version = 1,
+            path = None
+        ))
+    )
+
+
+@router.get(
     "/{refresh_token}",
     status_code=200,
     response_model=ResponseBody[Tokens],
