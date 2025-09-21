@@ -5,6 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final
 from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer
 from datetime import datetime
+from sqlalchemy.pool import NullPool
 
 load_dotenv()
 
@@ -13,7 +14,7 @@ DATABASE_URL: Final[str | None] = os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
     raise ValueError("DATABASE_URL is None")
 
-engine: Final[AsyncEngine] = create_async_engine(DATABASE_URL, echo=True)
+engine: Final[AsyncEngine] = create_async_engine(DATABASE_URL, future=True, echo=True, poolclass=NullPool)
 
 AsyncSessionLocal: Final[async_sessionmaker[AsyncSession]] = async_sessionmaker(engine, expire_on_commit=False)
 
