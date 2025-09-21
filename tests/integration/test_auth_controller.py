@@ -5,6 +5,7 @@ from main import app
 import random
 from httpx import ASGITransport, AsyncClient
 import pytest
+from tests.integration.helper import create_and_login_user
 
 client: Final[TestClient] = TestClient(app)
 
@@ -26,22 +27,10 @@ async def test_register_user():
 
 @pytest.mark.anyio
 async def test_register_and_login_user():
-    num = random.randint(1000000, 10000000000000)
-    dto = CreateUserDTO(
-        name=f"user {num}",
-        email=f"user{num}@example.com",
-        password=str(num),
-        bio=None,
-        avatar_url=None,
-    )
+    user_data = await create_and_login_user()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/api/v1/auth/register", json=dict(dto))
-    assert response.status_code == 201
-
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        dto_login = LoginDTO(email=dto.email, password=dto.password)
+        dto_login = LoginDTO(email=user_data.dto.email, password=user_data.dto.password)
         response = await ac.post("/api/v1/auth/login", json=dict(dto_login))
     assert response.status_code == 200
 
@@ -56,27 +45,12 @@ async def test_register_and_login_user():
     
 @pytest.mark.anyio
 async def test_refresh_token():
-    num = random.randint(1000000, 10000000000000)
-    dto = CreateUserDTO(
-        name=f"user {num}",
-        email=f"user{num}@example.com",
-        password=str(num),
-        bio=None,
-        avatar_url=None,
-    )
+    user_data = await create_and_login_user()
+
+    assert user_data.tokens.refresh_token is not None
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/api/v1/auth/register", json=dict(dto))
-    assert response.status_code == 201
-
-    data = response.json()
-
-    assert data['body']['refresh_token'] is not None
-
-    refresh_token = str(data['body']['refresh_token'])
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response_get = await ac.get(f"/api/v1/auth/{refresh_token}")
+        response_get = await ac.get(f"/api/v1/auth/{user_data.tokens.refresh_token}")
 
     assert response_get.status_code == 200
 
