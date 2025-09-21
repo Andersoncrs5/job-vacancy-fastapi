@@ -98,7 +98,7 @@ async def delete(
   
 
 @router.get(
-    '',
+    '/me',
     status_code=200,
     response_model=ResponseBody[UserOUT]
 )
