@@ -5,7 +5,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
 from app.utils.res.response_body import ResponseBody
 from app.utils.res.responses_http import *
-from app.schemas.favorite_post_user_schemas import *
+from app.schemas.post_user_schemas import PostUserOUT
+# from app.schemas.favorite_post_user_schemas import *
 from app.services.providers.user_service_provider import UserServiceProvider
 from app.dependencies.service_dependency import *
 from fastapi_pagination import Page, add_pagination, paginate
@@ -149,7 +150,7 @@ async def create(
 
 @router.get(
     "/{user_id}",
-    response_model=Page[PostUserEntity],
+    response_model=Page[PostUserOUT],
     status_code = 200,
     responses = {
         400: RESPONSE_400
@@ -198,8 +199,8 @@ async def get_all_another_user(
 
 
 @router.get(
-    "my",
-    response_model=Page[PostUserEntity],
+    "/my",
+    response_model=Page[PostUserOUT],
     status_code = 200
 )
 async def get_all(
