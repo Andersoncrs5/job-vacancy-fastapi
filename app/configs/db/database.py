@@ -30,6 +30,7 @@ class UserEntity(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True, index=True)
+    bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     avatar_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -52,6 +53,9 @@ class UserEntity(Base):
             id = self.id,
             name = self.name,
             email = self.email,
+            avatar_url = self.avatar_url,
+            created_at = str(self.created_at),
+            bio = self.bio,
         )
 
 class IndustryEntity(Base):
