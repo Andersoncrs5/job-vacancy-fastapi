@@ -19,6 +19,16 @@ class CategoryRepositoryProvider(CategoryRepositoryBase):
 
         return result > 0
 
+    async def exists_by_id(self, id: int) -> bool:
+        stmt: Final = select(func.count(CategoryEntity.id)).where(CategoryEntity.id == id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def exists_by_slug(self, slug: str) -> bool:
         stmt: Final = select(func.count(CategoryEntity.id)).where(CategoryEntity.slug.ilike(f"%{slug}%"))  
 
