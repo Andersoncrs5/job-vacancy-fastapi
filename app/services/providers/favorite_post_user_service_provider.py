@@ -1,0 +1,3 @@
+from app.services.base.favorite_post_user_service_base import FavoritePostUserServiceBase
+
+class FavoritePostUserServiceProvider(FavoritePostUserServiceBase):
