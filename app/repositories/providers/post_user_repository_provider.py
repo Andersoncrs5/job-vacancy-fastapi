@@ -9,6 +9,16 @@ class PostUserRepositoryProvider(PostUserRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def exists_by_id(self, id: int) -> bool:
+        stmt = select(func.count(PostUserEntity.id)).where(PostUserEntity.id == id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def get_all_filter(self, filter: PostUserFilter) -> list[PostUserEntity]:
         stmt = select(PostUserEntity)
 
