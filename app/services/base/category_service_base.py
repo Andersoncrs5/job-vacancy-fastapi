@@ -7,6 +7,10 @@ from app.utils.enums.sum_red import SumRedEnum
 class CategoryServiceBase(ABC):
 
     @abstractmethod
+    async def exists_by_id(self, id: int) -> bool:
+        pass
+    
+    @abstractmethod
     async def get_all(self, is_active: bool) -> list[CategoryEntity]:
         pass
 

@@ -15,6 +15,9 @@ class IndustryServiceProvider(IndustryServiceBase):
     async def exists_by_name(self, name: str) -> bool:
         return await self.repository.exists_by_name(name)
 
+    async def exists_by_id(self, id: int) -> bool:
+        return await self.repository.exists_by_id(id)
+
     async def update(self, industry: IndustryEntity, dto: UpdateIndustryDTO) -> IndustryEntity:
         if dto.name is not None and dto.name != industry.name:
             check_name = await self.repository.exists_by_name(dto.name)

@@ -53,6 +53,9 @@ class CategoryServiceProvider(CategoryServiceBase):
     async def exists_by_name(self, name: str) -> bool:
         return await self.repository.exists_by_name(name)
 
+    async def exists_by_id(self, id: int) -> bool:
+        return await self.repository.exists_by_id(id)
+
     async def toggle_is_active(self, category: CategoryEntity) -> CategoryEntity:
         category.is_active = not category.is_active
 

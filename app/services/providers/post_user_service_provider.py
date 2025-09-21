@@ -9,6 +9,9 @@ class PostUserServiceProvider(PostUserServiceBase):
     def __init__(self, repository: PostUserRepositoryProvider):
         self.repository = repository
 
+    async def exists_by_id(self, id: int) -> bool:
+        return await self.repository.exists_by_id(id)
+
     async def get_all_filter(self, filter: PostUserFilter) -> list[PostUserEntity]:
         return await self.repository.get_all_filter(filter)
 

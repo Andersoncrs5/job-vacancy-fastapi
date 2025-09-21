@@ -6,6 +6,10 @@ from app.utils.filter.post_user_filter import PostUserFilter
 class PostUserServiceBase(ABC):
 
     @abstractmethod
+    async def exists_by_id(self, id: int) -> bool:
+        pass
+    
+    @abstractmethod
     async def get_all_filter(self, filter: PostUserFilter) -> list[PostUserEntity]:
         pass
 

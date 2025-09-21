@@ -3,6 +3,11 @@ from app.schemas.user_schemas import CreateUserDTO, UpdateUserDTO
 from app.configs.db.database import UserEntity
 
 class UserServiceBase(ABC):
+    
+    @abstractmethod
+    async def exists_by_id(self, id: int) -> bool:
+        pass
+
     @abstractmethod
     async def exists_by_email(self, email: str) -> bool:
         pass

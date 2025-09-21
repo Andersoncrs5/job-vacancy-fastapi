@@ -6,6 +6,10 @@ from app.utils.filter.industry_filter import IndustryFilter
 class IndustryServiceBase(ABC):
 
     @abstractmethod
+    async def exists_by_id(self, id: int) -> bool:
+        pass
+    
+    @abstractmethod
     async def get_all_filter(self, filter: IndustryFilter) -> list[IndustryEntity]:
         pass
 

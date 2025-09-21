@@ -9,6 +9,9 @@ class UserServiceProvider(UserServiceBase):
     def __init__(self, repository: UserRepositoryProvider):
         self.repository = repository
 
+    async def exists_by_id(self, id: int) -> bool:
+        return await self.repository.exists_by_id(id)
+
     async def create(self, dto: CreateUserDTO) -> UserEntity: 
         user_mapped: Final[UserEntity] = dto.to_user_entity()
 
