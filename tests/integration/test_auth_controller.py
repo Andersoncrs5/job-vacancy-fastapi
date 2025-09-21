@@ -10,6 +10,21 @@ from tests.integration.helper import create_and_login_user
 client: Final[TestClient] = TestClient(app)
 
 @pytest.mark.asyncio
+async def test_exists_by_email():
+    email = "user9999999999@example.com"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(f"/api/v1/auth/{email}/exists/email")
+    
+    data = response.json()
+    assert response.status_code == 200
+    
+    assert data['body'] == False
+    assert data['code'] == 200
+    assert data['version'] == 1
+    assert data['path'] is None
+
+@pytest.mark.asyncio
 async def test_register_user():
     num = random.randint(1000000, 10000000000000)
     dto = CreateUserDTO(
