@@ -3,7 +3,7 @@ from app.schemas.post_user_schemas import PostUserOUT
 from app.schemas.user_schemas import UserOUT
 from datetime import datetime
 
-class FavoritePostOUT(BaseModel):
+class FavoritePostUserOUT(BaseModel):
     id: int
     owner: UserOUT
     post: PostUserOUT
