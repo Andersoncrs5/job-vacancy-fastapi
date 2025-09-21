@@ -76,6 +76,9 @@ class IndustryEntity(Base):
     
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="industries")
     
+    enterprises: Mapped[list["EnterpriseEntity"]] = relationship(
+        "EnterpriseEntity", back_populates="industry"
+    )
 
     def to_out(self):
         from app.schemas.industry_schemas import IndustryOUT
