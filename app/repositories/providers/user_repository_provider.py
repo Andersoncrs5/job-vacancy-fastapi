@@ -8,6 +8,16 @@ class UserRepositoryProvider(UserRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def exists_by_id(self, id: int) -> bool:
+        stmt = select(func.count(UserEntity.id)).where(UserEntity.id == id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def get_by_id(self, id: int) -> (UserEntity | None):
         stmt: Final = select(UserEntity).where(UserEntity.id == id)
         
