@@ -71,7 +71,6 @@ async def get_all(
                 ))
             )
 
-
 @router.put(
     '/{category_id}/toggle/status/is_active',
     status_code=200,
@@ -88,7 +87,7 @@ async def toggle_change_is_status(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if category_id is None or category_id <= 0:
+    if category_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -183,7 +182,7 @@ async def update(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if category_id is None or category_id <= 0:
+    if category_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -276,7 +275,7 @@ async def get_by_id(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if category_id is None or category_id <= 0:
+    if category_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -367,7 +366,7 @@ async def delete(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if category_id is None or category_id <= 0:
+    if category_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -480,9 +479,9 @@ async def create(
         check_name: Final[bool] = await category_service.exists_by_name(dto.name)
         if check_name == True:
             return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=409,
                 content=dict(ResponseBody[None](
-                    code=status.HTTP_400_BAD_REQUEST,
+                    code=409,
                     message=f"Category name: {dto.name} already exists",
                     status=False,
                     body=None,
@@ -495,9 +494,9 @@ async def create(
         check_slug: Final[bool] = await category_service.exists_by_slug(dto.slug)
         if check_slug == True:
             return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=409,
                 content=dict(ResponseBody[None](
-                    code=status.HTTP_400_BAD_REQUEST,
+                    code=409,
                     message=f"Category slug: {dto.slug} already exists",
                     status=False,
                     body=None,
@@ -529,7 +528,7 @@ async def create(
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content=dict(ResponseBody[dict](
-                message="Category created",
+                message="Category created with successfully",
                 code=status.HTTP_201_CREATED,
                 status=True,
                 body=dict(category_mapped),
