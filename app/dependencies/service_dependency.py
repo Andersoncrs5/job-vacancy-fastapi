@@ -5,6 +5,8 @@ from app.repositories.providers.user_repository_provider import UserRepositoryPr
 from app.services.providers.user_service_provider import UserServiceProvider
 from app.repositories.providers.enterprise_repository_provider import EnterpriseRepositoryProvider
 from app.services.providers.enterprise_service_provider import EnterpriseServiceProvider
+from app.repositories.providers.favorite_posts_user_repository_provider import FavoritePostUserRepositoryProvider
+from app.services.providers.favorite_post_user_service_provider import FavoritePostUserServiceProvider
 from app.repositories.providers.industry_repository_provider import IndustryRepositoryProvider
 from app.services.providers.industry_service_provider import IndustryServiceProvider
 from app.repositories.providers.category_repository_provider import CategoryRepositoryProvider
@@ -14,6 +16,10 @@ from app.services.providers.post_user_service_provider import PostUserServicePro
 from app.services.providers.jwt_service_provider import JwtServiceProvider
 from app.services.base.jwt_service_base import JwtServiceBase
 from typing import Final
+
+def get_favorite_posts_user_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> FavoritePostUserServiceProvider:
+    repository: Final = FavoritePostUserRepositoryProvider(db)
+    return FavoritePostUserServiceProvider(repository)
 
 def get_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> EnterpriseServiceProvider:
     repository: Final = EnterpriseRepositoryProvider(db)
