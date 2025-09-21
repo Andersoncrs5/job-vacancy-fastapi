@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from app.configs.db.database import UserEntity
 from jose import jwt, JWTError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from fastapi import HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
 from typing import Final
@@ -25,8 +25,8 @@ class JwtServiceProvider(JwtServiceBase):
             "sub": str(user.id),
             "email": user.email,
             "name": user.name,
-            "iat": datetime.utcnow(),
-            "exp": datetime.utcnow() + timedelta(minutes=float(ACCESS_TOKEN_EXPIRE_MINUTES))
+            "iat": datetime.now(UTC),
+            "exp": datetime.now(UTC) + timedelta(minutes=float(ACCESS_TOKEN_EXPIRE_MINUTES))
         }
 
         token: str = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -40,8 +40,8 @@ class JwtServiceProvider(JwtServiceBase):
             "sub": str(user.id),
             "email": user.email,
             "name": user.name,
-            "iat": datetime.utcnow(),
-            "exp": datetime.utcnow() + timedelta(minutes=float(REFRESH_TOKEN_EXPIRE_MINUTES))
+            "iat": datetime.now(UTC),
+            "exp": datetime.now(UTC) + timedelta(minutes=float(REFRESH_TOKEN_EXPIRE_MINUTES))
         }
 
         return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
