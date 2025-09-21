@@ -4,6 +4,10 @@ from app.configs.db.database import FavoritePostUserEntity, PostUserEntity, User
 class FavoritePostUserServiceBase(ABC):
 
     @abstractmethod
+    async def get_all_by_user_id(self, user_id: int) -> list[FavoritePostUserEntity]:
+        pass
+    
+    @abstractmethod
     async def delete(self, favo: FavoritePostUserEntity):
         pass
     
