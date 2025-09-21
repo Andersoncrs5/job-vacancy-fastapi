@@ -19,6 +19,16 @@ class EnterpriseRepositoryProvider(EnterpriseRepositoryBase):
 
         return result > 0
 
+    async def exists_by_id(self, id: int) -> bool:
+        stmt = select(func.count(EnterpriseEntity.id)).where(EnterpriseEntity.id == id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def exists_by_name(self, name: str) -> bool:
         stmt = select(func.count(EnterpriseEntity.id)).where(EnterpriseEntity.name.ilike(f"%{name}%"))
 
