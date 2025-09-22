@@ -7,10 +7,52 @@ from typing import Final
 from pydantic import BaseModel
 from app.utils.res.tokens import Tokens
 from app.schemas.category_schemas import *
+from app.schemas.industry_schemas import *
 
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+
+async def create_industry(user_data: UserTestData):
+    URL: Final[str] = '/api/v1/industry'
+    num: Final = random.randint(1000,10000000000000)
+
+    dto: Final = CreateIndustryDTO(
+        name = f"name {num}",
+        description = None,
+        icon_url = None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.post(F"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    assert response.status_code == 201
+
+    data: Final = response.json()        
+
+    assert data['message'] == "Industry created with successfully"
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body']['id'] is not None
+    assert isinstance(data['body']['id'], int)
+    assert data['body']['name'] == dto.name
+    assert data['body']['description'] == dto.description
+    assert data['body']['icon_url'] == dto.icon_url
+    assert data['body']['user_id'] is not None
+    assert isinstance(data['body']['user_id'], int)
+    assert data['body']['is_active'] == True
+
+    return IndustryOUT(
+        id = data['body']['id'],
+        name = data['body']['name'],
+        description = data['body']['description'],
+        icon_url = data['body']['icon_url'],
+        is_active = data['body']['is_active'],
+        usage_count = data['body']['usage_count'],
+        user_id = data['body']['user_id'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_post_user(user_data: UserTestData, category_data: CategoryOUT):
     num = random.randint(10000,100000000000)
