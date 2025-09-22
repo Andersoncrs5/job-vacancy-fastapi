@@ -73,44 +73,43 @@ async def test_change_status_category():
     assert data["body"]["user_id"] == category_data.user_id
     assert data["body"]["parent_id"] == category_data.parent_id
 
-"""
-    @pytest.mark.asyncio
-    async def test_update_category():
-        user_data: Final = await create_and_login_user()
-        category_data: Final = await create_category(user_data)
+@pytest.mark.asyncio
+async def test_update_category():
+    num = random.randint(10000,100000000000)
+    user_data: Final = await create_and_login_user()
+    category_data: Final = await create_category(user_data)
 
-        dto = UpdateCategoryDTO(
-            name = "category updated",
-            slug = None,
-            description = None,
-            order = None,
-            icon_url = None
-        )
+    dto = UpdateCategoryDTO(
+        name = f"category updated {num}",
+        slug = category_data.slug,
+        description = "description update",
+        order = 8,
+        icon_url = None
+    )
 
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-            response = await ac.put(f"/api/v1/category/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.put(f"/api/v1/category/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
-        data = response.json()
+    data = response.json()
 
-        assert response.status_code == 200
+    assert response.status_code == 200
 
-        assert data["code"] == 200
-        assert data["message"] == "Category updated with successfully"
-        assert data["status"] == True
-        assert data["version"] == 1
-        assert data["path"] == None
-        assert data["body"]['id'] == category_data.id
-        assert data["body"]['name'] == dto.name
-        assert data["body"]['slug'] == category_data.slug
-        assert data["body"]['description'] == category_data.description
-        assert data["body"]['is_active'] == category_data.is_active
-        assert data["body"]['order'] == category_data.order
-        assert data["body"]['post_count'] == category_data.post_count
-        assert data["body"]['job_count'] == category_data.job_count
-        assert data["body"]['icon_url'] == category_data.icon_url
-        assert data["body"]['user_id'] == category_data.user_id
-        assert data["body"]['parent_id'] == category_data.parent_id
-"""
+    assert data["code"] == 200
+    assert data["message"] == "Category updated with successfully"
+    assert data["status"] == True
+    assert data["version"] == 1
+    assert data["path"] == None
+    assert data["body"]['id'] == category_data.id
+    assert data["body"]['name'] == dto.name
+    assert data["body"]['slug'] == category_data.slug
+    assert data["body"]['description'] == dto.description
+    assert data["body"]['is_active'] == category_data.is_active
+    assert data["body"]['order'] == dto.order
+    assert data["body"]['post_count'] == category_data.post_count
+    assert data["body"]['job_count'] == category_data.job_count
+    assert data["body"]['icon_url'] == category_data.icon_url
+    assert data["body"]['user_id'] == category_data.user_id
+    assert data["body"]['parent_id'] == category_data.parent_id
 
 @pytest.mark.asyncio
 async def test_return_bad_request_update_category():
