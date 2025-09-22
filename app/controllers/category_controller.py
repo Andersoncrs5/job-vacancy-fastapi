@@ -229,6 +229,42 @@ async def update(
                 ))
             )
 
+        if dto.name != None and dto.name != category.name:
+            check: Final[bool] = await category_service.exists_by_name(dto.name)
+            if check:
+                return JSONResponse(
+                    status_code=status.HTTP_409_CONFLICT,
+                    content=dict(ResponseBody[None](
+                        code=status.HTTP_409_CONFLICT,
+                        message=f"Name {dto.name} already in use",
+                        status=False,
+                        body=None,
+                        timestamp=str(datetime.now()),
+                        version = 1,
+                        path = None
+                    ))
+                )
+
+            category.name = dto.name
+
+        if dto.slug != None and dto.slug != category.slug:
+            check_slug: Final[bool] = await category_service.exists_by_slug(dto.slug)
+            if check_slug:
+                return JSONResponse(
+                    status_code=status.HTTP_409_CONFLICT,
+                    content=dict(ResponseBody[None](
+                        code=status.HTTP_409_CONFLICT,
+                        message=f"Slug {dto.slug} already in use",
+                        status=False,
+                        body=None,
+                        timestamp=str(datetime.now()),
+                        version = 1,
+                        path = None
+                    ))
+                )
+
+            category.slug = dto.slug
+
         category_updated: Final[CategoryEntity] = await category_service.update(category, dto)
 
         category_mapped: Final[CategoryOUT] = category_updated.to_category_out()
