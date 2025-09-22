@@ -36,3 +36,4 @@ class UpdateEnterpriseDTO(BaseModel):
     description: str | None
     website_url: str | None
     logo_url: str | None
+    industry_id: int | None
