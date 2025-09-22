@@ -12,31 +12,13 @@ class CategoryServiceProvider(CategoryServiceBase):
         self.repository = repository
 
     async def update(self, category: CategoryEntity, dto: UpdateCategoryDTO) -> CategoryEntity:
-        if dto.name is not None and dto.name != category.name:
-            check: Final[bool] = await self.repository.exists_by_name(dto.name)
-            if check:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Category with name '{dto.name}' already exists."
-                )
-            category.name = dto.name
-
-        if dto.slug is not None and dto.slug != category.slug:
-            check_slug: Final[bool] = await self.repository.exists_by_slug(dto.slug)
-            if check_slug:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Category with slug '{dto.slug}' already exists."
-                )
-            category.slug = dto.slug
-
-        if dto.description is not None:
+        if dto.description != None:
             category.description = dto.description
 
-        if dto.order is not None:
+        if dto.order != None:
             category.order = dto.order
 
-        if dto.icon_url is not None:
+        if dto.icon_url != None:
             category.icon_url = dto.icon_url
 
         return await self.repository.save(category)
