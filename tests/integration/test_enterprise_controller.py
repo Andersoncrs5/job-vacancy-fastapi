@@ -10,10 +10,122 @@ import random
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = '/api/v1/enterprise'
 
+@pytest.mark.asyncio
+async def test_update_enterprise_success():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
+    dto = UpdateEnterpriseDTO(
+        name=f"{enterprise_data.name}_updated",
+        description="Updated description",
+        website_url="http://newsite.com",
+        logo_url="http://newlogo.png",
+        industry_id=industry_data.id
+    )
 
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.put(URL, json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
+    data = response.json()
 
+    assert response.status_code == 200
+    assert data["message"] == "Enterprise updated with successfully"
+    assert data["status"] is True
+    assert data["body"]["id"] == enterprise_data.id
+    assert data["body"]["name"] == dto.name
+    assert data["body"]["description"] == dto.description
+
+@pytest.mark.asyncio
+async def test_update_enterprise_not_authorized():
+    user_data: Final = await create_and_login_user()
+
+    dto = UpdateEnterpriseDTO(
+        name="invalid update",
+        description=None,
+        website_url=None,
+        logo_url=None,
+        industry_id=None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.put(URL, json=dict(dto), headers={"Authorization": f"Bearer {"invalid.token.fake"}"})
+
+    data = response.json()
+
+    assert response.status_code == 500
+
+@pytest.mark.asyncio
+async def test_update_enterprise_not_found():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+
+    dto = UpdateEnterpriseDTO(
+        name="enterprise_not_found",
+        description=None,
+        website_url=None,
+        logo_url=None,
+        industry_id=industry_data.id
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.put(URL, json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["message"] == "Enterprise not found"
+    assert data["status"] is False
+
+@pytest.mark.asyncio
+async def test_update_enterprise_industry_not_exists():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+
+    dto = UpdateEnterpriseDTO(
+        name=None,
+        description=None,
+        website_url=None,
+        logo_url=None,
+        industry_id=99999999  # industry inexistente
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.put(URL, json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+
+    assert response.status_code == 409
+    assert data["message"] == "Industry not exists"
+    assert data["status"] is False
+
+@pytest.mark.asyncio
+async def test_update_enterprise_name_conflict():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_1: Final = await create_enterprise(user_data, industry_data)
+    
+    other_user: Final = await create_and_login_user()
+    other_industry: Final = await create_industry(other_user)
+    enterprise_2: Final = await create_enterprise(other_user, other_industry)
+
+    dto = UpdateEnterpriseDTO(
+        name=enterprise_2.name,  
+        description=None,
+        website_url=None,
+        logo_url=None,
+        industry_id=industry_data.id
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.put(URL, json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+
+    assert response.status_code == 409
+    assert "already in use" in data["message"]
+    assert data["status"] is False
 
 @pytest.mark.asyncio
 async def test_exists_by_name_enterprise():
