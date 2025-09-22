@@ -59,6 +59,12 @@ class EnterpriseRepositoryProvider(EnterpriseRepositoryBase):
         )
         return result.scalars().first()
 
+    async def get_by_user_id(self, user_id: int) -> EnterpriseEntity | None:
+        result = await self.db.execute(
+            select(EnterpriseEntity).where(EnterpriseEntity.user_id == user_id)
+        )
+        return result.scalars().first()
+
     async def delete(self, enter: EnterpriseEntity):
         await self.db.delete(enter)
         await self.db.commit()
