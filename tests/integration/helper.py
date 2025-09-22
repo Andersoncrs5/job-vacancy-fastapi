@@ -14,6 +14,25 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
 
+async def create_favorite_post_user(user_data: UserTestData, category_data: CategoryOUT, post_data: PostUserOUT):
+    URL: Final[str] = '/api/v1/favorite-post-user'
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.post(f"{URL}/{post_data.id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+
+    assert response.status_code == 201
+
+    assert data['message'] =="Post favorited with successfully"
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body'] is not None
+    assert data['path'] is None
+    assert data['version'] == 1
+
+    return int(data['body'])
+
 async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT):
     num: Final = random.randint(1000,1000000000000000)
     URL: Final[str] = '/api/v1/enterprise'
