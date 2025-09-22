@@ -1,6 +1,7 @@
 import random
 from httpx import ASGITransport, AsyncClient
 from app.schemas.user_schemas import CreateUserDTO, LoginDTO
+from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO, PostUserOUT
 from main import app
 from typing import Final
 from pydantic import BaseModel
@@ -11,8 +12,44 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
 
-async def create_category(user_data: UserTestData):
+async def create_post_user(user_data: UserTestData, category_data: CategoryOUT):
     num = random.randint(10000,100000000000)
+    URL: Final[str] = "/api/v1/post-user"
+
+    dto = CreatePostUserDTO(
+        title = f"title {num}",
+        content = f"content {num}",
+        url_image = None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.post(f"{URL}/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['message'] == "Post created with successfully"
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body']['id'] is not None
+    assert data['body']['title'] == dto.title
+    assert data['body']['content'] == dto.content
+    assert data['body']['url_image'] == dto.url_image
+    assert data['body']['category_id'] == category_data.id
+
+    return PostUserOUT(
+        id = data['body']['id'],
+        title = data['body']['title'],
+        content = data['body']['content'],
+        url_image = data['body']['url_image'],
+        user_id = data['body']['user_id'],
+        category_id = data['body']['category_id'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
+
+async def create_category(user_data: UserTestData):
+    num = random.randint(100000,10000000000000)
 
     dto = CreateCategoryDTO(
         name = f"name {num}",
@@ -64,7 +101,7 @@ async def create_category(user_data: UserTestData):
     )
 
 async def create_and_login_user() -> UserTestData:
-    num = random.randint(1000000, 10000000000000)
+    num = random.randint(100000, 100000000000000)
     dto = CreateUserDTO(
         name=f"user {num}",
         email=f"user{num}@example.com",
@@ -83,6 +120,9 @@ async def create_and_login_user() -> UserTestData:
     assert response.status_code == 200
 
     data = response.json()["body"]
+
+    assert data["token"] is not None
+    assert data["refresh_token"] is not None
 
     tokens = Tokens(
         token=data["token"],
