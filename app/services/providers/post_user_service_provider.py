@@ -4,6 +4,7 @@ from app.repositories.providers.post_user_repository_provider import PostUserRep
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO
 from app.utils.filter.post_user_filter import PostUserFilter
 from typing import Final
+from datetime import datetime
 
 class PostUserServiceProvider(PostUserServiceBase):
     def __init__(self, repository: PostUserRepositoryProvider):
@@ -23,9 +24,16 @@ class PostUserServiceProvider(PostUserServiceBase):
         return await self.repository.create(post)
 
     async def update(self, post: PostUserEntity, dto: UpdatePostUserDTO) -> PostUserEntity:
-        for field, value in dto.model_dump(exclude_unset=True).items():
-            setattr(post, field, value)
+        if dto.title is not None:
+            post.title = dto.title
 
+        if dto.content is not None:
+            post.content = dto.content
+
+        if dto.url_image is not None:
+            post.url_image = dto.url_image
+
+        post.updated_at = datetime.now()
         return await self.repository.save(post)
 
     async def get_by_id(self, id: int) -> (PostUserEntity | None):
