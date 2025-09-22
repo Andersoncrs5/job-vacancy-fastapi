@@ -116,6 +116,7 @@ async def get_all(
 async def update(
     dto: UpdateEnterpriseDTO,
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
+    industry_service: IndustryServiceProvider = Depends(get_industry_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -151,6 +152,41 @@ async def update(
                     path = None
                 ))
             )
+        
+        if dto.industry_id != None and dto.industry_id != enterprise.industry_id:
+            check: bool = await industry_service.exists_by_id(dto.industry_id)
+            if check == False:
+                return JSONResponse(
+                    status_code=status.HTTP_409_CONFLICT,
+                    content=dict(ResponseBody[None](
+                        code=status.HTTP_409_CONFLICT,
+                        message="Industry not exists",
+                        status=False,
+                        body=None,
+                        timestamp=str(datetime.now()),
+                        version = 1,
+                        path = None
+                    ))
+                )
+
+            enterprise.industry_id = dto.industry_id
+
+        if dto.name != None and dto.name !=  enterprise.name:
+            check: bool = await enterprise_service.exists_by_name(dto.name)
+            if check :
+                return JSONResponse(
+                    status_code=status.HTTP_409_CONFLICT,
+                    content=dict(ResponseBody[None](
+                        code=status.HTTP_409_CONFLICT,
+                        message="Enterprise name '{dto.name}' is already in use",
+                        status=False,
+                        body=None,
+                        timestamp=str(datetime.now()),
+                        version = 1,
+                        path = None
+                    ))
+                )
+            enterprise.name = dto.name
 
         enterprise_updated = await enterprise_service.update(enterprise, dto)
 
@@ -350,7 +386,7 @@ async def get(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if id is None or id <= 0:
+    if id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -444,7 +480,7 @@ async def create(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if industry_id is None or industry_id <= 0:
+    if industry_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
