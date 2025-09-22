@@ -40,7 +40,7 @@ async def delete(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if post_user_id is None or post_user_id <= 0:
+    if post_user_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -147,19 +147,19 @@ async def get(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if post_user_id is None or post_user_id <= 0:
+    if post_user_id <= 0:
         return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_400_BAD_REQUEST,
-                    message="Post user id is required",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=dict(ResponseBody[None](
+                code=status.HTTP_400_BAD_REQUEST,
+                message="Post user id is required",
+                status=False,
+                body=None,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
@@ -240,7 +240,7 @@ async def update(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if post_user_id is None or post_user_id <= 0:
+    if post_user_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -383,7 +383,7 @@ async def create(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if category_id is None or category_id <= 0:
+    if category_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -468,7 +468,7 @@ async def create(
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content=dict(ResponseBody[dict](
-                message="Post created",
+                message="Post created with successfully",
                 code=status.HTTP_201_CREATED,
                 status=True,
                 body=dict(post_user_out),
