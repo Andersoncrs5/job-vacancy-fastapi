@@ -1,6 +1,7 @@
 import random
 from httpx import ASGITransport, AsyncClient
 from app.schemas.user_schemas import CreateUserDTO, LoginDTO
+from app.schemas.enterprise_schemas import *
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO, PostUserOUT
 from main import app
 from typing import Final
@@ -12,6 +13,44 @@ from app.schemas.industry_schemas import *
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+
+async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT):
+    num: Final = random.randint(1000,1000000000000000)
+    URL: Final[str] = '/api/v1/enterprise'
+
+    dto = CreateEnterpriseDTO(
+        name = f'name {num}',
+        description = f" description {num}",
+        website_url = None,
+        logo_url = None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.post(F"{URL}/{industry_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data: Final = response.json()
+
+    assert response.status_code == 201
+
+    assert data['message'] == 'Enterprise created with successfully'
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body']['id'] is not None
+    assert data['body']['user_id'] is not None
+    assert data['version'] == 1
+    assert data['path'] is None
+
+    return EnterpriseOUT(
+        id = data['body']['id'],
+        name = data['body']['name'],
+        description = data['body']['description'],
+        website_url = data['body']['website_url'],
+        logo_url = data['body']['logo_url'],
+        user_id = data['body']['user_id'],
+        industry_id = data['body']['industry_id'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_industry(user_data: UserTestData):
     URL: Final[str] = '/api/v1/industry'
