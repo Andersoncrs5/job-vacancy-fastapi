@@ -37,7 +37,7 @@ async def exists_name(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
-        token: Final[str] = jwt_service.valid_credentials(credentials)
+        jwt_service.valid_credentials(credentials)
 
         check = await enterprise_service.exists_by_name(name)
 
@@ -70,7 +70,6 @@ async def exists_name(
                 ))
             )
 
-
 @router.get(
     "",
     response_model=Page[EnterpriseOUT],
@@ -102,7 +101,6 @@ async def get_all(
                     path = None
                 ))
             )
-
 
 @router.put(
     "",
@@ -138,7 +136,7 @@ async def update(
                 ))
             )
 
-        enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_id(user_id)
+        enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_user_id(user_id)
         if enterprise is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -220,7 +218,7 @@ async def update(
             )
 
 @router.delete(
-    "/",
+    "",
     response_model=ResponseBody[EnterpriseOUT],
     status_code=200,
     responses = {
@@ -251,7 +249,7 @@ async def delete_my_enterprise(
                 ))
             )
 
-        enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_id(user_id)
+        enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_user_id(user_id)
         if enterprise is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -327,7 +325,7 @@ async def get_my_enterprise(
                 ))
             )
 
-        enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_id(user_id)
+        enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_user_id(user_id)
         if enterprise is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -504,6 +502,21 @@ async def create(
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        exists_by_name = await enterprise_service.exists_by_name(dto.name)
+        if exists_by_name == True :
+            return JSONResponse(
+                status_code=409,
+                content=dict(ResponseBody[None](
+                    code=409,
+                    message=f"Name {dto.name} are in use",
                     status=False,
                     body=None,
                     timestamp=str(datetime.now()),
