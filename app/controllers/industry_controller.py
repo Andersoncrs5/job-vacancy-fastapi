@@ -378,7 +378,7 @@ async def delete(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if industry_id is None or industry_id <= 0:
+    if industry_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
