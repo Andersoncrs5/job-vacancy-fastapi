@@ -16,24 +16,6 @@ class EnterpriseServiceProvider(EnterpriseServiceBase):
 
     async def update(self, enter: EnterpriseEntity, dto: UpdateEnterpriseDTO) -> EnterpriseEntity:
         
-        if dto.name != None and dto.name !=  enter.name:
-            check: bool = await self.repository.exists_by_name(dto.name)
-            if check :
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=dict(ResponseBody[None](
-                        code = status.HTTP_409_CONFLICT,
-                        message = f"Enterprise name '{dto.name}' is already in use",
-                        body=None,
-                        path=None,
-                        status=False,
-                        timestamp=str(datetime.now()),
-                        version=1
-                    ))
-                )
-
-            enter.name = dto.name
-
         if dto.description != None:
             enter.description = dto.description
 
