@@ -26,7 +26,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
 @router.post(
     '/{post_id}',
-    response_model=ResponseBody[None],
+    response_model=ResponseBody[int],
     status_code=201,
     responses = {
         404: RESPONSE_404,
@@ -41,7 +41,7 @@ async def create(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if post_id is None or post_id <= 0:
+    if post_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -118,15 +118,15 @@ async def create(
                 ))
             )  
         
-        await favorite_posts_user_service.add(post_user, user)
+        favorite_created = await favorite_posts_user_service.add(post_user, user)
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody[int](
                 message="Post favorited with successfully",
                 code=status.HTTP_201_CREATED,
                 status=True,
-                body=None,
+                body=favorite_created.id,
                 timestamp=str(datetime.now()),
                 version = 1,
                 path = None
@@ -162,7 +162,7 @@ async def get_all_another_user(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if user_id is None or user_id <= 0:
+    if user_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -196,7 +196,6 @@ async def get_all_another_user(
                     path = None
                 ))
             )
-
 
 @router.get(
     "/my",
@@ -260,7 +259,7 @@ async def delete(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if id is None or id <= 0:
+    if id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -312,7 +311,7 @@ async def delete(
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[None](
-                message="Post removed",
+                message="Post removed with successfully",
                 code=status.HTTP_200_OK,
                 status=True,
                 body=None,
@@ -348,6 +347,20 @@ async def exists_favorite(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
+    if post_id <= 0:
+        return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
         
