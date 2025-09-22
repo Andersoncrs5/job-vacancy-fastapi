@@ -33,6 +33,12 @@ class EnterpriseServiceProvider(EnterpriseServiceBase):
             return None
 
         return await self.repository.get_by_id(id)
+
+    async def get_by_user_id(self, user_id: int) -> EnterpriseEntity | None:
+        if user_id is None or user_id <= 0:
+            return None
+
+        return await self.repository.get_by_user_id(user_id)
     
     async def exists_by_name(self, name: str) -> bool:
         return await self.repository.exists_by_name(name)
