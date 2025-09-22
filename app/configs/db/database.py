@@ -127,8 +127,8 @@ class EnterpriseEntity(Base):
             logo_url = self.logo_url,
             user_id = self.user_id,
             industry_id = self.industry_id,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
         )
 
 class CategoryEntity(Base):
