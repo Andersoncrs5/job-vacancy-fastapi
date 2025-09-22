@@ -81,8 +81,6 @@ async def check_name_exists(
                 ))
             )
 
-
-
 @router.post(
     "",
     response_model=ResponseBody[IndustryOUT],
@@ -195,7 +193,7 @@ async def toggle_status_is_active(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if industry_id is None or industry_id <= 0:
+    if industry_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -280,7 +278,7 @@ async def toggle_status_is_active(
     responses={
         404: RESPONSE_404_INDUSTRY
     }
-    )
+)
 async def put(
     industry_id: int,
     dto: UpdateIndustryDTO,
@@ -288,7 +286,7 @@ async def put(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if industry_id is None or industry_id <= 0:
+    if industry_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
@@ -470,7 +468,7 @@ async def get(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    if industry_id is None or industry_id <= 0:
+    if industry_id <= 0:
         return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
