@@ -1,7 +1,7 @@
 from app.repositories.base.media_post_user_repository_base import MediaPostUserRepositoryBase
 from app.configs.db.database import MediaPostUserEntity
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, Result, Select
+from sqlalchemy import select, func
 from app.utils.filter.medias_post_user_filter import MediaPostUserFilter
 from typing import List, Final
 from datetime import datetime
@@ -9,6 +9,11 @@ from datetime import datetime
 class MediaPostUserRepositoryProvider(MediaPostUserRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def get_amount_by_post_id(self, post_id: int) -> int:
+        stmt = select(func.count(MediaPostUserEntity.id)).where(MediaPostUserEntity.post_id == post_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none() or 0
 
     async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserFilter]:
         stmt = select(MediaPostUserFilter)
