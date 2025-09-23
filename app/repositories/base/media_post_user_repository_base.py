@@ -6,6 +6,10 @@ from typing import List
 class MediaPostUserRepositoryBase(ABC):
 
     @abstractmethod
+    async def get_amount_by_post_id(self, post_id: int) -> int:
+        pass
+    
+    @abstractmethod
     async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserFilter]:
         pass
 
