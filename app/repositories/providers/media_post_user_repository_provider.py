@@ -15,8 +15,8 @@ class MediaPostUserRepositoryProvider(MediaPostUserRepositoryBase):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none() or 0
 
-    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserFilter]:
-        stmt = select(MediaPostUserFilter)
+    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
+        stmt = select(MediaPostUserEntity)
 
         stmt = filter.filter(stmt)
 

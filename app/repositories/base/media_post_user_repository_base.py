@@ -10,7 +10,7 @@ class MediaPostUserRepositoryBase(ABC):
         pass
     
     @abstractmethod
-    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserFilter]:
+    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
         pass
 
     @abstractmethod

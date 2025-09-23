@@ -40,7 +40,7 @@ class MediaPostUserServiceProvider(MediaPostUserServiceBase):
 
         return await self.repository.add(media_entity)
 
-    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserFilter]:
+    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
         return await self.repository.get_all_filter(filter)
 
     async def delete(self, media: MediaPostUserEntity):
