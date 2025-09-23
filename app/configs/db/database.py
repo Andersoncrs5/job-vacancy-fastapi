@@ -3,9 +3,10 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final
-from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger
+from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger, Enum
 from datetime import datetime
 from sqlalchemy.pool import NullPool
+from app.configs.db.enums import MediaType
 
 load_dotenv()
 
@@ -193,6 +194,7 @@ class PostUserEntity(Base):
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts")
 
     favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="post_user")
+    medias: Mapped[list["MediaPostUser"]] = relationship("MediaPostUser", back_populates="post")
 
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
@@ -207,6 +209,24 @@ class PostUserEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class MediaPostUser(Base):
+    __tablename__ = "medias_post_user"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    url: Mapped[str] = mapped_column(String(800), nullable=False, index=True)
+    type: Mapped[MediaType] = mapped_column(Enum(MediaType, name="media_type"), nullable=False)
+    order: Mapped[int] = mapped_column(Integer, default=0)
+    caption: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    mime_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    post_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_user.id"))
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    post: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="medias")
 
 class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
