@@ -194,7 +194,7 @@ class PostUserEntity(Base):
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts")
 
     favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="post_user")
-    medias: Mapped[list["MediaPostUser"]] = relationship("MediaPostUser", back_populates="post")
+    medias: Mapped[list["MediaPostUserEntity"]] = relationship("MediaPostUserEntity", back_populates="post")
 
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
@@ -210,7 +210,7 @@ class PostUserEntity(Base):
             updated_at = str(self.updated_at),
         )
 
-class MediaPostUser(Base):
+class MediaPostUserEntity(Base):
     __tablename__ = "medias_post_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
