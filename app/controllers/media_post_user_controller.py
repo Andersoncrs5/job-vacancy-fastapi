@@ -12,6 +12,7 @@ from app.dependencies.service_dependency import *
 from fastapi_pagination import Page, add_pagination, paginate
 from app.utils.filter.post_user_filter import PostUserFilter
 from datetime import datetime
+from typing import Final, List
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/media-post-user", 
@@ -129,7 +130,6 @@ async def get_all(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
@@ -148,9 +148,9 @@ async def get_all(
                 ))
             )
 
-        all = await media_post_user_service.get_all_filter(filter)
-        
-        return Page(all)
+        all_entities: Final[List[MediaPostUserEntity]] = await media_post_user_service.get_all_filter(filter)
+
+        return paginate(all_entities)
 
     except Exception as e:
         return JSONResponse(
@@ -348,7 +348,7 @@ async def delete(
 
 @router.post(
     "/{post_user_id}",
-    status_code=status.HTTP_200_OK,
+    status_code=201,
     response_model=ResponseBody[MediaPostUserOUT],
     responses={
         404: RESPONSE_404_POST_USER,
@@ -454,3 +454,5 @@ async def create(
                     path = None
                 ))
             )
+
+add_pagination(router)
