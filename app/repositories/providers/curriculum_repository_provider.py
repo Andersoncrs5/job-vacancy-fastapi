@@ -1,0 +1,3 @@
+from app.repositories.base.curriculum_repository_base import CurriculumRepositoryBase
+
+class CurriculumRepositoryProvider(CurriculumRepositoryBase):
