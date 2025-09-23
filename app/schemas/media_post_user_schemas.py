@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from app.configs.db.enums import MediaType
 
-class MediaPostUserDTO(BaseModel):
+class MediaPostUserOUT(BaseModel):
     id: int 
     url: str 
     type: MediaType 
