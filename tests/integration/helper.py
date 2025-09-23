@@ -1,5 +1,7 @@
 import random
 from httpx import ASGITransport, AsyncClient
+from app.configs.db.enums import MediaType
+from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO
 from app.schemas.user_schemas import CreateUserDTO, LoginDTO
 from app.schemas.enterprise_schemas import *
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO, PostUserOUT
@@ -13,6 +15,44 @@ from app.schemas.industry_schemas import *
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+
+async def create_media_post_user(user_data: UserTestData, post_user_data: PostUserOUT):
+    URL: Final[str] = '/api/v1/media-post-user'
+    
+    dto = CreateMediaPostUserDTO(
+        url = "https://picsum.photos/200/300",
+        type = MediaType.IMAGE,
+        order = 1,
+        caption = None,
+        size = None,
+        mime_type = None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(f"{URL}/{post_user_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['message'] == "Media created with successfully"
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body']['id'] is not None
+    assert data['body']['post_id'] == post_user_data.id
+
+    from app.schemas.media_post_user_schemas import MediaPostUserOUT
+    return MediaPostUserOUT(
+        id = data['body']['id'],
+        url = data['body']['url'],
+        type = data['body']['type'],
+        order = data['body']['order'],
+        caption = data['body']['caption'],
+        size = data['body']['size'],
+        mime_type = data['body']['mime_type'],
+        post_id = data['body']['post_id'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_favorite_post_user(user_data: UserTestData, category_data: CategoryOUT, post_data: PostUserOUT):
     URL: Final[str] = '/api/v1/favorite-post-user'
