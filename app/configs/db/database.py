@@ -45,6 +45,7 @@ class UserEntity(Base):
     industries: Mapped[list["IndustryEntity"]] = relationship("IndustryEntity", back_populates="owner")
 
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="owner", uselist=False)
+    curriculum: Mapped["CurriculumEntity"] = relationship("CurriculumEntity", back_populates="owner", uselist=False)
 
     favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="owner")
 
@@ -59,6 +60,21 @@ class UserEntity(Base):
             created_at = str(self.created_at),
             bio = self.bio,
         )
+
+class CurriculumEntity(Base):
+    __tablename__ = "curriculums"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), unique=True, nullable=False)
+
+    title: Mapped[str] = mapped_column(String(150), nullable=False)
+    is_updated: Mapped[bool] = mapped_column(Boolean, default=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="curriculum")
 
 class IndustryEntity(Base):
     __tablename__ = "industries"
