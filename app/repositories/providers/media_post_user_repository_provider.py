@@ -1,0 +1,3 @@
+from app.repositories.base.media_post_user_repository_base import MediaPostUserRepositoryBase
+
+class MediaPostUserRepositoryProvider(MediaPostUserRepositoryBase):
