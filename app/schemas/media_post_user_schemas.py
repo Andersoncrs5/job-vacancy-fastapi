@@ -14,6 +14,9 @@ class MediaPostUserOUT(BaseModel):
     created_at: datetime | str
     updated_at: datetime | str
 
+    class Config:
+        from_attributes = True
+
 class CreateMediaPostUserDTO(BaseModel):
     url: str
     type: MediaType
