@@ -228,6 +228,21 @@ class MediaPostUserEntity(Base):
 
     post: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="medias")
 
+    def to_out(self):
+        from app.schemas.media_post_user_schemas import MediaPostUserOUT
+        return MediaPostUserOUT(
+            id = self.id,
+            url = self.url,
+            type = self.type,
+            order = self.order,
+            caption = self.caption,
+            size = self.size,
+            mime_type = self.mime_type,
+            post_id = self.post_id,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
+
 class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
 
