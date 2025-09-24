@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from app.configs.db.database import IndustryEntity, UserEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
@@ -40,7 +40,7 @@ async def check_name_exists(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -68,7 +68,7 @@ async def check_name_exists(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -105,7 +105,7 @@ async def create(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -120,7 +120,7 @@ async def create(
 
         check_name: Final[bool] = await industry_service.exists_by_name(dto.name)
         if check_name == True:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=409,
                 content=dict(ResponseBody[None](
                     code=409,
@@ -135,7 +135,7 @@ async def create(
 
         user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
         if user is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -152,7 +152,7 @@ async def create(
 
         industry_mapped: Final[IndustryOUT] = industry_created.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
             content=dict(ResponseBody[dict](
                 message="Industry created with successfully",
@@ -166,7 +166,7 @@ async def create(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -194,7 +194,7 @@ async def toggle_status_is_active(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if industry_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -212,7 +212,7 @@ async def toggle_status_is_active(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -227,7 +227,7 @@ async def toggle_status_is_active(
 
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -244,7 +244,7 @@ async def toggle_status_is_active(
 
         industry_mapped: Final[IndustryOUT] = industry_updated.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Industry active status changed with successfully",
@@ -258,7 +258,7 @@ async def toggle_status_is_active(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -287,7 +287,7 @@ async def put(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if industry_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -305,7 +305,7 @@ async def put(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -320,7 +320,7 @@ async def put(
 
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -337,7 +337,7 @@ async def put(
 
         industry_mapped = industry_updated.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Industry updated with successfully",
@@ -351,7 +351,7 @@ async def put(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -379,7 +379,7 @@ async def delete(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if industry_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -397,7 +397,7 @@ async def delete(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -412,7 +412,7 @@ async def delete(
 
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -427,7 +427,7 @@ async def delete(
 
         await industry_service.delete(industry)
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[None](
                 message="Industry deleted with successfully",
@@ -441,7 +441,7 @@ async def delete(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -469,7 +469,7 @@ async def get(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if industry_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -487,7 +487,7 @@ async def get(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -502,7 +502,7 @@ async def get(
 
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -517,7 +517,7 @@ async def get(
 
         industry_mapped: Final[IndustryOUT] = industry.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Industry found with successfully",
@@ -531,7 +531,7 @@ async def get(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -560,7 +560,7 @@ async def get_all(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -578,7 +578,7 @@ async def get_all(
         return paginate(all)
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,

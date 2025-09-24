@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from app.configs.db.database import EnterpriseEntity, UserEntity, IndustryEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
@@ -43,7 +43,7 @@ async def exists_name(
 
         message = "Enterprise name already exists" if check else "Enterprise name not exists"
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[bool](
                 message=message,
@@ -57,7 +57,7 @@ async def exists_name(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -89,7 +89,7 @@ async def get_all(
         return paginate(all)
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -123,7 +123,7 @@ async def update(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -138,7 +138,7 @@ async def update(
 
         enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_user_id(user_id)
         if enterprise is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -154,7 +154,7 @@ async def update(
         if dto.industry_id != None and dto.industry_id != enterprise.industry_id:
             check: bool = await industry_service.exists_by_id(dto.industry_id)
             if check == False:
-                return JSONResponse(
+                return ORJSONResponse(
                     status_code=status.HTTP_409_CONFLICT,
                     content=dict(ResponseBody[None](
                         code=status.HTTP_409_CONFLICT,
@@ -172,7 +172,7 @@ async def update(
         if dto.name != None and dto.name !=  enterprise.name:
             check: bool = await enterprise_service.exists_by_name(dto.name)
             if check :
-                return JSONResponse(
+                return ORJSONResponse(
                     status_code=status.HTTP_409_CONFLICT,
                     content=dict(ResponseBody[None](
                         code=status.HTTP_409_CONFLICT,
@@ -190,7 +190,7 @@ async def update(
 
         enterprise_out = enterprise_updated.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Enterprise updated with successfully",
@@ -204,7 +204,7 @@ async def update(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -236,7 +236,7 @@ async def delete_my_enterprise(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -251,7 +251,7 @@ async def delete_my_enterprise(
 
         enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_user_id(user_id)
         if enterprise is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -266,7 +266,7 @@ async def delete_my_enterprise(
 
         await enterprise_service.delete(enterprise)
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[None](
                 message="Enterprise deleted with successfully",
@@ -280,7 +280,7 @@ async def delete_my_enterprise(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -312,7 +312,7 @@ async def get_my_enterprise(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -327,7 +327,7 @@ async def get_my_enterprise(
 
         enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_user_id(user_id)
         if enterprise is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -342,7 +342,7 @@ async def get_my_enterprise(
 
         enterprise_out = enterprise.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Enterprise found with successfully",
@@ -356,7 +356,7 @@ async def get_my_enterprise(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -385,7 +385,7 @@ async def get(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -403,7 +403,7 @@ async def get(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -418,7 +418,7 @@ async def get(
 
         enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_id(id)
         if enterprise is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -433,7 +433,7 @@ async def get(
 
         enterprise_out = enterprise.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Enterprise found with successfully",
@@ -447,7 +447,7 @@ async def get(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -479,7 +479,7 @@ async def create(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if industry_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -497,7 +497,7 @@ async def create(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -512,7 +512,7 @@ async def create(
 
         exists_by_name = await enterprise_service.exists_by_name(dto.name)
         if exists_by_name == True :
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=409,
                 content=dict(ResponseBody[None](
                     code=409,
@@ -527,7 +527,7 @@ async def create(
 
         exists_enterprise: Final[bool] = await enterprise_service.exists_by_user_id(user_id)
         if exists_enterprise == True :
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=409,
                 content=dict(ResponseBody[None](
                     code=409,
@@ -542,7 +542,7 @@ async def create(
 
         user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
         if user is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -557,7 +557,7 @@ async def create(
 
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -574,7 +574,7 @@ async def create(
 
         enterprise_out: Final[EnterpriseOUT] = enterprise_created.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
             content=dict(ResponseBody[dict](
                 message="Enterprise created with successfully",
@@ -588,7 +588,7 @@ async def create(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,

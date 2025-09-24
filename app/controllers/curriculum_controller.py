@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from app.configs.db.database import CurriculumEntity, UserEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
@@ -42,7 +42,7 @@ async def toggle_is_updated(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -57,7 +57,7 @@ async def toggle_is_updated(
 
         curriculum = await curriculum_service.get_by_user_id(user_id)
         if curriculum is None :
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=404,
                 content=dict(ResponseBody[None](
                     code=404,
@@ -74,7 +74,7 @@ async def toggle_is_updated(
 
         out: Final[CurriculumOUT] = curriculum_updated.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Curriculum status is updated changed with successfully",
@@ -88,7 +88,7 @@ async def toggle_is_updated(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -121,7 +121,7 @@ async def update(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -136,7 +136,7 @@ async def update(
 
         curriculum = await curriculum_service.get_by_user_id(user_id)
         if curriculum is None :
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=404,
                 content=dict(ResponseBody[None](
                     code=404,
@@ -153,7 +153,7 @@ async def update(
 
         out: Final[CurriculumOUT] = curriculum_updated.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Curriculum updated with successfully",
@@ -167,7 +167,7 @@ async def update(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -200,7 +200,7 @@ async def delete(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -215,7 +215,7 @@ async def delete(
 
         curriculum = await curriculum_service.get_by_user_id(user_id)
         if curriculum is None :
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=404,
                 content=dict(ResponseBody[None](
                     code=404,
@@ -228,7 +228,7 @@ async def delete(
                 ))
             )
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[None](
                 message="Curriculum deleted with successfully",
@@ -242,7 +242,7 @@ async def delete(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -278,7 +278,7 @@ async def create(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -293,7 +293,7 @@ async def create(
 
         curriculum: Final[bool] = await curriculum_service.exists_by_user_id(user_id)
         if curriculum == True :
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=409,
                 content=dict(ResponseBody[None](
                     code=409,
@@ -310,7 +310,7 @@ async def create(
 
         out: Final[CurriculumOUT] = curriculum_created.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=201,
             content=dict(ResponseBody[dict](
                 message="Curriculum created with successfully",
@@ -324,7 +324,7 @@ async def create(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -353,7 +353,7 @@ async def get_by_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if user_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -371,7 +371,7 @@ async def get_by_user_id(
 
         curriculum = await curriculum_service.get_by_user_id(user_id)
         if curriculum == None :
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=404,
                 content=dict(ResponseBody[None](
                     code=404,
@@ -386,7 +386,7 @@ async def get_by_user_id(
 
         out: Final[CurriculumOUT] = curriculum.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=200,
             content=dict(ResponseBody[dict](
                 message="Curriculum found with successfully",
@@ -400,7 +400,7 @@ async def get_by_user_id(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity, MediaPostUserEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
@@ -42,7 +42,7 @@ async def update(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if media_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -60,7 +60,7 @@ async def update(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -75,7 +75,7 @@ async def update(
 
         media = await media_post_user_service.get_by_id(media_id)
         if media is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -92,7 +92,7 @@ async def update(
 
         media_out = media_updated.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=200,
             content=dict(ResponseBody[dict](
                 message="Media updated with successfully",
@@ -106,7 +106,7 @@ async def update(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -135,7 +135,7 @@ async def get_all(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -153,7 +153,7 @@ async def get_all(
         return paginate(all_entities)
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -181,7 +181,7 @@ async def get_by_id(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if media_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -199,7 +199,7 @@ async def get_by_id(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -214,7 +214,7 @@ async def get_by_id(
 
         media = await media_post_user_service.get_by_id(media_id)
         if media is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -229,7 +229,7 @@ async def get_by_id(
 
         media_out = media.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=200,
             content=dict(ResponseBody[dict](
                 message="Media found with successfully",
@@ -243,7 +243,7 @@ async def get_by_id(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -271,7 +271,7 @@ async def delete(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if media_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -289,7 +289,7 @@ async def delete(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -304,7 +304,7 @@ async def delete(
 
         media = await media_post_user_service.get_by_id(media_id)
         if media is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -319,7 +319,7 @@ async def delete(
 
         await media_post_user_service.delete(media)
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=200,
             content=dict(ResponseBody[None](
                 message="Media deleted with successfully",
@@ -333,7 +333,7 @@ async def delete(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -363,7 +363,7 @@ async def create(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if post_user_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -381,7 +381,7 @@ async def create(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -396,7 +396,7 @@ async def create(
 
         check: Final[int] = await media_post_user_service.get_amount_by_post_id(post_user_id)
         if check >= 10:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=409,
                 content=dict(ResponseBody[None](
                     code=409,
@@ -411,7 +411,7 @@ async def create(
 
         post_user: Final[bool] = await post_user_service.exists_by_id(post_user_id)
         if post_user == False:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -428,7 +428,7 @@ async def create(
 
         media_out = media_created.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=201,
             content=dict(ResponseBody[dict](
                 message="Media created with successfully",
@@ -442,7 +442,7 @@ async def create(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,

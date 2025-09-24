@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from app.configs.db.database import CategoryEntity, UserEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
@@ -40,7 +40,7 @@ async def get_all(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -58,7 +58,7 @@ async def get_all(
         return paginate(categories)
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -88,7 +88,7 @@ async def toggle_change_is_status(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if category_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -106,7 +106,7 @@ async def toggle_change_is_status(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -121,7 +121,7 @@ async def toggle_change_is_status(
 
         category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
         if category is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -138,7 +138,7 @@ async def toggle_change_is_status(
 
         category_mapped: Final[CategoryOUT] = category_updated.to_category_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Category status changed with successfully",
@@ -152,7 +152,7 @@ async def toggle_change_is_status(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -182,7 +182,7 @@ async def update(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if category_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -200,7 +200,7 @@ async def update(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -215,7 +215,7 @@ async def update(
 
         category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
         if category is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -231,7 +231,7 @@ async def update(
         if dto.name != None and dto.name != category.name:
             check: Final[bool] = await category_service.exists_by_name(dto.name)
             if check:
-                return JSONResponse(
+                return ORJSONResponse(
                     status_code=status.HTTP_409_CONFLICT,
                     content=dict(ResponseBody[None](
                         code=status.HTTP_409_CONFLICT,
@@ -249,7 +249,7 @@ async def update(
         if dto.slug != None and dto.slug != category.slug:
             check_slug: Final[bool] = await category_service.exists_by_slug(dto.slug)
             if check_slug:
-                return JSONResponse(
+                return ORJSONResponse(
                     status_code=status.HTTP_409_CONFLICT,
                     content=dict(ResponseBody[None](
                         code=status.HTTP_409_CONFLICT,
@@ -268,7 +268,7 @@ async def update(
 
         category_mapped: Final[CategoryOUT] = category_updated.to_category_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Category updated with successfully",
@@ -282,7 +282,7 @@ async def update(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -311,7 +311,7 @@ async def get_by_id(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if category_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -329,7 +329,7 @@ async def get_by_id(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -344,7 +344,7 @@ async def get_by_id(
 
         category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
         if category is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -359,7 +359,7 @@ async def get_by_id(
 
         category_mapped: Final[CategoryOUT] = category.to_category_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Category found with successfully",
@@ -373,7 +373,7 @@ async def get_by_id(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -402,7 +402,7 @@ async def delete(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if category_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -420,7 +420,7 @@ async def delete(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -435,7 +435,7 @@ async def delete(
 
         category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
         if category is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -450,7 +450,7 @@ async def delete(
 
         await category_service.delete(category)
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[None](
                 message="Category deleted with successfully",
@@ -464,7 +464,7 @@ async def delete(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -498,7 +498,7 @@ async def create(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -513,7 +513,7 @@ async def create(
 
         check_name: Final[bool] = await category_service.exists_by_name(dto.name)
         if check_name == True:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=409,
                 content=dict(ResponseBody[None](
                     code=409,
@@ -528,7 +528,7 @@ async def create(
 
         check_slug: Final[bool] = await category_service.exists_by_slug(dto.slug)
         if check_slug == True:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=409,
                 content=dict(ResponseBody[None](
                     code=409,
@@ -543,7 +543,7 @@ async def create(
 
         user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
         if user is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -560,7 +560,7 @@ async def create(
 
         category_mapped: Final[CategoryOUT] = category_created.to_category_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
             content=dict(ResponseBody[dict](
                 message="Category created with successfully",
@@ -575,7 +575,7 @@ async def create(
 
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,

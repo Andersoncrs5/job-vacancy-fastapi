@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
@@ -41,7 +41,7 @@ async def delete(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if post_user_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -59,7 +59,7 @@ async def delete(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -74,7 +74,7 @@ async def delete(
 
         post_user: Final[PostUserEntity | None] = await post_user_service.get_by_id(post_user_id)
         if post_user is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -91,7 +91,7 @@ async def delete(
 
         category = await category_service.get_by_id(post_user.category_id)
         if category is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -106,7 +106,7 @@ async def delete(
 
         await category_service.sum_red_post_count(category, SumRedEnum.RED)
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[None](
                 message="Post deleted with successfully",
@@ -120,7 +120,7 @@ async def delete(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -148,7 +148,7 @@ async def get(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if post_user_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=dict(ResponseBody[None](
                 code=status.HTTP_400_BAD_REQUEST,
@@ -166,7 +166,7 @@ async def get(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -181,7 +181,7 @@ async def get(
 
         post_user: Final[PostUserEntity | None] = await post_user_service.get_by_id(post_user_id)
         if post_user is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -196,7 +196,7 @@ async def get(
         
         post_user_out: Final[PostUserOUT] = post_user.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Post found with successfully",
@@ -210,7 +210,7 @@ async def get(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -241,7 +241,7 @@ async def update(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if post_user_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -259,7 +259,7 @@ async def update(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -274,7 +274,7 @@ async def update(
 
         post_user: Final[PostUserEntity | None] = await post_user_service.get_by_id(post_user_id)
         if post_user is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -291,7 +291,7 @@ async def update(
 
         post_user_out: Final[PostUserOUT] = post_user_updated.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
                 message="Post updated with successfully",
@@ -305,7 +305,7 @@ async def update(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -334,7 +334,7 @@ async def get_all(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -352,7 +352,7 @@ async def get_all(
         return paginate(categories)
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,
@@ -384,7 +384,7 @@ async def create(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if category_id <= 0:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -402,7 +402,7 @@ async def create(
 
         user_id: Final[int | None] = jwt_service.extract_user_id(token)
         if user_id is None or user_id <= 0:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_401_UNAUTHORIZED,
@@ -417,7 +417,7 @@ async def create(
 
         user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
         if user is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -432,7 +432,7 @@ async def create(
 
         category: Final[CategoryEntity | None] = await category_service.get_by_id(category_id)
         if category is None:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_404_NOT_FOUND,
@@ -446,7 +446,7 @@ async def create(
             )  
         
         if category.is_active == False:
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content=dict(ResponseBody[None](
                     code=status.HTTP_400_BAD_REQUEST,
@@ -465,7 +465,7 @@ async def create(
 
         post_user_out = post_user_created.to_out()
 
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
             content=dict(ResponseBody[dict](
                 message="Post created with successfully",
@@ -479,7 +479,7 @@ async def create(
         )
 
     except Exception as e:
-        return JSONResponse(
+        return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
                     code=500,

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from app.schemas.user_schemas import CreateUserDTO, LoginDTO
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from app.configs.db.database import UserEntity
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Final
@@ -36,7 +36,7 @@ async def exists_by_email(
 ):
     check: Final[bool] = await user_service.exists_by_email(email)
     
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=status.HTTP_200_OK,
         content=dict(ResponseBody[bool](
             message="",
@@ -66,7 +66,7 @@ async def refresh_token_method(
     
     check_token = jwt_service.decode_token(refresh_token)
     if check_token is None:
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content=dict(ResponseBody[None](
                 code=status.HTTP_401_UNAUTHORIZED,
@@ -81,7 +81,7 @@ async def refresh_token_method(
 
     user_id: Final[int | None] = jwt_service.extract_user_id(refresh_token)
     if user_id is None:
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content=dict(ResponseBody[None](
                 code=status.HTTP_401_UNAUTHORIZED,
@@ -96,7 +96,7 @@ async def refresh_token_method(
 
     user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
     if user is None:
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=dict(ResponseBody[None](
                 code=status.HTTP_404_NOT_FOUND,
@@ -121,7 +121,7 @@ async def refresh_token_method(
         exp_refresh_token = None
         )
     
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=status.HTTP_200_OK,
         content=dict(ResponseBody[dict](
             message="New Tokens sended",
@@ -147,7 +147,7 @@ async def login(
 ):
     user: Final[UserEntity | None] = await user_service.get_by_email(dto.email)
     if user is None:
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=401,
             content=dict(ResponseBody[None](
                 code=401,
@@ -161,7 +161,7 @@ async def login(
         )
 
     if verify_password(dto.password,user.password) == False :
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=401,
             content=dict(ResponseBody[None](
                 code=401,
@@ -186,7 +186,7 @@ async def login(
         exp_refresh_token = None
         )
 
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=status.HTTP_200_OK,
         content=dict(ResponseBody[dict](
             message="Welcome again",
@@ -219,7 +219,7 @@ async def resgiter(
 ):
     check: Final[bool] = await user_service.exists_by_email(dto.email)
     if check :
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content=dict(ResponseBody[None](
                 code=status.HTTP_409_CONFLICT,
@@ -246,7 +246,7 @@ async def resgiter(
         exp_refresh_token = None
         )
 
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=dict(ResponseBody[dict](
             message="Welcome",
