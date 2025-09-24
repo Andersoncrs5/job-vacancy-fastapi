@@ -177,7 +177,6 @@ async def toggle_change_is_status(
 async def update(
     category_id: int,
     dto: UpdateCategoryDTO,
-    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
