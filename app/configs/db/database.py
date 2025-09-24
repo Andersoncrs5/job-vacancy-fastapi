@@ -18,9 +18,6 @@ if DATABASE_URL is None:
 
 engine: Final[AsyncEngine] = create_async_engine(DATABASE_URL, future=True, echo=True, poolclass=NullPool)
 
-if not database_exists(engine.url):
-    create_database(engine.url)
-
 AsyncSessionLocal: Final[async_sessionmaker[AsyncSession]] = async_sessionmaker(engine, expire_on_commit=False)
 
 class Base(AsyncAttrs, DeclarativeBase):
