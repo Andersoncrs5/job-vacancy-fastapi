@@ -6,6 +6,11 @@ RESPONSE_401: Final[Dict] = {
     "model": ResponseBody[None]
 }
 
+RESPONSE_409: Final[Dict] = {
+    "description": "COnflict of datas",
+    "model": ResponseBody[None]
+}
+
 RESPONSE_400: Final[Dict] = {
     "description": "",
     "model": ResponseBody[None]
