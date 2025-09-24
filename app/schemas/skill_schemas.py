@@ -2,7 +2,7 @@ from app.configs.orjson.orjson_config import ORJSONModel
 from uuid import UUID
 from datetime import datetime
 
-class SkillEntity(ORJSONModel):
+class SkillOUT(ORJSONModel):
     id: UUID
     name: str
     is_active: bool
@@ -12,6 +12,13 @@ class SkillEntity(ORJSONModel):
 
 class CreateSkillDTO(ORJSONModel):
     name: str
+
+    def to_entity(self):
+        from app.configs.db.database import SkillEntity
+        
+        return SkillEntity(
+            name = self.name
+        )
 
 class UpdateSkillDTO(ORJSONModel):
     name: str | None
