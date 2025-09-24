@@ -1,21 +1,37 @@
-import logging
 from fastapi import FastAPI
-from app.controllers import favorite_post_user_controller, auth_controller, user_controller, category_controller, post_user_controller, industry_controller, enterprise_controller, media_post_user_controller, curriculum_controller
+from app.controllers import (
+    favorite_post_user_controller, auth_controller, user_controller,
+    category_controller, post_user_controller, industry_controller,
+    enterprise_controller, media_post_user_controller, curriculum_controller
+)
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
 from fastapi.responses import ORJSONResponse
 from typing import Final
+import structlog
+import uuid
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
-logger: Final[logging.Logger] = logging.getLogger(__name__)
+# ----------------- CONFIG STRUCTLOG -----------------
+def setup_logging() -> structlog.BoundLogger:
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.JSONRenderer()
+        ],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
+    return structlog.get_logger()
+
+logger: Final[structlog.BoundLogger] = setup_logging()
+# -----------------------------------------------------
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up the application...")
-    
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -23,12 +39,21 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down the application...")
 
 app: Final[FastAPI] = FastAPI(
-    lifespan=lifespan, 
-    title="Job vacancy in FastAPI", 
+    lifespan=lifespan,
+    title="Job vacancy in FastAPI",
     version="1.0.0",
     default_response_class=ORJSONResponse
 )
 
+# ----------------- MIDDLEWARE PARA REQUEST_ID -----------------
+@app.middleware("http")
+async def add_request_id(request, call_next):
+    request_id = str(uuid.uuid4())
+    structlog.contextvars.bind_contextvars(request_id=request_id)
+    response = await call_next(request)
+    return response
+
+# ----------------- ROTAS -----------------
 app.include_router(media_post_user_controller.router)
 app.include_router(curriculum_controller.router)
 app.include_router(enterprise_controller.router)
