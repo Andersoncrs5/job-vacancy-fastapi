@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from app.configs.orjson.orjson_config import ORJSONModel
 
-class Tokens(BaseModel):
+class Tokens(ORJSONModel):
     token: str
     refresh_token: str
     exp_token: str | None
