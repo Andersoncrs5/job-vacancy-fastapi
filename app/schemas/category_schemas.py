@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
+from app.configs.orjson.orjson_config import ORJSONModel
 
-class CategoryOUT(BaseModel):
+class CategoryOUT(ORJSONModel):
     id: int
     name: str
     slug: str
@@ -14,12 +15,9 @@ class CategoryOUT(BaseModel):
     user_id: int
     parent_id: int | None
     created_at: datetime | str
-    updated_at: datetime | str
+    updated_at: datetime | str        
 
-    class Config:
-        from_attributes = True
-
-class CreateCategoryDTO(BaseModel):
+class CreateCategoryDTO(ORJSONModel):
     name: str
     slug: str
     description: str | None
@@ -38,7 +36,7 @@ class CreateCategoryDTO(BaseModel):
         )
 
 
-class UpdateCategoryDTO(BaseModel):
+class UpdateCategoryDTO(ORJSONModel):
     name: str | None
     slug: str | None
     description: str | None
