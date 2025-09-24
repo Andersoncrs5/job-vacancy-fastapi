@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from app.controllers import favorite_post_user_controller, auth_controller, user_controller, category_controller, post_user_controller, industry_controller, enterprise_controller, media_post_user_controller, curriculum_controller
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
+from fastapi.responses import ORJSONResponse
 from typing import Final
 
 logging.basicConfig(
@@ -24,8 +25,9 @@ async def lifespan(app: FastAPI):
 app: Final[FastAPI] = FastAPI(
     lifespan=lifespan, 
     title="Job vacancy in FastAPI", 
-    version="1.0.0"
-    )
+    version="1.0.0",
+    default_response_class=ORJSONResponse
+)
 
 app.include_router(media_post_user_controller.router)
 app.include_router(curriculum_controller.router)
