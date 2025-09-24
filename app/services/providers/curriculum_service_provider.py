@@ -25,7 +25,7 @@ class CurriculumServiceProvider(CurriculumServiceBase):
 
         return await self.repository.add(curri)
 
-    async def get_by_id(self, user_id: int) -> CurriculumEntity | None:
+    async def get_by_user_id(self, user_id: int) -> CurriculumEntity | None:
         if user_id <= 0:
             return None
         
