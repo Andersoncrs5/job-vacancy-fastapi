@@ -1,8 +1,8 @@
 from datetime import datetime
-from pydantic import BaseModel
 from app.configs.db.enums import MediaType
+from app.configs.orjson.orjson_config import ORJSONModel
 
-class MediaPostUserOUT(BaseModel):
+class MediaPostUserOUT(ORJSONModel):
     id: int 
     url: str 
     type: MediaType 
@@ -14,10 +14,7 @@ class MediaPostUserOUT(BaseModel):
     created_at: datetime | str
     updated_at: datetime | str
 
-    class Config:
-        from_attributes = True
-
-class CreateMediaPostUserDTO(BaseModel):
+class CreateMediaPostUserDTO(ORJSONModel):
     url: str
     type: MediaType
     order: int
@@ -37,7 +34,7 @@ class CreateMediaPostUserDTO(BaseModel):
             mime_type = self.mime_type,
         )
 
-class UpdateMediaPostUserDTO(BaseModel):
+class UpdateMediaPostUserDTO(ORJSONModel):
     url: str | None
     type: MediaType | None
     order: int | None

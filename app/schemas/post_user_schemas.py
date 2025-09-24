@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from app.configs.orjson.orjson_config import ORJSONModel
 from datetime import datetime
 
-class PostUserOUT(BaseModel):
+class PostUserOUT(ORJSONModel):
     id: int
     title: str
     content: str
@@ -11,10 +11,7 @@ class PostUserOUT(BaseModel):
     created_at: datetime | str
     updated_at: datetime | str
 
-    class Config:
-        from_attributes = True
-
-class CreatePostUserDTO(BaseModel):
+class CreatePostUserDTO(ORJSONModel):
     title: str
     content: str
     url_image: str | None
@@ -28,7 +25,7 @@ class CreatePostUserDTO(BaseModel):
             url_image = self.url_image,
         )
 
-class UpdatePostUserDTO(BaseModel):
+class UpdatePostUserDTO(ORJSONModel):
     title: str | None
     content: str | None
     url_image: str | None

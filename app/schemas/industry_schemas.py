@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
+from app.configs.orjson.orjson_config import ORJSONModel
 
-class IndustryOUT(BaseModel):
+class IndustryOUT(ORJSONModel):
     id: int
     name: str
     description: str | None
@@ -12,10 +13,7 @@ class IndustryOUT(BaseModel):
     created_at: datetime | str
     updated_at: datetime | str
 
-    class Config:
-        from_attributes = True
-
-class CreateIndustryDTO(BaseModel):
+class CreateIndustryDTO(ORJSONModel):
     name: str
     description: str | None
     icon_url: str | None
@@ -29,7 +27,7 @@ class CreateIndustryDTO(BaseModel):
             icon_url = self.icon_url,
         )
 
-class UpdateIndustryDTO(BaseModel):
+class UpdateIndustryDTO(ORJSONModel):
     name: str | None
     description: str | None
     icon_url: str | None
