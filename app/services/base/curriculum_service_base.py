@@ -21,5 +21,5 @@ class CurriculumServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_by_id(self, user_id: int) -> CurriculumEntity | None:
+    async def get_by_user_id(self, user_id: int) -> CurriculumEntity | None:
         pass
