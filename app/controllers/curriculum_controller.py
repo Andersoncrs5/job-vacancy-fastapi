@@ -24,7 +24,7 @@ router: Final[APIRouter] = APIRouter(
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
 @router.patch(
-    'toggle/status/is_updated',
+    '/toggle/status/is_updated',
     response_model=ResponseBody[CurriculumOUT],
     status_code=200,
     responses = {
@@ -298,7 +298,7 @@ async def create(
                 content=dict(ResponseBody[None](
                     code=409,
                     message=f"you already have a Curriculum",
-                    status=True,
+                    status=False,
                     body=None,
                     timestamp=str(datetime.now()),
                     version = 1,
@@ -370,13 +370,13 @@ async def get_by_user_id(
         jwt_service.valid_credentials(credentials)
 
         curriculum = await curriculum_service.get_by_user_id(user_id)
-        if curriculum is None :
+        if curriculum == None :
             return JSONResponse(
                 status_code=404,
                 content=dict(ResponseBody[None](
                     code=404,
                     message=f"Curriculum not found",
-                    status=True,
+                    status=False,
                     body=None,
                     timestamp=str(datetime.now()),
                     version = 1,
@@ -387,10 +387,10 @@ async def get_by_user_id(
         out: Final[CurriculumOUT] = curriculum.to_out()
 
         return JSONResponse(
-            status_code=status.HTTP_200_OK,
+            status_code=200,
             content=dict(ResponseBody[dict](
                 message="Curriculum found with successfully",
-                code=status.HTTP_200_OK,
+                code=200,
                 status=True,
                 body=dict(out),
                 timestamp=str(datetime.now()),
