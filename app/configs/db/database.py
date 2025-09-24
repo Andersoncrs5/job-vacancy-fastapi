@@ -62,7 +62,7 @@ class UserEntity(Base):
             bio = self.bio,
         )
 
-class Skill(Base):
+class SkillEntity(Base):
     __tablename__ = "skills"
 
     id: Mapped[UUID] = mapped_column(default=uuid4, primary_key=True)
