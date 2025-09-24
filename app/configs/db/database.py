@@ -7,7 +7,7 @@ from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Intege
 from datetime import datetime
 from sqlalchemy.pool import NullPool
 from app.configs.db.enums import MediaType
-from sqlalchemy_utils import create_database, database_exists
+from uuid import UUID, uuid4
 
 load_dotenv()
 
@@ -61,6 +61,17 @@ class UserEntity(Base):
             created_at = str(self.created_at),
             bio = self.bio,
         )
+
+class Skill(Base):
+    __tablename__ = "skills"
+
+    id: Mapped[UUID] = mapped_column(default=uuid4, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    refresh_token: Mapped[str | None] = mapped_column(String(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class CurriculumEntity(Base):
     __tablename__ = "curriculums"
