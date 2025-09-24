@@ -7,6 +7,7 @@ from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Intege
 from datetime import datetime
 from sqlalchemy.pool import NullPool
 from app.configs.db.enums import MediaType
+from sqlalchemy_utils import create_database, database_exists
 
 load_dotenv()
 
@@ -16,6 +17,9 @@ if DATABASE_URL is None:
     raise ValueError("DATABASE_URL is None")
 
 engine: Final[AsyncEngine] = create_async_engine(DATABASE_URL, future=True, echo=True, poolclass=NullPool)
+
+if not database_exists(engine.url):
+    create_database(engine.url)
 
 AsyncSessionLocal: Final[async_sessionmaker[AsyncSession]] = async_sessionmaker(engine, expire_on_commit=False)
 
