@@ -76,6 +76,19 @@ class CurriculumEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="curriculum")
 
+    def to_out(self):
+        from app.schemas.curriculum_schemas import CurriculumOUT
+
+        return CurriculumOUT(
+            id = self.id,
+            user_id = self.user_id,
+            title = self.title,
+            is_updated = self.is_updated,
+            description = self.description,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
+
 class IndustryEntity(Base):
     __tablename__ = "industries"
 
