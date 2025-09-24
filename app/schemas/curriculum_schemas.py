@@ -22,7 +22,6 @@ class CreateCurriculumDTO(BaseModel):
             description = self.description,
         )
 
-
 class UpdateCurriculumDTO(BaseModel):
     title: str | None
     is_updated: bool | None
