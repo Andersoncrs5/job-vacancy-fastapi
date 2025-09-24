@@ -7,6 +7,7 @@ from app.schemas.enterprise_schemas import *
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO, PostUserOUT
 from main import app
 from typing import Final
+from app.schemas.curriculum_schemas import *
 from pydantic import BaseModel
 from app.utils.res.tokens import Tokens
 from app.schemas.category_schemas import *
@@ -15,6 +16,36 @@ from app.schemas.industry_schemas import *
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+
+async def create_curriculum(user_data):
+    URL: Final[str] = '/api/v1/curriculum'
+
+    dto = CreateCurriculumDTO(
+        title = "a little about me",
+        description = None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['message'] == "Curriculum created with successfully"
+    assert data['code'] == 201
+    assert data['body']['id'] is not None
+    assert data['body']['user_id'] is not None
+    assert data['body']['title'] == dto.title
+
+    return CurriculumOUT(
+        id = data['body']['id'],
+        user_id = data['body']['user_id'],
+        title = data['body']['title'],
+        is_updated = data['body']['is_updated'],
+        description = data['body']['description'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_media_post_user(user_data: UserTestData, post_user_data: PostUserOUT):
     URL: Final[str] = '/api/v1/media-post-user'
