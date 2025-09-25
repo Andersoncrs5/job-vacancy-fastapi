@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final
@@ -7,7 +8,7 @@ from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Intege
 from datetime import datetime
 from sqlalchemy.pool import NullPool
 from app.configs.db.enums import MediaType
-from uuid import UUID, uuid4
+import uuid
 
 load_dotenv()
 
@@ -65,7 +66,7 @@ class UserEntity(Base):
 class SkillEntity(Base):
     __tablename__ = "skills"
 
-    id: Mapped[UUID] = mapped_column(default=uuid4, primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -76,7 +77,7 @@ class SkillEntity(Base):
         from app.schemas.skill_schemas import SkillOUT
 
         return SkillOUT(
-            id = self.id,
+            id = str(self.id),
             name = self.name,
             is_active = self.is_active,
             created_at = str(self.created_at),
