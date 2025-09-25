@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from app.controllers import (
     favorite_post_user_controller, auth_controller, user_controller,
     category_controller, post_user_controller, industry_controller,
-    enterprise_controller, media_post_user_controller, curriculum_controller
+    enterprise_controller, media_post_user_controller, curriculum_controller,
+    skill_controller
 )
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
@@ -11,7 +12,6 @@ from typing import Final
 import structlog
 import uuid
 
-# ----------------- CONFIG STRUCTLOG -----------------
 def setup_logging() -> structlog.BoundLogger:
     structlog.configure(
         processors=[
@@ -26,7 +26,7 @@ def setup_logging() -> structlog.BoundLogger:
     return structlog.get_logger()
 
 logger: Final[structlog.BoundLogger] = setup_logging()
-# -----------------------------------------------------
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -45,7 +45,6 @@ app: Final[FastAPI] = FastAPI(
     default_response_class=ORJSONResponse
 )
 
-# ----------------- MIDDLEWARE PARA REQUEST_ID -----------------
 @app.middleware("http")
 async def add_request_id(request, call_next):
     request_id = str(uuid.uuid4())
@@ -53,7 +52,7 @@ async def add_request_id(request, call_next):
     response = await call_next(request)
     return response
 
-# ----------------- ROTAS -----------------
+app.include_router(skill_controller.router)
 app.include_router(media_post_user_controller.router)
 app.include_router(curriculum_controller.router)
 app.include_router(enterprise_controller.router)
