@@ -58,6 +58,9 @@ class SkillServiceProvider(SkillServiceBase):
     async def exists_by_id(self, id: UUID) -> bool:
         return await self.repository.exists_by_id(id)
 
+    async def exists_by_name(self, name: str) -> bool:
+        return await self.repository.exists_by_name(name)
+
     async def get_by_id(self, id: UUID) -> SkillEntity | None:
         return await self.repository.get_by_id(id)
 
