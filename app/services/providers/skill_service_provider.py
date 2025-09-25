@@ -14,6 +14,9 @@ class SkillServiceProvider(SkillServiceBase):
     def __init__(self, repository: SkillRepositoryProvider):
         self.repository = repository
 
+    async def get_all(self, filter: SkillFilter) -> List[SkillEntity]:
+        return await self.repository.get_all(filter)
+
     async def toggle_is_active(self, skill: SkillEntity) -> SkillEntity: 
         skill.is_active = not skill.is_active
 
