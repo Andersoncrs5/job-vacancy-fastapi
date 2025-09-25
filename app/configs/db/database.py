@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final
 from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger, Enum
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy.pool import NullPool
-from app.configs.db.enums import MediaType
+from app.configs.db.enums import MediaType, ProficiencyEnum
 import uuid
 
 load_dotenv()
@@ -50,6 +50,7 @@ class UserEntity(Base):
     curriculum: Mapped["CurriculumEntity"] = relationship("CurriculumEntity", back_populates="owner", uselist=False)
 
     favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="owner")
+    my_skills: Mapped[list["MySkillEntity"]] = relationship("MySkillEntity", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -63,6 +64,42 @@ class UserEntity(Base):
             bio = self.bio,
         )
 
+class MySkillEntity(Base):
+    __tablename__ = "my_skills"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), 
+        primary_key=True,
+        nullable=False
+    )
+
+    skill_id: Mapped[int] = mapped_column(
+        ForeignKey("skills.id", ondelete="CASCADE"), 
+        primary_key=True,
+        nullable=False
+    )
+
+    proficiency: Mapped[ProficiencyEnum] = mapped_column(
+        Enum(ProficiencyEnum), 
+        default=ProficiencyEnum.basic, 
+        nullable=False
+    )
+    
+    certificate_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    datails: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    years_of_experience: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    last_used_date: Mapped[date] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="my_skills")
+    
+    skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="my_skills")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
 class SkillEntity(Base):
     __tablename__ = "skills"
 
@@ -72,6 +109,8 @@ class SkillEntity(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    my_skills: Mapped[list["MySkillEntity"]] = relationship("MySkillEntity", back_populates="skill")
 
     def to_out(self):
         from app.schemas.skill_schemas import SkillOUT
