@@ -14,6 +14,10 @@ class MySkillRepositoryBase(ABC):
         pass
 
     @abstractmethod
+    async def delete(self, my: MySkillEntity):
+        pass
+
+    @abstractmethod
     async def add(self, my: MySkillEntity) -> MySkillEntity:
         pass
 
