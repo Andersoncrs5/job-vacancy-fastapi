@@ -13,6 +13,7 @@ class SkillRepositoryProvider(SkillRepositoryBase):
         self.db = db
 
     async def add(self, skill: SkillEntity) -> SkillEntity:
+        skill.id = uuid4()
         self.db.add(skill)
         await self.db.commit()
         await self.db.refresh(skill)
