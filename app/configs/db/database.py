@@ -69,9 +69,19 @@ class SkillEntity(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    refresh_token: Mapped[str | None] = mapped_column(String(), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    def to_out(self):
+        from app.schemas.skill_schemas import SkillOUT
+
+        return SkillOUT(
+            id = self.id,
+            name = self.name,
+            is_active = self.is_active,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
 
 class CurriculumEntity(Base):
     __tablename__ = "curriculums"
