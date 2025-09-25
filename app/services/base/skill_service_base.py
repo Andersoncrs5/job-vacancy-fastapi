@@ -10,6 +10,14 @@ from app.schemas.skill_schemas import SkillOUT, CreateSkillDTO, UpdateSkillDTO
 class SkillServiceBase(ABC):
 
     @abstractmethod
+    async def get_all(self, filter: SkillFilter) -> List[SkillEntity]:
+        pass
+    
+    @abstractmethod
+    async def update(self, skill: SkillEntity, dto: UpdateSkillDTO) -> SkillEntity:
+        pass
+
+    @abstractmethod
     async def toggle_is_active(self, skill: SkillEntity) -> SkillEntity: 
         pass
     
