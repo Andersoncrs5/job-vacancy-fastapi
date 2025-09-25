@@ -10,3 +10,9 @@ class MediaType(str, enum.Enum):
     PDF = "pdf"
     TEXT = "text"
     ARCHIVE = "archive"
+
+class ProficiencyEnum(str, enum.Enum):
+    basic = "Basic"
+    intermediary = "Intermediary"
+    proficient = "Proficient"
+    specialist = "Specialist"
