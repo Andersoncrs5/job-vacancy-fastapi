@@ -10,6 +10,10 @@ from app.schemas.skill_schemas import SkillOUT, CreateSkillDTO, UpdateSkillDTO
 class SkillServiceBase(ABC):
 
     @abstractmethod
+    async def exists_by_name(self, name: str) -> bool:
+        pass
+    
+    @abstractmethod
     async def get_all(self, filter: SkillFilter) -> List[SkillEntity]:
         pass
     
