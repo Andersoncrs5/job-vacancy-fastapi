@@ -3,7 +3,7 @@ from uuid import UUID
 from datetime import datetime
 
 class SkillOUT(ORJSONModel):
-    id: UUID
+    id: UUID | str
     name: str
     is_active: bool
     created_at: datetime | str
