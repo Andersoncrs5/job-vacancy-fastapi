@@ -12,10 +12,38 @@ from pydantic import BaseModel
 from app.utils.res.tokens import Tokens
 from app.schemas.category_schemas import *
 from app.schemas.industry_schemas import *
+from app.schemas.skill_schemas import *
 
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+
+async def create_skill(user_data):
+    URL: Final[str] = '/api/v1/skill'
+    num = random.randint(10000,100000000000000)
+
+    dto = CreateSkillDTO(
+        name = f"name {num}" 
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['body']['id'] is not None
+    assert data['body']['name'] == dto.name
+
+    return SkillOUT(
+        id = str(data['body']['id']),
+        name = data['body']['name'],
+        is_active = data['body']['is_active'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
+
 
 async def create_curriculum(user_data):
     URL: Final[str] = '/api/v1/curriculum'
