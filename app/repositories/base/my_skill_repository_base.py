@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from app.configs.db.database import MySkillEntity
-from uuid import UUID
 from app.utils.filter.my_skill_filter import MySkillFilter
 
 class MySkillRepositoryBase(ABC):
@@ -22,9 +21,9 @@ class MySkillRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def exists_by_skill_id_and_user_id(self, skill_id: UUID, user_id: int) -> bool:
+    async def exists_by_skill_id_and_user_id(self, skill_id: int, user_id: int) -> bool:
         pass
 
     @abstractmethod
-    async def get_by_skill_id_and_user_id(self, skill_id: UUID, user_id: int) -> MySkillEntity | None:
+    async def get_by_skill_id_and_user_id(self, skill_id: int, user_id: int) -> MySkillEntity | None:
         pass

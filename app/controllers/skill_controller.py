@@ -81,7 +81,7 @@ async def exists_by_name(
     }
 )
 async def toggle_is_active(
-    id: uuid.UUID,
+    id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -145,7 +145,7 @@ async def toggle_is_active(
     }
 )
 async def update(
-    id: uuid.UUID,
+    id: int,
     dto: UpdateSkillDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
@@ -242,7 +242,7 @@ async def get_all(
     }
 )
 async def delete(
-    id: uuid.UUID,
+    id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -304,7 +304,7 @@ async def delete(
     }
 )
 async def get_by_id(
-    id: uuid.UUID,
+    id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),

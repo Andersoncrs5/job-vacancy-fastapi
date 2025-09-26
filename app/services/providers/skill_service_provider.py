@@ -1,6 +1,5 @@
 from app.services.base.skill_service_base import SkillServiceBase
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
-from uuid import UUID
 from typing import Final
 from app.utils.filter.skill_filter import SkillFilter
 from fastapi import HTTPException
@@ -55,13 +54,13 @@ class SkillServiceProvider(SkillServiceBase):
     async def delete(self, skill: SkillEntity):
         await self.repository.delete(skill)
 
-    async def exists_by_id(self, id: UUID) -> bool:
+    async def exists_by_id(self, id: int) -> bool:
         return await self.repository.exists_by_id(id)
 
     async def exists_by_name(self, name: str) -> bool:
         return await self.repository.exists_by_name(name)
 
-    async def get_by_id(self, id: UUID) -> SkillEntity | None:
+    async def get_by_id(self, id: int) -> SkillEntity | None:
         return await self.repository.get_by_id(id)
 
     

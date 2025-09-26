@@ -1,5 +1,4 @@
 from abc import ABC , abstractmethod 
-from uuid import UUID
 from typing import Final
 from app.utils.filter.skill_filter import SkillFilter
 from app.configs.db.database import SkillEntity
@@ -34,9 +33,9 @@ class SkillServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_by_id(self, id: UUID) -> SkillEntity | None:
+    async def get_by_id(self, id: int) -> SkillEntity | None:
         pass
 
     @abstractmethod
-    async def exists_by_id(self, id: UUID) -> bool:
+    async def exists_by_id(self, id: int) -> bool:
         pass

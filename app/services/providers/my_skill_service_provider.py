@@ -1,5 +1,4 @@
 from app.configs.db.database import MySkillEntity
-from uuid import UUID
 from app.utils.filter.my_skill_filter import MySkillFilter
 from datetime import datetime
 from typing import Final
@@ -41,8 +40,8 @@ class MySkillServiceProvider(MySkillServiceBase):
     async def get_all(self, filter: MySkillFilter) -> list[MySkillEntity]: 
         return await self.repository.get_all(filter)
 
-    async def exists_by_skill_id_and_user_id(self, skill_id: UUID, user_id: int) -> bool:
+    async def exists_by_skill_id_and_user_id(self, skill_id: int, user_id: int) -> bool:
         return await self.repository.exists_by_skill_id_and_user_id(skill_id, user_id)
 
-    async def get_by_skill_id_and_user_id(self, skill_id: UUID, user_id: int) -> MySkillEntity | None:
+    async def get_by_skill_id_and_user_id(self, skill_id: int, user_id: int) -> MySkillEntity | None:
         return await self.repository.get_by_skill_id_and_user_id(skill_id, user_id)

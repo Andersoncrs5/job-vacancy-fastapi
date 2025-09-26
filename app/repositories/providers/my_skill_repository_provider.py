@@ -1,6 +1,5 @@
 from app.repositories.base.my_skill_repository_base import MySkillRepositoryBase
 from app.configs.db.database import MySkillEntity
-from uuid import UUID
 from app.utils.filter.my_skill_filter import MySkillFilter
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
@@ -11,7 +10,7 @@ class MySkillRepositoryProvider(MySkillRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def exists_by_skill_id_and_user_id(self, skill_id: UUID, user_id: int) -> bool:
+    async def exists_by_skill_id_and_user_id(self, skill_id: int, user_id: int) -> bool:
         stmt = select(func.count(MySkillEntity.user_id)).where(
             and_(
                 MySkillEntity.user_id == user_id,
@@ -23,7 +22,7 @@ class MySkillRepositoryProvider(MySkillRepositoryBase):
 
         return bool(result and result > 0)
 
-    async def get_by_skill_id_and_user_id(self, skill_id: UUID, user_id: int) -> MySkillEntity | None:
+    async def get_by_skill_id_and_user_id(self, skill_id: int, user_id: int) -> MySkillEntity | None:
         stmt = select(MySkillEntity).where(
             and_(
                 MySkillEntity.user_id == user_id,

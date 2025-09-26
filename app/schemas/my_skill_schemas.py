@@ -1,20 +1,20 @@
 from app.configs.orjson.orjson_config import ORJSONModel
-from uuid import UUID
 from datetime import datetime, date
 from app.configs.db.enums import ProficiencyEnum
-from app.configs.db.database import MySkillEntity
 
 class MySkillOUT(ORJSONModel):
     user_id: int
-    skill_id: UUID
+    skill_id: int
     proficiency: ProficiencyEnum
     certificate_url: str | None
     datails: str | None
     years_of_experience: int | None
-    last_used_date: date
+    last_used_date: date | str
+    created_at: datetime | str
+    updated_at: datetime | str
 
 class UpdateMySkillDTO(ORJSONModel):
-    skill_id: UUID | None
+    skill_id: int | None
     proficiency: ProficiencyEnum
     certificate_url: str | None
     datails: str | None
@@ -22,7 +22,7 @@ class UpdateMySkillDTO(ORJSONModel):
     last_used_date: date | None
 
 class CreateMySkillDTO(ORJSONModel):
-    skill_id: UUID
+    skill_id: int
     proficiency: ProficiencyEnum
     certificate_url: str | None
     datails: str | None

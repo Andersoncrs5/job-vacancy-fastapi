@@ -1,9 +1,8 @@
 from app.configs.orjson.orjson_config import ORJSONModel
-from uuid import UUID
 from datetime import datetime
 
 class SkillOUT(ORJSONModel):
-    id: UUID | str
+    id: int
     name: str
     is_active: bool
     created_at: datetime | str

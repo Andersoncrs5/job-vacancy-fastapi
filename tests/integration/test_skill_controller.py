@@ -6,7 +6,6 @@ from httpx import ASGITransport, AsyncClient
 from app.schemas.skill_schemas import *
 import pytest
 import random
-from uuid import UUID, uuid4
 
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = '/api/v1/skill'
@@ -83,7 +82,7 @@ async def test_return_not_found_delete_skill():
     skill_data = await create_skill(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.delete(f"{URL}/{uuid4()}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response: Final = await acdc.delete(f"{URL}/{9999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 404
@@ -112,7 +111,7 @@ async def test_return_not_found_get_skill():
     user_data = await create_and_login_user()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.get(f"{URL}/{uuid4()}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response: Final = await acdc.get(f"{URL}/{99999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 404

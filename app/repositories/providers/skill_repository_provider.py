@@ -2,7 +2,6 @@ from app.repositories.base.skill_repository_base import SkillRepositoryBase
 from app.configs.db.database import SkillEntity
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from uuid import UUID, uuid4
 from typing import Final
 from app.utils.filter.skill_filter import SkillFilter
 from typing import List
@@ -13,7 +12,6 @@ class SkillRepositoryProvider(SkillRepositoryBase):
         self.db = db
 
     async def add(self, skill: SkillEntity) -> SkillEntity:
-        skill.id = uuid4()
         self.db.add(skill)
         await self.db.commit()
         await self.db.refresh(skill)
@@ -38,7 +36,7 @@ class SkillRepositoryProvider(SkillRepositoryBase):
         await self.db.delete(skill)
         await self.db.commit()
 
-    async def get_by_id(self, id: UUID) -> (SkillEntity | None):
+    async def get_by_id(self, id: int) -> (SkillEntity | None):
         result = await self.db.execute(
             select(SkillEntity).where(SkillEntity.id == id)
         )
@@ -55,7 +53,7 @@ class SkillRepositoryProvider(SkillRepositoryBase):
 
         return result > 0
 
-    async def exists_by_id(self, id: UUID) -> bool:
+    async def exists_by_id(self, id: int) -> bool:
         result: Final[int | None] = await self.db.scalar(
             select(func.count(SkillEntity.id)).where(SkillEntity.id == id)
         )
