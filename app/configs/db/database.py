@@ -73,7 +73,7 @@ class MySkillEntity(Base):
         nullable=False
     )
 
-    skill_id: Mapped[uuid.UUID] = mapped_column(
+    skill_id: Mapped[int] = mapped_column(
         ForeignKey("skills.id", ondelete="CASCADE"), 
         primary_key=True,
         nullable=False
@@ -100,10 +100,25 @@ class MySkillEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+    def to_out(self):
+        from app.schemas.my_skill_schemas import MySkillOUT
+
+        return MySkillOUT(
+            skill_id = self.skill_id,
+            user_id = self.user_id,
+            proficiency = self.proficiency,
+            certificate_url = self.certificate_url,
+            datails = self.datails,
+            years_of_experience = self.years_of_experience,
+            last_used_date = str(self.last_used_date),
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
+
 class SkillEntity(Base):
     __tablename__ = "skills"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -116,7 +131,7 @@ class SkillEntity(Base):
         from app.schemas.skill_schemas import SkillOUT
 
         return SkillOUT(
-            id = str(self.id),
+            id = self.id,
             name = self.name,
             is_active = self.is_active,
             created_at = str(self.created_at),
