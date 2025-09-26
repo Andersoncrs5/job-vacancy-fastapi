@@ -37,7 +37,7 @@ async def create_skill(user_data):
     assert data['body']['name'] == dto.name
 
     return SkillOUT(
-        id = str(data['body']['id']),
+        id = data['body']['id'],
         name = data['body']['name'],
         is_active = data['body']['is_active'],
         created_at = str(data['body']['created_at']),
