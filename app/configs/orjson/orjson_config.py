@@ -2,15 +2,18 @@ import orjson
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import date, datetime
+import json
 
 def orjson_default(obj):
     if isinstance(obj, UUID):
-        return obj.hex 
-    if isinstance(obj, (date, datetime)):
-        return obj.isoformat()
-    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+        return str(obj)          
 
-def orjson_dumps(v, *, default):
+    if isinstance(obj, (date, datetime)):
+        return str(obj)
+
+    return json.JSONEncoder().default(obj)
+
+def orjson_dumps(v, *, default=orjson_default):
     return orjson.dumps(v, default=default).decode()
 
 class ORJSONModel(BaseModel):
