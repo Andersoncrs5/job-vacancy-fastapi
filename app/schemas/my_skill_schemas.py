@@ -14,7 +14,6 @@ class MySkillOUT(ORJSONModel):
     updated_at: datetime | str
 
 class UpdateMySkillDTO(ORJSONModel):
-    skill_id: int | None
     proficiency: ProficiencyEnum
     certificate_url: str | None
     datails: str | None
