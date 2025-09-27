@@ -220,6 +220,7 @@ class EnterpriseEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="enterprise")
     industry: Mapped["IndustryEntity"] = relationship("IndustryEntity", back_populates="enterprises")
+    posts: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="enterprise")
 
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
@@ -235,6 +236,24 @@ class EnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class PostEnterpriseEntity(Base):
+    __tablename__ = "posts_enterprise"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    url_image: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    enterprie_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
+    category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("categories.id"))
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="posts")
+    category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts_enterprise")
+
 
 class CategoryEntity(Base):
     __tablename__ = "categories"
@@ -260,6 +279,7 @@ class CategoryEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="categories")
     posts: Mapped[list["PostUserEntity"]] = relationship("PostUserEntity", back_populates="category")
+    posts_enterprise: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="category")
 
     def to_category_out(self):
         from app.schemas.category_schemas import CategoryOUT
