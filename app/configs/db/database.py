@@ -254,6 +254,20 @@ class PostEnterpriseEntity(Base):
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="posts")
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts_enterprise")
 
+    def to_out(self):
+        from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
+
+        return PostEnterpriseOUT(
+            id = self.id,
+            title = self.title,
+            content = self.content,
+            url_image = self.url_image,
+            enterprise_id = self.enterprise_id,
+            category_id = self.category_id,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
+
 
 class CategoryEntity(Base):
     __tablename__ = "categories"
