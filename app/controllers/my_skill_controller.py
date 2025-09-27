@@ -12,6 +12,7 @@ from app.dependencies.service_dependency import *
 from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
 from app.utils.filter.my_skill_filter import MySkillFilter
+from app.configs.db.database import MySkillEntity
 import json
 
 router: Final[APIRouter] = APIRouter(
@@ -25,6 +26,426 @@ router: Final[APIRouter] = APIRouter(
 )
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
+
+@router.get(
+    '/{skill_int}/exists',
+    status_code = status.HTTP_200_OK,
+    response_model = ResponseBody[None],
+    responses = {
+        404: RESPONSE_404
+    }
+)
+async def exists(
+    skill_int: int,
+    my_skill_service: MySkillServiceProvider = Depends(get_my_skill_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if skill_int <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+        
+        my: Final[bool] = await my_skill_service.exists_by_skill_id_and_user_id(skill_int, user_id)
+        
+        return ORJSONResponse(
+            status_code=200,
+            content=dict(ResponseBody[bool](
+                message="",
+                code=200,
+                status=True,
+                body=my,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.get(
+    '/{skill_int}',
+    status_code = status.HTTP_200_OK,
+    response_model = ResponseBody[None],
+    responses = {
+        404: RESPONSE_404
+    }
+)
+async def get(
+    skill_int: int,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
+    my_skill_service: MySkillServiceProvider = Depends(get_my_skill_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if skill_int <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+        
+        my: Final[MySkillEntity | None] = await my_skill_service.get_by_skill_id_and_user_id(skill_int, user_id)
+        if my is None :
+            return ORJSONResponse(
+                status_code=404,
+                content=dict(ResponseBody[None](
+                    code=404,
+                    message=f"My Skill not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        out: Final[MySkillOUT] = my.to_out()
+
+        return ORJSONResponse(
+            status_code=200,
+            content=dict(ResponseBody[dict](
+                message="My Skill found with successfully",
+                code=200,
+                status=True,
+                body=dict(out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.get(
+    '',
+    status_code = status.HTTP_200_OK,
+    response_model = Page[MySkillOUT],
+)
+async def get_all(
+    filter: MySkillFilter = Depends(),
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    my_skill_service: MySkillServiceProvider = Depends(get_my_skill_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+        
+        all: Final[list[MySkillEntity]] = await my_skill_service.get_all(filter)
+
+        return paginate(all)
+        
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.patch(
+    "/{skill_id}",
+    status_code = status.HTTP_200_OK,
+    response_model = ResponseBody[MySkillOUT],
+    responses = {
+        409: RESPONSE_409,
+        400: RESPONSE_400,
+        404: RESPONSE_404,
+    }
+)
+async def update(
+    skill_id: int,
+    dto: UpdateMySkillDTO,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
+    my_skill_service: MySkillServiceProvider = Depends(get_my_skill_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if skill_id <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+        
+        my_skill: Final[MySkillEntity | None] = await my_skill_service.get_by_skill_id_and_user_id(skill_id, user_id)
+        if my_skill is None:
+            return ORJSONResponse(
+                status_code=404,
+                content=dict(ResponseBody[None](
+                    code=404,
+                    message="My Skill not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        check = await user_service.exists_by_id(user_id)
+        if check == False:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        my_skill_updated = await my_skill_service.update(my_skill, dto)
+
+        out: Final[MySkillOUT] = my_skill_updated.to_out()
+
+        return ORJSONResponse(
+            status_code=200,
+            content=dict(ResponseBody[dict](
+                message="My Skill updated with successfully",
+                code=200,
+                status=True,
+                body=dict(out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.delete(
+    '/{skill_int}',
+    status_code = status.HTTP_200_OK,
+    response_model = ResponseBody[None],
+    responses = {
+        404: RESPONSE_404,
+        400: RESPONSE_400
+    }
+)
+async def delete(
+    skill_int: int,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
+    my_skill_service: MySkillServiceProvider = Depends(get_my_skill_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if skill_int <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int | None] = jwt_service.extract_user_id(token)
+        if user_id is None or user_id <= 0:
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+        
+        my: Final[MySkillEntity | None] = await my_skill_service.get_by_skill_id_and_user_id(skill_int, user_id)
+        if my is None :
+            return ORJSONResponse(
+                status_code=404,
+                content=dict(ResponseBody[None](
+                    code=404,
+                    message=f"My Skill not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        await my_skill_service.delete(my)
+
+        return ORJSONResponse(
+            status_code=200,
+            content=dict(ResponseBody[None](
+                message="My Skill removed with successfully",
+                code=200,
+                status=True,
+                body=None,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
 
 @router.post(
     "",
