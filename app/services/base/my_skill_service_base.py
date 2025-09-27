@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from app.configs.db.database import MySkillEntity
 from app.utils.filter.my_skill_filter import MySkillFilter
-from datetime import datetime
-from typing import Final
-from app.schemas.my_skill_schemas import CreateMySkillDTO
+from app.schemas.my_skill_schemas import CreateMySkillDTO, UpdateMySkillDTO
 
 class MySkillServiceBase(ABC):
 
@@ -12,7 +10,7 @@ class MySkillServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def update(self, my: MySkillEntity, dto: CreateMySkillDTO) -> MySkillEntity:
+    async def update(self, my: MySkillEntity, dto: UpdateMySkillDTO) -> MySkillEntity:
         pass
 
     @abstractmethod
