@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload
 
 from typing import Final
 
-class FavoritePostUserRepositoryProvider(FavoritePostEnterpriseRepositoryBase):
+class FavoritePostEnterpriseRepositoryProvider(FavoritePostEnterpriseRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
