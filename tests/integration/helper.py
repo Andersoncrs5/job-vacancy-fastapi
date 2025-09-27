@@ -2,7 +2,7 @@ import random
 from httpx import ASGITransport, AsyncClient
 from app.configs.db.enums import MediaType
 from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO
-from app.schemas.user_schemas import CreateUserDTO, LoginDTO
+from app.schemas.user_schemas import CreateUserDTO, LoginDTO, UserOUT
 from app.schemas.enterprise_schemas import *
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO, PostUserOUT
 from main import app
@@ -21,6 +21,22 @@ from datetime import date
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+    out: UserOUT
+
+async def create_favorite_post_enterprise(user_data, post_enterprise):
+    URL: Final[str] = '/api/v1/favorite-post-enterprise'
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.post(f"{URL}/{post_enterprise.id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['message'] == "Post favorited with successfully"
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body'] is not None
+
+    return int(data['body'])
 
 async def create_post_enterprise(user_data, enterprise_data, category_data):
     URL: Final[str] = "/api/v1/post-enterprise"
@@ -399,6 +415,14 @@ async def create_and_login_user() -> UserTestData:
     assert data["token"] is not None
     assert data["refresh_token"] is not None
 
+    URL: Final[str] = "/api/v1/user"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(URL + f"/{dto.email}", headers={"Authorization": f"Bearer {data["token"]}"})
+
+    assert response.status_code == 200
+    data_user = response.json()
+
     tokens = Tokens(
         token=data["token"],
         refresh_token=data["refresh_token"],
@@ -406,4 +430,13 @@ async def create_and_login_user() -> UserTestData:
         exp_refresh_token=data.get("exp_refresh_token"),
     )
 
-    return UserTestData(dto=dto, tokens=tokens)
+    out = UserOUT(
+        id = data_user['body']['id'],
+        name = data_user['body']['name'],
+        email = data_user['body']['email'],
+        avatar_url = data_user['body']['avatar_url'],
+        bio = data_user['body']['bio'],
+        created_at = str(data_user['body']['created_at']),
+    )
+
+    return UserTestData(dto=dto, tokens=tokens, out=out)
