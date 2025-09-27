@@ -126,6 +126,7 @@ async def delete(
 )
 async def get_all(
     user_id: int,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     favorite_posts_enterprise_service: FavoritePostEnterpriseServiceProvider = Depends(get_favorite_posts_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -146,6 +147,21 @@ async def get_all(
 
     try:
         jwt_service.valid_credentials(credentials)
+
+        check = await user_service.exists_by_id(user_id)
+        if check == False:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
 
         all = await favorite_posts_enterprise_service.get_all_by_user_id_just_post(user_id)
 
