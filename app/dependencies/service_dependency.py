@@ -3,10 +3,8 @@ from fastapi import Depends
 from app.configs.db.database import get_db
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
 from app.services.providers.skill_service_provider import SkillServiceProvider
-
 from app.repositories.providers.my_skill_repository_provider import MySkillRepositoryProvider
 from app.services.providers.my_skill_service_provider import MySkillServiceProvider
-
 from app.repositories.providers.user_repository_provider import UserRepositoryProvider
 from app.services.providers.user_service_provider import UserServiceProvider
 from app.repositories.providers.curriculum_repository_provider import CurriculumRepositoryProvider
@@ -26,6 +24,12 @@ from app.services.providers.post_user_service_provider import PostUserServicePro
 from app.services.providers.jwt_service_provider import JwtServiceProvider
 from app.services.base.jwt_service_base import JwtServiceBase
 from typing import Final
+from app.repositories.providers.post_enterprise_repository_provider import PostEnterpriseRepositoryProvider
+from app.services.providers.post_enterprise_service_provider import PostEnterpriseServiceProvider
+
+def get_post_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> PostEnterpriseServiceProvider:
+    repository: Final = PostEnterpriseRepositoryProvider(db)
+    return PostEnterpriseServiceProvider(repository)
 
 def get_my_skill_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> MySkillServiceProvider:
     repository: Final = MySkillRepositoryProvider(db)
