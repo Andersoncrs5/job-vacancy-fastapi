@@ -38,7 +38,7 @@ class MySkillRepositoryProvider(MySkillRepositoryBase):
         await self.db.commit()
 
     async def get_all(self, filter: MySkillFilter) -> list[MySkillEntity]: 
-        stmt = filter.filter(select(MySkillFilter))
+        stmt = filter.filter(select(MySkillEntity))
 
         result: Final = await self.db.execute(stmt)
         all: Final = result.scalars().all()
