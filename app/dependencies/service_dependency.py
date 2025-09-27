@@ -26,6 +26,12 @@ from app.services.base.jwt_service_base import JwtServiceBase
 from typing import Final
 from app.repositories.providers.post_enterprise_repository_provider import PostEnterpriseRepositoryProvider
 from app.services.providers.post_enterprise_service_provider import PostEnterpriseServiceProvider
+from app.repositories.providers.favorite_posts_enterprise_repository_provider import FavoritePostEnterpriseRepositoryProvider
+from app.services.providers.favorite_post_enterprise_service_provider import FavoritePostEnterpriseServiceProvider
+
+def get_favorite_posts_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> FavoritePostEnterpriseServiceProvider:
+    repository: Final = FavoritePostEnterpriseRepositoryProvider(db)
+    return FavoritePostEnterpriseServiceProvider(repository)
 
 def get_post_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> PostEnterpriseServiceProvider:
     repository: Final = PostEnterpriseRepositoryProvider(db)
