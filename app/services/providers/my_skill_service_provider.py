@@ -1,8 +1,7 @@
 from app.configs.db.database import MySkillEntity
 from app.utils.filter.my_skill_filter import MySkillFilter
-from datetime import datetime
 from typing import Final
-from app.schemas.my_skill_schemas import CreateMySkillDTO
+from app.schemas.my_skill_schemas import CreateMySkillDTO, UpdateMySkillDTO
 from app.services.base.my_skill_service_base import MySkillServiceBase
 from app.repositories.providers.my_skill_repository_provider import MySkillRepositoryProvider
 
@@ -10,7 +9,7 @@ class MySkillServiceProvider(MySkillServiceBase):
     def __init__(self, repository: MySkillRepositoryProvider):
         self.repository = repository
 
-    async def update(self, my: MySkillEntity, dto: CreateMySkillDTO) -> MySkillEntity:
+    async def update(self, my: MySkillEntity, dto: UpdateMySkillDTO) -> MySkillEntity:
         if dto.proficiency != None:
             my.proficiency = dto.proficiency
 
