@@ -14,12 +14,50 @@ from app.schemas.category_schemas import *
 from app.schemas.industry_schemas import *
 from app.schemas.skill_schemas import *
 from app.schemas.my_skill_schemas import *
+from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdatePostEnterpriseDTO, PostEnterpriseOUT
 from app.configs.db.enums import ProficiencyEnum
 from datetime import date
 
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+
+async def create_post_enterprise(user_data, enterprise_data, category_data):
+    URL: Final[str] = "/api/v1/post-enterprise"
+    num = random.randint(10000,10000000000000)
+
+    dto = CreatePostEnterpriseDTO(
+        title = f"title {num}",
+        content = f"content {num}",
+        url_image = None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.post(f"{URL}/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['message'] == "Post created with successfully"
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body']['id'] is not None
+    assert data['body']['title'] == dto.title
+    assert data['body']['content'] == dto.content
+    assert data['body']['url_image'] == dto.url_image
+    assert data['body']['category_id'] == category_data.id
+    assert data['body']['enterprise_id'] == enterprise_data.id
+
+    return PostEnterpriseOUT(
+        id = data['body']['id'],
+        title = data['body']['title'],
+        content = data['body']['content'],
+        url_image = data['body']['url_image'],
+        enterprise_id = data['body']['enterprise_id'],
+        category_id = data['body']['category_id'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_my_skill(user_data, skill):
     URL: Final[str] = '/api/v1/my-skill'
