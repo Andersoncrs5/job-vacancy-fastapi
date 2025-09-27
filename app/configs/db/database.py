@@ -1,14 +1,12 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final
-from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger, Enum
+from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger, Enum, Date
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
 from app.configs.db.enums import MediaType, ProficiencyEnum
-import uuid
 
 load_dotenv()
 
@@ -91,7 +89,7 @@ class MySkillEntity(Base):
 
     years_of_experience: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    last_used_date: Mapped[date] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    last_used_date: Mapped[date] = mapped_column(Date, server_default=func.now(), nullable=False)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="my_skills")
     
