@@ -6,7 +6,7 @@ class PostEnterpriseOUT(ORJSONModel):
     title: str
     content: str
     url_image: str | None
-    Enterprise_id: int
+    enterprise_id: int
     category_id: int
     created_at: datetime | str
     updated_at: datetime | str
