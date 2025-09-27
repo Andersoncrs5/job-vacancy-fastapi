@@ -245,7 +245,7 @@ class PostEnterpriseEntity(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     url_image: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    enterprie_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
+    enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
     category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("categories.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
