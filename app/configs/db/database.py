@@ -50,6 +50,8 @@ class UserEntity(Base):
     favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="owner")
     my_skills: Mapped[list["MySkillEntity"]] = relationship("MySkillEntity", back_populates="owner")
 
+    favorite_post_enterprise: Mapped[list["FavoritePostEnterpriseEntity"]] = relationship("FavoritePostEnterpriseEntity", back_populates="owner")
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -222,6 +224,7 @@ class EnterpriseEntity(Base):
     industry: Mapped["IndustryEntity"] = relationship("IndustryEntity", back_populates="enterprises")
     posts: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="enterprise")
 
+
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
 
@@ -253,6 +256,7 @@ class PostEnterpriseEntity(Base):
 
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="posts")
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts_enterprise")
+    favorite_post_enterprise: Mapped[list["FavoritePostEnterpriseEntity"]] = relationship("FavoritePostEnterpriseEntity", back_populates="posts")
 
     def to_out(self):
         from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
@@ -268,7 +272,19 @@ class PostEnterpriseEntity(Base):
             updated_at = str(self.updated_at),
         )
 
+class FavoritePostEnterpriseEntity(Base):
+    __tablename__ = "favorite_posts_enterprise"
+    
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
 
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    post_enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_enterprise.id"))
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="favorite_post_enterprise")
+    posts: Mapped["PostEnterpriseEntity"] = relationship("PostEnterpriseEntity", back_populates="favorite_post_enterprise")
+    
 class CategoryEntity(Base):
     __tablename__ = "categories"
 
