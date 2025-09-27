@@ -13,10 +13,49 @@ from app.utils.res.tokens import Tokens
 from app.schemas.category_schemas import *
 from app.schemas.industry_schemas import *
 from app.schemas.skill_schemas import *
+from app.schemas.my_skill_schemas import *
+from app.configs.db.enums import ProficiencyEnum
+from datetime import date
 
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
+
+async def create_my_skill(user_data, skill):
+    URL: Final[str] = '/api/v1/my-skill'
+
+    dto = CreateMySkillDTO(
+        skill_id = skill.id,
+        proficiency = ProficiencyEnum.basic,
+        certificate_url = None,
+        datails = None,
+        years_of_experience = 2,
+        last_used_date = date.today()
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(f"{URL}", json=dto.model_dump(mode="json"), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201    
+
+    assert data['body']['skill_id'] == dto.skill_id
+    assert data['body']['proficiency'] == dto.proficiency
+    assert data['body']['certificate_url'] == dto.certificate_url
+    assert data['body']['datails'] == dto.datails
+    assert data['body']['years_of_experience'] == dto.years_of_experience
+
+    return MySkillOUT(
+        user_id = data['body']['user_id'],
+        skill_id = data['body']['skill_id'],
+        proficiency = data['body']['proficiency'],
+        certificate_url = data['body']['certificate_url'],
+        datails = data['body']['datails'],
+        years_of_experience = data['body']['years_of_experience'],
+        last_used_date = date.today(),
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_skill(user_data):
     URL: Final[str] = '/api/v1/skill'
@@ -43,7 +82,6 @@ async def create_skill(user_data):
         created_at = str(data['body']['created_at']),
         updated_at = str(data['body']['updated_at']),
     )
-
 
 async def create_curriculum(user_data):
     URL: Final[str] = '/api/v1/curriculum'
