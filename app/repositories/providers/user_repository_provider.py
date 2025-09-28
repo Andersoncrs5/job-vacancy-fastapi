@@ -1,12 +1,22 @@
 from app.repositories.base.user_repository_base import UserRepositoryBase
 from app.configs.db.database import UserEntity
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.utils.filter.user_filter import UserFilter
 from sqlalchemy import select, func
 from typing import Final
 
 class UserRepositoryProvider(UserRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def get_all(self, filter: UserFilter) -> list[UserEntity]:
+        stmt = select(UserEntity)
+
+        stmt = filter.filter(stmt)
+
+        result: Final = await self.db.execute(stmt)
+        all: Final = result.scalars().all()
+        return list(all)
 
     async def exists_by_id(self, id: int) -> bool:
         stmt = select(func.count(UserEntity.id)).where(UserEntity.id == id)

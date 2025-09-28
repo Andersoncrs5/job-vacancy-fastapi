@@ -4,10 +4,14 @@ from app.configs.db.database import UserEntity
 from app.schemas.user_schemas import CreateUserDTO, UpdateUserDTO
 from app.services.providers.crypto_service import hash_password
 from typing import Final
+from app.utils.filter.user_filter import UserFilter
 
 class UserServiceProvider(UserServiceBase):
     def __init__(self, repository: UserRepositoryProvider):
         self.repository = repository
+
+    async def get_all(self, filter: UserFilter) -> list[UserEntity]:
+        return await self.repository.get_all(filter)
 
     async def exists_by_id(self, id: int) -> bool:
         return await self.repository.exists_by_id(id)

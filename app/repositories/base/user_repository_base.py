@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 from app.configs.db.database import UserEntity
+from app.utils.filter.user_filter import UserFilter
 
 class UserRepositoryBase(ABC):
 
+    @abstractmethod
+    async def get_all(self, filter: UserFilter) -> list[UserEntity]:
+        pass
+    
     @abstractmethod
     async def exists_by_id(self, id: int) -> bool:
         pass

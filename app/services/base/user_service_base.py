@@ -1,9 +1,14 @@
 from abc import ABC, abstractmethod
 from app.schemas.user_schemas import CreateUserDTO, UpdateUserDTO
 from app.configs.db.database import UserEntity
+from app.utils.filter.user_filter import UserFilter
 
 class UserServiceBase(ABC):
     
+    @abstractmethod
+    async def get_all(self, filter: UserFilter) -> list[UserEntity]:
+        pass
+
     @abstractmethod
     async def exists_by_id(self, id: int) -> bool:
         pass
