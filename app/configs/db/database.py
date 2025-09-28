@@ -255,8 +255,13 @@ class EmployeeEnterpriseEntity(Base):
     position: Mapped[str | None] = mapped_column(String(100), nullable=True)
     salary_range: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    employment_type: Mapped["EmploymentTypeEnum"] = mapped_column(Enum("EmploymentTypeEnum"), nullable=False)
-    employment_status: Mapped["EmploymentStatusEnum"] = mapped_column(Enum("EmploymentStatusEnum"), nullable=False)
+    employment_type: Mapped[EmploymentTypeEnum] = mapped_column(
+        Enum(EmploymentTypeEnum, name="employment_type_enum"), nullable=False
+    )
+
+    employment_status: Mapped[EmploymentStatusEnum] = mapped_column(
+        Enum(EmploymentStatusEnum, name="employment_status_enum"), nullable=False
+    )
 
     start_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     end_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -284,9 +289,14 @@ class ReviewEnterprise(Base):
     position: Mapped[str | None] = mapped_column(String(100), nullable=True)
     salary_range: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    employment_type: Mapped["EmploymentTypeEnum"] = mapped_column(Enum("EmploymentTypeEnum"), nullable=False)
-    employment_status: Mapped["EmploymentStatusEnum"] = mapped_column(Enum("EmploymentStatusEnum"), nullable=False)
+    employment_type: Mapped[EmploymentTypeEnum] = mapped_column(
+        Enum(EmploymentTypeEnum, name="employment_type_enum"), nullable=False
+    )
 
+    employment_status: Mapped[EmploymentStatusEnum] = mapped_column(
+        Enum(EmploymentStatusEnum, name="employment_status_enum"), nullable=False
+    )
+    
     helpful_votes: Mapped[int] = mapped_column(Integer, default=0)
     unhelpful_votes: Mapped[int] = mapped_column(Integer, default=0)
 
