@@ -263,8 +263,8 @@ class EmployeeEnterpriseEntity(Base):
         Enum(EmploymentStatusEnum, name="employment_status_enum"), nullable=False
     )
 
-    start_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
-    end_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
