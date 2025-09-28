@@ -16,3 +16,15 @@ class ProficiencyEnum(str, enum.Enum):
     intermediary = "Intermediary"
     proficient = "Proficient"
     specialist = "Specialist"
+
+class EmploymentTypeEnum(str, enum.Enum):
+    full_time = "full_time"
+    part_time = "part_time"
+    internship = "internship"
+    contract = "contract"
+    temporary = "temporary"
+    freelance = "freelance"
+
+class EmploymentStatusEnum(str, enum.Enum):
+    current_employee = "current_employee"
+    former_employee = "former_employee"
