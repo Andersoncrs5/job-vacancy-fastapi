@@ -4,6 +4,10 @@ from fastapi.security import HTTPAuthorizationCredentials
 
 class JwtServiceBase(ABC):
     @abstractmethod
+    def extract_user_id_v2(self, token: str) -> int:
+        pass
+    
+    @abstractmethod
     def create_access_token(self, user: UserEntity) -> str:
         pass
 
