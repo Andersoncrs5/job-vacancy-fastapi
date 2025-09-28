@@ -24,7 +24,12 @@ class EmploymentTypeEnum(str, enum.Enum):
     contract = "contract"
     temporary = "temporary"
     freelance = "freelance"
+    apprentice = "apprentice"
+    seasonal = "seasonal" 
 
 class EmploymentStatusEnum(str, enum.Enum):
     current_employee = "current_employee"
     former_employee = "former_employee"
+    on_leave = "on_leave"   
+    vacation = "vacation"   
+    probation = "probation" 
