@@ -11,6 +11,11 @@ RESPONSE_409: Final[Dict] = {
     "model": ResponseBody[None]
 }
 
+RESPONSE_403: Final[Dict] = {
+    "description": "Forbbin of make such action",
+    "model": ResponseBody[None]
+}
+
 RESPONSE_400: Final[Dict] = {
     "description": "",
     "model": ResponseBody[None]
