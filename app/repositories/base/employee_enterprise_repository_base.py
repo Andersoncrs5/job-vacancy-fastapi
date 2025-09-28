@@ -1,7 +1,20 @@
 from abc import ABC, abstractmethod
 from app.configs.db.database import EmployeeEnterpriseEntity
+from app.utils.filter.employee_enterprise_filter import EmployeeEnterpriseFilter
 
 class EmployeeEnterpriseRepositoryBase(ABC):
+
+    @abstractmethod
+    async def get_all(self, filter: EmployeeEnterpriseFilter) -> list[EmployeeEnterpriseEntity]:
+        pass
+    
+    @abstractmethod
+    async def save(self, emp: EmployeeEnterpriseEntity) -> EmployeeEnterpriseEntity:
+        pass
+
+    @abstractmethod
+    async def add(self, emp: EmployeeEnterpriseEntity) -> EmployeeEnterpriseEntity:
+        pass
 
     @abstractmethod
     async def get_by_id(self, id: int) -> EmployeeEnterpriseEntity | None:
