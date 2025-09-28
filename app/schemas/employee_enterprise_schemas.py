@@ -17,7 +17,7 @@ class EmployeeEnterpriseOUT(ORJSONModel):
     updated_at: datetime | str
 
 class CreateEmployeeEnterpriseDTO(ORJSONModel):
-    enterprise_id: int 
+    user_id: int 
     position: str | None 
     salary_range: str | None 
     employment_type: EmploymentTypeEnum 
@@ -28,12 +28,11 @@ class CreateEmployeeEnterpriseDTO(ORJSONModel):
         from app.configs.db.database import EmployeeEnterpriseEntity
 
         return EmployeeEnterpriseEntity(
-            enterprise_id = self.enterprise_id,
             position = self.position,
             salary_range = self.salary_range,
             employment_type = self.employment_type,
             employment_status = self.employment_status,
-            start_date = self.employment_status,
+            start_date = self.start_date,
         )
 
 class UpdateEmployeeEnterpriseDTO(ORJSONModel):
