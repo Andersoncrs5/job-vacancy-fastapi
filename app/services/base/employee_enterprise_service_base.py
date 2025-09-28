@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 from app.configs.db.database import EmployeeEnterpriseEntity
+from app.utils.filter.employee_enterprise_filter import EmployeeEnterpriseFilter
 from app.schemas.employee_enterprise_schemas import CreateEmployeeEnterpriseDTO, UpdateEmployeeEnterpriseDTO
 
 class EmployeeEnterpriseServiceBase(ABC):
+
+    @abstractmethod
+    async def get_all(self, filter: EmployeeEnterpriseFilter) -> list[EmployeeEnterpriseEntity]:
+        pass
 
     @abstractmethod
     async def update(self, emp: EmployeeEnterpriseEntity, dto: UpdateEmployeeEnterpriseDTO) -> EmployeeEnterpriseEntity:
