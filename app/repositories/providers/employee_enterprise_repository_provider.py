@@ -10,6 +10,15 @@ class EmployeeEnterpriseRepositoryProvider(EmployeeEnterpriseRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def exists_by_user_id(self, user_id: int) -> bool :
+        stmt = select(func.count(EmployeeEnterpriseEntity.id)).where(
+            EmployeeEnterpriseEntity.user_id == user_id
+        )
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        return bool(result and result > 0)
+
     async def get_all(self, filter: EmployeeEnterpriseFilter) -> list[EmployeeEnterpriseEntity]:
         stmt = select(EmployeeEnterpriseEntity)
 
