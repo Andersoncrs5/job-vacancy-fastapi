@@ -13,6 +13,17 @@ client: Final[TestClient] = TestClient(app)
 URL: Final[str] = "/api/v1/user"
 
 @pytest.mark.asyncio
+async def test_get_all_user():
+    user_data: Final = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(URL, headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+@pytest.mark.asyncio
 async def test_update_user():
     user_data: Final = await create_and_login_user()
 
