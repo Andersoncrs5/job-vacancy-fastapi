@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, UTC
 from fastapi import HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
 from typing import Final
+from app.utils.res.response_body import ResponseBody
 
 load_dotenv()
 
@@ -65,6 +66,25 @@ class JwtServiceProvider(JwtServiceBase):
 
         return None
 
+    def extract_user_id_v2(self, token: str) -> int:
+        id = self.extract_user_id(token)
+
+        if id is None or id <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        return id 
+
     def extract_email(self, token: str) -> str | None:
         payload: Final = self.decode_token(token)
 
@@ -92,3 +112,5 @@ class JwtServiceProvider(JwtServiceBase):
             )
 
         return token
+
+    
