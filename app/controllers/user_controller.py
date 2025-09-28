@@ -9,6 +9,8 @@ from app.schemas.user_schemas import UserOUT, UpdateUserDTO
 from app.services.providers.user_service_provider import UserServiceProvider
 from app.dependencies.service_dependency import *
 from datetime import datetime
+from app.utils.filter.user_filter import UserFilter
+from fastapi_pagination import Page, add_pagination, paginate
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/user", 
@@ -143,7 +145,6 @@ async def delete(
                 ))
             )
   
-
 @router.get(
     '/me',
     status_code=200,
@@ -203,7 +204,6 @@ async def me(
                 ))
             )
     
-
 @router.put(
     "",
     description="Endpoint to update user",
@@ -280,3 +280,38 @@ async def update(
                     path = None
                 ))
             )
+
+@router.get(
+    "",
+    status_code=status.HTTP_200_OK,
+    response_model=Page[UserOUT]
+)
+async def get_all(
+    filter: UserFilter = Depends(),
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+        all: Final[list[UserEntity]] = await user_service.get_all(filter)
+
+        return paginate(all)
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+add_pagination(router)
