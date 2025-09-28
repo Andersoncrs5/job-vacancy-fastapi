@@ -83,7 +83,7 @@ class MySkillEntity(Base):
     )
 
     proficiency: Mapped[ProficiencyEnum] = mapped_column(
-        Enum(ProficiencyEnum), 
+        Enum(ProficiencyEnum, name="proficiency_enum"), 
         default=ProficiencyEnum.basic, 
         nullable=False
     )
@@ -271,6 +271,23 @@ class EmployeeEnterpriseEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="employments")
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="employments")
+
+    def to_out(self):
+        from app.schemas.employee_enterprise_schemas import EmployeeEnterpriseOUT
+
+        return EmployeeEnterpriseOUT(
+            id = self.id,
+            user_id = self.user_id,
+            enterprise_id = self.enterprise_id,
+            position = self.position,
+            salary_range = self.salary_range,
+            employment_type = self.employment_type,
+            employment_status = self.employment_status,
+            start_date = str(self.start_date),
+            end_date = str(self.end_date),
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )        
 
 class ReviewEnterprise(Base):
     __tablename__ = "reviews_enterprise"
