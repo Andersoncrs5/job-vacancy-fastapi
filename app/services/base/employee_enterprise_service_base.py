@@ -14,7 +14,7 @@ class EmployeeEnterpriseServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def create(self, user_id: int, dto: CreateEmployeeEnterpriseDTO) -> EmployeeEnterpriseEntity:
+    async def create(self, user_id: int, enterprise_id:int, dto: CreateEmployeeEnterpriseDTO) -> EmployeeEnterpriseEntity:
         pass
 
     @abstractmethod
