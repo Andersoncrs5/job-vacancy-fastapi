@@ -22,7 +22,7 @@ router: Final[APIRouter] = APIRouter(
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     },
     deprecated=False,
-    )
+)
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
@@ -58,20 +58,7 @@ async def update(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         media = await media_post_user_service.get_by_id(media_id)
         if media is None:
@@ -133,20 +120,7 @@ async def get_all(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         all_entities: Final[List[MediaPostUserEntity]] = await media_post_user_service.get_all_filter(filter)
 
@@ -197,20 +171,7 @@ async def get_by_id(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         media = await media_post_user_service.get_by_id(media_id)
         if media is None:
@@ -287,20 +248,7 @@ async def delete(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         media = await media_post_user_service.get_by_id(media_id)
         if media is None:
@@ -379,20 +327,7 @@ async def create(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         check: Final[int] = await media_post_user_service.get_amount_by_post_id(post_user_id)
         if check >= 10:

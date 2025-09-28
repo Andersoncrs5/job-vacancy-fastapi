@@ -38,21 +38,7 @@ async def check_name_exists(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
-
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         check: Final[bool] = await industry_service.exists_by_name(name)
         
         message = "Industry name already exists" if check else "Industry name not exists"
@@ -103,21 +89,7 @@ async def create(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
-
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         check_name: Final[bool] = await industry_service.exists_by_name(dto.name)
         if check_name == True:
             return ORJSONResponse(
@@ -210,21 +182,7 @@ async def toggle_status_is_active(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
-
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
             return ORJSONResponse(
@@ -303,21 +261,7 @@ async def put(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
-
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
             return ORJSONResponse(
@@ -395,21 +339,7 @@ async def delete(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
-
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
             return ORJSONResponse(
@@ -485,21 +415,7 @@ async def get(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
-
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
         if industry is None:
             return ORJSONResponse(
@@ -558,21 +474,7 @@ async def get_all(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
-
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         all: Final[list[IndustryEntity]] = await industry_service.get_all_filter(filter)
 
         return paginate(all)

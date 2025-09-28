@@ -19,7 +19,7 @@ router: Final[APIRouter] = APIRouter(
         status.HTTP_404_NOT_FOUND: RESPONSE_404_USER,
     },
     deprecated=False,
-    )
+)
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
@@ -37,20 +37,7 @@ async def get_user(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         user: Final[UserEntity | None] = await user_service.get_by_email(email)
         if user is None:
@@ -110,20 +97,7 @@ async def delete(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
         if user is None:
@@ -183,20 +157,7 @@ async def me(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
-        user_id: Final[int | None] = jwt_service.extract_user_id(token)
-        if user_id is None or user_id <= 0:
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
-                    code=status.HTTP_401_UNAUTHORIZED,
-                    message="You are not authorized",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version = 1,
-                    path = None
-                ))
-            )
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
         if user is None:
