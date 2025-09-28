@@ -1,11 +1,15 @@
 from app.services.base.employee_enterprise_service_base import EmployeeEnterpriseServiceBase
 from app.repositories.providers.employee_enterprise_repository_provider import EmployeeEnterpriseRepositoryProvider
 from app.configs.db.database import EmployeeEnterpriseEntity
+from app.utils.filter.employee_enterprise_filter import EmployeeEnterpriseFilter
 from app.schemas.employee_enterprise_schemas import CreateEmployeeEnterpriseDTO, UpdateEmployeeEnterpriseDTO
 
 class EmployeeEnterpriseServiceProvider(EmployeeEnterpriseServiceBase):
     def __init__(self, repository: EmployeeEnterpriseRepositoryProvider):
         self.repository = repository    
+
+    async def get_all(self, filter: EmployeeEnterpriseFilter) -> list[EmployeeEnterpriseEntity]:
+        return await self.repository.get_all(filter)
 
     async def update(self, emp: EmployeeEnterpriseEntity, dto: UpdateEmployeeEnterpriseDTO) -> EmployeeEnterpriseEntity:
         if dto.position != None:
