@@ -32,10 +32,11 @@ class EmployeeEnterpriseServiceProvider(EmployeeEnterpriseServiceBase):
 
         return await self.repository.save(emp)
 
-    async def create(self, user_id: int, dto: CreateEmployeeEnterpriseDTO) -> EmployeeEnterpriseEntity:
+    async def create(self, user_id: int, enterprise_id:int, dto: CreateEmployeeEnterpriseDTO) -> EmployeeEnterpriseEntity:
         employee = dto.to_entity()
 
         employee.user_id = user_id
+        employee.enterprise_id = enterprise_id
 
         return await self.repository.add(employee)
 
