@@ -28,6 +28,12 @@ from app.repositories.providers.post_enterprise_repository_provider import PostE
 from app.services.providers.post_enterprise_service_provider import PostEnterpriseServiceProvider
 from app.repositories.providers.favorite_posts_enterprise_repository_provider import FavoritePostEnterpriseRepositoryProvider
 from app.services.providers.favorite_post_enterprise_service_provider import FavoritePostEnterpriseServiceProvider
+from app.repositories.providers.employee_enterprise_repository_provider import EmployeeEnterpriseRepositoryProvider
+from app.services.providers.employee_enterprise_service_provider import EmployeeEnterpriseServiceProvider
+
+def get_employee_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> EmployeeEnterpriseServiceProvider:
+    repository: Final = EmployeeEnterpriseRepositoryProvider(db)
+    return EmployeeEnterpriseServiceProvider(repository)
 
 def get_favorite_posts_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> FavoritePostEnterpriseServiceProvider:
     repository: Final = FavoritePostEnterpriseRepositoryProvider(db)
