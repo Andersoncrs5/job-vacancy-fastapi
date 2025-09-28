@@ -5,6 +5,10 @@ from app.utils.filter.employee_enterprise_filter import EmployeeEnterpriseFilter
 class EmployeeEnterpriseRepositoryBase(ABC):
 
     @abstractmethod
+    async def exists_by_user_id(self, user_id: int) -> bool :
+        pass
+    
+    @abstractmethod
     async def get_all(self, filter: EmployeeEnterpriseFilter) -> list[EmployeeEnterpriseEntity]:
         pass
     
