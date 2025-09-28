@@ -16,12 +16,52 @@ from app.schemas.skill_schemas import *
 from app.schemas.my_skill_schemas import *
 from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdatePostEnterpriseDTO, PostEnterpriseOUT
 from app.configs.db.enums import ProficiencyEnum
+from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
+from app.schemas.employee_enterprise_schemas import *
 from datetime import date
 
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def create_employee(user_data: UserTestData, enterprise_data, user_data_two: UserTestData, URL: str):
+    dto = CreateEmployeeEnterpriseDTO(
+        user_id = user_data_two.out.id,
+        position = "SOFTWARE ENGINEER",
+        salary_range = "5000-8000",
+        employment_type = EmploymentTypeEnum.full_time,
+        employment_status = EmploymentStatusEnum.current_employee,
+        start_date = date.today()
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(f"{URL}", json=dto.model_dump(mode="json"), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['message'] == "Employee created with successfully"
+    assert data['code'] == 201
+    assert data['status'] == True
+    assert data['body']["id"] is not None
+    assert data['body']["user_id"] == dto.user_id
+    assert data['body']["position"] == dto.position
+    assert data['body']["salary_range"] == dto.salary_range
+
+    return EmployeeEnterpriseOUT(
+        id = data['body']['id'],
+        user_id = data['body']['user_id'],
+        enterprise_id = data['body']['enterprise_id'],
+        position = data['body']['position'],
+        salary_range = data['body']['salary_range'],
+        employment_type = data['body']['employment_type'],
+        employment_status = data['body']['employment_status'],
+        start_date = str(data['body']['start_date']),
+        end_date = str(data['body']['end_date']),
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_favorite_post_enterprise(user_data, post_enterprise):
     URL: Final[str] = '/api/v1/favorite-post-enterprise'
