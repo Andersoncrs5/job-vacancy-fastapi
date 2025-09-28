@@ -53,6 +53,8 @@ class UserEntity(Base):
     favorite_post_enterprise: Mapped[list["FavoritePostEnterpriseEntity"]] = relationship("FavoritePostEnterpriseEntity", back_populates="owner")
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="owner")
 
+    employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="owner")
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -225,6 +227,7 @@ class EnterpriseEntity(Base):
     industry: Mapped["IndustryEntity"] = relationship("IndustryEntity", back_populates="enterprises")
     posts: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="enterprise")
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="enterprise")
+    employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="enterprise")
 
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
@@ -240,6 +243,29 @@ class EnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class EmployeeEnterpriseEntity(Base):
+    __tablename__ = "employees_enterprise"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
+
+    position: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    salary_range: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    employment_type: Mapped["EmploymentTypeEnum"] = mapped_column(Enum("EmploymentTypeEnum"), nullable=False)
+    employment_status: Mapped["EmploymentStatusEnum"] = mapped_column(Enum("EmploymentStatusEnum"), nullable=False)
+
+    start_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    end_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="employments")
+    enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="employments")
 
 class ReviewEnterprise(Base):
     __tablename__ = "reviews_enterprise"
