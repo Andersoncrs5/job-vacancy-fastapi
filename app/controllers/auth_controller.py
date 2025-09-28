@@ -34,21 +34,35 @@ async def exists_by_email(
     email: str,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
 ):
-    check: Final[bool] = await user_service.exists_by_email(email)
+    try:
+        check: Final[bool] = await user_service.exists_by_email(email)
     
-    return ORJSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=dict(ResponseBody[bool](
-            message="",
-            code=status.HTTP_200_OK,
-            status=True,
-            body=check,
-            timestamp=str(datetime.now()),
-            version = 1,
-            path = None
-        ))
-    )
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[bool](
+                message="",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=check,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
 
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
 
 @router.get(
     "/{refresh_token}",
@@ -64,75 +78,77 @@ async def refresh_token_method(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     ):
     
-    check_token = jwt_service.decode_token(refresh_token)
-    if check_token is None:
+    try:
+        check_token = jwt_service.decode_token(refresh_token)
+        if check_token is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        user_id: Final[int] = jwt_service.extract_user_id_v2(refresh_token)
+        
+        user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
+        if user is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="You are not authorized",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        token: Final[str] = jwt_service.create_access_token(user)
+        new_refresh_token: Final[str] = jwt_service.create_refresh_token(user)
+
+        await user_service.set_refresh_token(new_refresh_token, user)
+
+        tokens: Final[Tokens] = Tokens(
+            token=token, 
+            refresh_token=refresh_token,
+            exp_token = None,
+            exp_refresh_token = None
+        )
+        
         return ORJSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content=dict(ResponseBody[None](
-                code=status.HTTP_401_UNAUTHORIZED,
-                message="You are not authorized",
-                status=False,
-                body=None,
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="New Tokens sended",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(tokens),
                 timestamp=str(datetime.now()),
                 version = 1,
                 path = None
             ))
         )
 
-    user_id: Final[int | None] = jwt_service.extract_user_id(refresh_token)
-    if user_id is None:
+    except Exception as e:
         return ORJSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content=dict(ResponseBody[None](
-                code=status.HTTP_401_UNAUTHORIZED,
-                message="You are not authorized",
-                status=False,
-                body=None,
-                timestamp=str(datetime.now()),
-                version = 1,
-                path = None
-            ))
-        )
-
-    user: Final[UserEntity | None] = await user_service.get_by_id(user_id)
-    if user is None:
-        return ORJSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content=dict(ResponseBody[None](
-                code=status.HTTP_404_NOT_FOUND,
-                message="You are not authorized",
-                status=False,
-                body=None,
-                timestamp=str(datetime.now()),
-                version = 1,
-                path = None
-            ))
-        )
-
-    token: Final[str] = jwt_service.create_access_token(user)
-    new_refresh_token: Final[str] = jwt_service.create_refresh_token(user)
-
-    await user_service.set_refresh_token(new_refresh_token, user)
-
-    tokens: Final[Tokens] = Tokens(
-        token=token, 
-        refresh_token=refresh_token,
-        exp_token = None,
-        exp_refresh_token = None
-        )
-    
-    return ORJSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=dict(ResponseBody[dict](
-            message="New Tokens sended",
-            code=status.HTTP_200_OK,
-            status=True,
-            body=dict(tokens),
-            timestamp=str(datetime.now()),
-            version = 1,
-            path = None
-        ))
-    )
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
 
 @router.post(
     "/login",
@@ -145,60 +161,73 @@ async def login(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
-    user: Final[UserEntity | None] = await user_service.get_by_email(dto.email)
-    if user is None:
+    try:
+        user: Final[UserEntity | None] = await user_service.get_by_email(dto.email)
+        if user is None:
+            return ORJSONResponse(
+                status_code=401,
+                content=dict(ResponseBody[None](
+                    code=401,
+                    message="Login invalid",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        if verify_password(dto.password,user.password) == False :
+            return ORJSONResponse(
+                status_code=401,
+                content=dict(ResponseBody[None](
+                    code=401,
+                    message="Login invalid",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        token: Final[str] = jwt_service.create_access_token(user)
+        refresh_token: Final[str] = jwt_service.create_refresh_token(user)
+
+        await user_service.set_refresh_token(refresh_token, user)
+
+        tokens: Final[Tokens] = Tokens(
+            token=token, 
+            refresh_token=refresh_token,
+            exp_token = None,
+            exp_refresh_token = None
+        )
+
         return ORJSONResponse(
-            status_code=401,
-            content=dict(ResponseBody[None](
-                code=401,
-                message="Login invalid",
-                status=False,
-                body=None,
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Welcome again",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(tokens),
                 timestamp=str(datetime.now()),
                 version = 1,
                 path = None
             ))
         )
-
-    if verify_password(dto.password,user.password) == False :
+    except Exception as e:
         return ORJSONResponse(
-            status_code=401,
-            content=dict(ResponseBody[None](
-                code=401,
-                message="Login invalid",
-                status=False,
-                body=None,
-                timestamp=str(datetime.now()),
-                version = 1,
-                path = None
-            ))
-        )
-
-    token: Final[str] = jwt_service.create_access_token(user)
-    refresh_token: Final[str] = jwt_service.create_refresh_token(user)
-
-    await user_service.set_refresh_token(refresh_token, user)
-
-    tokens: Final[Tokens] = Tokens(
-        token=token, 
-        refresh_token=refresh_token,
-        exp_token = None,
-        exp_refresh_token = None
-        )
-
-    return ORJSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=dict(ResponseBody[dict](
-            message="Welcome again",
-            code=status.HTTP_200_OK,
-            status=True,
-            body=dict(tokens),
-            timestamp=str(datetime.now()),
-            version = 1,
-            path = None
-        ))
-    )
-
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
 
 @router.post(
     "/register",
@@ -217,44 +246,60 @@ async def resgiter(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
-    check: Final[bool] = await user_service.exists_by_email(dto.email)
-    if check :
+    try:
+
+        check: Final[bool] = await user_service.exists_by_email(dto.email)
+        if check :
+            return ORJSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_409_CONFLICT,
+                    message="Email already in use",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        user_created: Final[UserEntity] = await user_service.create(dto)
+
+        token: Final = jwt_service.create_access_token(user_created)
+        refresh_token: Final = jwt_service.create_refresh_token(user_created)
+
+        await user_service.set_refresh_token(refresh_token, user_created)
+
+        tokens: Final[Tokens] = Tokens(
+            token=token, 
+            refresh_token=refresh_token,
+            exp_token = None,
+            exp_refresh_token = None
+        )
+
         return ORJSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content=dict(ResponseBody[None](
-                code=status.HTTP_409_CONFLICT,
-                message="Email already in use",
-                status=False,
-                body=None,
+            status_code=status.HTTP_201_CREATED,
+            content=dict(ResponseBody[dict](
+                message="Welcome",
+                code=201,
+                status=True,
+                body=dict(tokens),
                 timestamp=str(datetime.now()),
-                version = 1,
-                path = None
+                path = None,
+                version = 1
             ))
         )
 
-    user_created: Final[UserEntity] = await user_service.create(dto)
-
-    token: Final = jwt_service.create_access_token(user_created)
-    refresh_token: Final = jwt_service.create_refresh_token(user_created)
-
-    await user_service.set_refresh_token(refresh_token, user_created)
-
-    tokens: Final[Tokens] = Tokens(
-        token=token, 
-        refresh_token=refresh_token,
-        exp_token = None,
-        exp_refresh_token = None
-        )
-
-    return ORJSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content=dict(ResponseBody[dict](
-            message="Welcome",
-            code=201,
-            status=True,
-            body=dict(tokens),
-            timestamp=str(datetime.now()),
-            path = None,
-            version = 1
-        ))
-    )
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
