@@ -19,6 +19,15 @@ class EmployeeEnterpriseRepositoryProvider(EmployeeEnterpriseRepositoryBase):
 
         return bool(result and result > 0)
 
+    async def exists_by_id(self, id: int) -> bool :
+        stmt = select(func.count(EmployeeEnterpriseEntity.id)).where(
+            EmployeeEnterpriseEntity.id == id
+        )
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        return bool(result and result > 0)
+
     async def get_all(self, filter: EmployeeEnterpriseFilter) -> list[EmployeeEnterpriseEntity]:
         stmt = select(EmployeeEnterpriseEntity)
 
