@@ -1,6 +1,7 @@
 from app.configs.orjson.orjson_config import ORJSONModel
 from datetime import datetime
 from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
+from app.configs.db.database import ReviewEnterprise
 
 class ReviewEnterpriseOUT(ORJSONModel):
     id: int
@@ -33,3 +34,19 @@ class CreateReviewEnterpriseDTO(ORJSONModel):
     employment_type: EmploymentTypeEnum
     employment_status: EmploymentStatusEnum
     enterprise_id: int
+
+    def to_entity(self):
+        from app.configs.db.database import ReviewEnterprise
+
+        return ReviewEnterprise(
+            rating = self.rating,
+            title = self.title,
+            description = self.description,
+            pros = self.pros,
+            cons = self.cons,
+            would_recommend = self.would_recommend,
+            position = self.position,
+            salary_range = self.salary_range,
+            employment_type = self.employment_type,
+            employment_status = self.employment_status,
+        )
