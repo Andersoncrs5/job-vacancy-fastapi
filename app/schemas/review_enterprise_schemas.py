@@ -22,6 +22,19 @@ class ReviewEnterpriseOUT(ORJSONModel):
     created_at: datetime | str
     updated_at: datetime | str
 
+class UpdateReviewEnterpriseDTO(ORJSONModel):
+    rating: int | None
+    title: str | None
+    description: str | None
+    pros: str | None
+    cons: str | None
+    would_recommend: bool | None
+    position: str | None
+    salary_range: str | None
+    employment_type: EmploymentTypeEnum | None
+    employment_status: EmploymentStatusEnum | None
+    enterprise_id: int | None
+
 class CreateReviewEnterpriseDTO(ORJSONModel):
     rating: int
     title: str
