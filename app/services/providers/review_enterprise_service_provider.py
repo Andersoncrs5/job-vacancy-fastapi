@@ -16,6 +16,9 @@ class ReviewEnterpriseServiceProvider(ReviewEnterpriseRepositoryProvider):
         if dto.title != None:
             view.title = dto.title
 
+        if dto.description != None:
+            view.description = dto.description
+
         if dto.pros != None:
             view.pros = dto.pros
 
