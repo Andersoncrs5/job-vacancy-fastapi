@@ -296,7 +296,7 @@ class ReviewEnterprise(Base):
     rating: Mapped[int] = mapped_column(Integer, nullable=False)
 
     title: Mapped[str] = mapped_column(String(80), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
 
     pros: Mapped[str | None] = mapped_column(String(400), nullable=True)
     cons: Mapped[str | None] = mapped_column(String(400), nullable=True)
@@ -326,6 +326,29 @@ class ReviewEnterprise(Base):
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="reviews")
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="reviews")
     
+    def to_out(self):
+        from app.schemas.review_enterprise_schemas import ReviewEnterpriseOUT
+
+        return ReviewEnterpriseOUT(
+            id = self.id,
+            rating = self.rating,
+            title = self.title,
+            description = self.description,
+            pros = self.pros,
+            cons = self.cons,
+            would_recommend = self.would_recommend,
+            position = self.position,
+            salary_range = self.salary_range,
+            employment_type = self.employment_type,
+            employment_status = self.employment_status,
+            helpful_votes = self.helpful_votes,
+            unhelpful_votes = self.unhelpful_votes,
+            user_id = self.user_id,
+            enterprise_id = self.enterprise_id,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
+
 class PostEnterpriseEntity(Base):
     __tablename__ = "posts_enterprise"
 
