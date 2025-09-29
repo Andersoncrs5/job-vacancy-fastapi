@@ -33,7 +33,6 @@ class UpdateReviewEnterpriseDTO(ORJSONModel):
     salary_range: str | None
     employment_type: EmploymentTypeEnum | None
     employment_status: EmploymentStatusEnum | None
-    enterprise_id: int | None
 
 class CreateReviewEnterpriseDTO(ORJSONModel):
     rating: int
