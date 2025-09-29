@@ -14,6 +14,7 @@ from app.schemas.category_schemas import *
 from app.schemas.industry_schemas import *
 from app.schemas.skill_schemas import *
 from app.schemas.my_skill_schemas import *
+from app.schemas.review_enterprise_schemas import *
 from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdatePostEnterpriseDTO, PostEnterpriseOUT
 from app.configs.db.enums import ProficiencyEnum
 from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
@@ -25,7 +26,64 @@ class UserTestData(BaseModel):
     tokens: Tokens
     out: UserOUT
 
-async def create_employee(user_data: UserTestData, enterprise_data, user_data_two: UserTestData, URL: str):
+async def create_review(user_data, enterprise_data, user_data_two):
+    URL = "/api/v1/review-enterprise"
+
+    dto = CreateReviewEnterpriseDTO(
+        rating=5,
+        title="Great place to work",
+        description="Very good company culture",
+        pros="Supportive environment",
+        cons="Sometimes long hours",
+        would_recommend=True,
+        position="SOFTWARE ENGINEER",
+        salary_range="5000-8000",
+        employment_type=EmploymentTypeEnum.full_time,
+        employment_status=EmploymentStatusEnum.current_employee,
+        enterprise_id=enterprise_data.id
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(
+            URL,
+            json=dto.model_dump(mode="json"),
+            headers={"Authorization": f"Bearer {user_data_two.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 201
+    assert data["message"] == "Review created with successfully"
+    assert data["code"] == 201
+    assert data["status"] is True
+    assert data["body"]["id"] is not None
+    assert data["body"]["enterprise_id"] == enterprise_data.id
+    assert data["body"]["user_id"] == user_data_two.out.id
+    assert data["body"]["rating"] == dto.rating
+    assert data["body"]["title"] == dto.title
+    assert data["body"]["description"] == dto.description
+
+    return ReviewEnterpriseOUT(
+        id=data["body"]["id"],
+        rating=data["body"]["rating"],
+        title=data["body"]["title"],
+        description=data["body"]["description"],
+        pros=data["body"]["pros"],
+        cons=data["body"]["cons"],
+        would_recommend=data["body"]["would_recommend"],
+        position=data["body"]["position"],
+        salary_range=data["body"]["salary_range"],
+        employment_type=data["body"]["employment_type"],
+        employment_status=data["body"]["employment_status"],
+        helpful_votes=data["body"]["helpful_votes"],
+        unhelpful_votes=data["body"]["unhelpful_votes"],
+        user_id=data["body"]["user_id"],
+        enterprise_id=data["body"]["enterprise_id"],
+        created_at=str(data["body"]["created_at"]),
+        updated_at=str(data["body"]["updated_at"]),
+    )
+
+async def create_employee(user_data: UserTestData, enterprise_data, user_data_two: UserTestData):
+    URL = "/api/v1/employee-enterprise"
     dto = CreateEmployeeEnterpriseDTO(
         user_id = user_data_two.out.id,
         position = "SOFTWARE ENGINEER",
