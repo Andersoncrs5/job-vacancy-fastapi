@@ -54,7 +54,7 @@ class UserEntity(Base):
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="owner")
 
     employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="owner")
-    searchs: Mapped[list["SavedSearch"]] = relationship("SavedSearch", back_populates="owner")
+    searchs: Mapped[list["SavedSearchEntity"]] = relationship("SavedSearchEntity", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
