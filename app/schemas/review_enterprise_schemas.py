@@ -38,7 +38,7 @@ class UpdateReviewEnterpriseDTO(ORJSONModel):
 class CreateReviewEnterpriseDTO(ORJSONModel):
     rating: int
     title: str
-    description: str | None
+    description: str
     pros: str | None
     cons: str | None
     would_recommend: bool
@@ -62,4 +62,5 @@ class CreateReviewEnterpriseDTO(ORJSONModel):
             salary_range = self.salary_range,
             employment_type = self.employment_type,
             employment_status = self.employment_status,
+            enterprise_id = self.enterprise_id,
         )
