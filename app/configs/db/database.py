@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from typing import Final
-from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger, Enum, Date
+from typing import Final, Optional
+from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger, Enum, Date, JSON
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
 from app.configs.db.enums import MediaType, ProficiencyEnum, EmploymentTypeEnum, EmploymentStatusEnum
@@ -54,6 +54,7 @@ class UserEntity(Base):
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="owner")
 
     employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="owner")
+    searchs: Mapped[list["SavedSearch"]] = relationship("SavedSearch", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -66,6 +67,24 @@ class UserEntity(Base):
             created_at = str(self.created_at),
             bio = self.bio,
         )
+
+class SavedSearchEntity(Base):
+    __tablename__ = "saved_searches"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    query: Mapped[dict] = mapped_column(JSON, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    last_executed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    execution_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    notifications_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="searchs")
 
 class MySkillEntity(Base):
     __tablename__ = "my_skills"
