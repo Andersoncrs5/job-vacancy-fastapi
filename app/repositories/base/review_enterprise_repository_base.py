@@ -10,11 +10,11 @@ class ReviewEnterpriseRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def add(self, view: ReviewEnterprise):
+    async def add(self, view: ReviewEnterprise) -> ReviewEnterprise:
         pass
 
     @abstractmethod
-    async def save(self, view: ReviewEnterprise):
+    async def save(self, view: ReviewEnterprise) -> ReviewEnterprise:
         pass
 
     @abstractmethod
@@ -26,7 +26,7 @@ class ReviewEnterpriseRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def exists_by_user_id(self, id: int) -> bool:
+    async def exists_by_user_id(self, user_id: int) -> bool:
         pass
 
     @abstractmethod
