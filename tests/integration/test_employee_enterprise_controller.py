@@ -18,7 +18,7 @@ async def test_patch_employee_successfully():
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     user_data_two: Final = await create_and_login_user()
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     dto = UpdateEmployeeEnterpriseDTO(
         position="Senior Software Engineer",
@@ -54,7 +54,7 @@ async def test_patch_employee_bad_request():
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     user_data_two: Final = await create_and_login_user()
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     dto = UpdateEmployeeEnterpriseDTO(
         position="QA Engineer",
@@ -85,7 +85,7 @@ async def test_patch_employee_not_found():
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     user_data_two: Final = await create_and_login_user()
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     dto = UpdateEmployeeEnterpriseDTO(
         position="DevOps Engineer",
@@ -118,7 +118,7 @@ async def test_delete_employee():
 
     user_data_two: Final = await create_and_login_user()
 
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{employee_data.id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -139,7 +139,7 @@ async def test_return_bad_request_delete_employee():
 
     user_data_two: Final = await create_and_login_user()
 
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -160,7 +160,7 @@ async def test_return_not_found_delete_employee():
 
     user_data_two: Final = await create_and_login_user()
 
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{9999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -181,7 +181,7 @@ async def test_return_bad_request_get_employee():
 
     user_data_two: Final = await create_and_login_user()
 
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -202,7 +202,7 @@ async def test_return_not_found_get_employee():
 
     user_data_two: Final = await create_and_login_user()
 
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{9999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -223,7 +223,7 @@ async def test_get_employee():
 
     user_data_two: Final = await create_and_login_user()
 
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{employee_data.id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -301,7 +301,7 @@ async def test_return_conflict_create_employee():
 
     user_data_two: Final = await create_and_login_user()
 
-    employee_data = await create_employee(user_data, enterprise_data, user_data_two, URL)
+    employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     dto = CreateEmployeeEnterpriseDTO(
         user_id = employee_data.user_id,
