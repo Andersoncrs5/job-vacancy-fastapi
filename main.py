@@ -4,7 +4,8 @@ from app.controllers import (
     category_controller, post_user_controller, industry_controller,
     enterprise_controller, media_post_user_controller, curriculum_controller,
     skill_controller, my_skill_controller, post_enterprise_controller,
-    favorite_post_enterprise_controller, employee_enterprise_controller
+    favorite_post_enterprise_controller, employee_enterprise_controller,
+    review_enterprise_controller
 )
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
@@ -53,6 +54,7 @@ async def add_request_id(request, call_next):
     response = await call_next(request)
     return response
 
+app.include_router(review_enterprise_controller.router)
 app.include_router(employee_enterprise_controller.router)
 app.include_router(favorite_post_enterprise_controller.router)
 app.include_router(post_enterprise_controller.router)
