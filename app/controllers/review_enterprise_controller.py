@@ -10,7 +10,7 @@ from app.services.providers.skill_service_provider import SkillServiceProvider
 from app.services.providers.my_skill_service_provider import MySkillServiceProvider
 from app.dependencies.service_dependency import *
 from fastapi_pagination import Page, add_pagination, paginate
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.utils.filter.review_enterprise_filter import ReviewEnterpriseFilter
 import json
 
@@ -25,6 +25,257 @@ router: Final[APIRouter] = APIRouter(
 )
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
+
+@router.patch(
+    "/{view_id}",
+    response_model=ResponseBody[ReviewEnterpriseOUT],
+    status_code=200,
+    responses = {
+        404: RESPONSE_404,
+    }
+)
+async def patch(
+    view_id: int,
+    dto: UpdateReviewEnterpriseDTO,
+    review_enterprise_service: ReviewEnterpriseServiceProvider = Depends(get_review_enterprise_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+):
+    if view_id <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+
+        view = await review_enterprise_service.get_by_id(view_id)
+        if view is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Review not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )  
+
+        if datetime.now(view.created_at.tzinfo) - view.created_at > timedelta(days=7):
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="You cannot update a review after 7 days of creation",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        view_updated = await review_enterprise_service.update(view, dto)
+
+        out = view_updated.to_out()
+
+        return ORJSONResponse(
+            status_code=200,
+            content=dict(ResponseBody[dict](
+                message="Review updated with successfully",
+                code=200,
+                status=True,
+                body=dict(out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.delete(
+    "/{view_id}",
+    response_model=ResponseBody[ReviewEnterpriseOUT],
+    status_code=200,
+    responses = {
+        404: RESPONSE_404,
+    }
+)
+async def delete(
+    view_id: int,
+    review_enterprise_service: ReviewEnterpriseServiceProvider = Depends(get_review_enterprise_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+):
+    if view_id <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+
+        view = await review_enterprise_service.get_by_id(view_id)
+        if view is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Review not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )  
+
+        await review_enterprise_service.delete(view)
+
+        return ORJSONResponse(
+            status_code=200,
+            content=dict(ResponseBody[None](
+                message="Review deleted with successfully",
+                code=200,
+                status=True,
+                body=None,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.get(
+    "/{view_id}",
+    response_model=ResponseBody[ReviewEnterpriseOUT],
+    status_code=200,
+    responses = {
+        404: RESPONSE_404,
+    }
+)
+async def get_by_id(
+    view_id: int,
+    review_enterprise_service: ReviewEnterpriseServiceProvider = Depends(get_review_enterprise_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+):
+    if view_id <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+
+        view = await review_enterprise_service.get_by_id(view_id)
+        if view is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody[None](
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Review not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )  
+
+        out = view.to_out()
+
+        return ORJSONResponse(
+            status_code=200,
+            content=dict(ResponseBody[dict](
+                message="Review found with successfully",
+                code=200,
+                status=True,
+                body=dict(out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
 
 @router.post(
     "",
