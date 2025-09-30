@@ -11,7 +11,260 @@ from app.schemas.saved_search_schemas import CreateSavedSearchDTO
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = '/api/v1/saved-search'
 
+@pytest.mark.asyncio
+async def test_return_forbbirn_patch_toggle_public_saved_search():
+    user_data = await create_and_login_user()
+    user_data_two = await create_and_login_user()
+    saved_search_data = await create_saved_search(user_data)
 
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{saved_search_data.id}/toggle/status/is-public",
+            headers={"Authorization": f"Bearer {user_data_two.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 403
+
+    assert data['body'] is None
+    assert data['message'] == "You cannot to change status this search"
+    assert data['code'] == 403
+
+@pytest.mark.asyncio
+async def test_patch_toggle_public_saved_search():
+    user_data = await create_and_login_user()
+    saved_search_data = await create_saved_search(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{saved_search_data.id}/toggle/status/is-public",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data['body'] is not None
+    assert data['body']['id'] == saved_search_data.id
+    assert data['body']['user_id'] == saved_search_data.user_id
+    assert data['body']['is_public'] == (not saved_search_data.is_public)
+    assert data['message'] == "Search changed status public with successfully"
+    assert data['code'] == 200
+
+@pytest.mark.asyncio
+async def test_return_bad_request_patch_toggle_public_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{0}/toggle/status/is-public",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 400
+
+    assert data['body'] is None
+    assert data['code'] == 400
+    assert data['message'] == "Id is required"
+    assert data['status'] == False
+
+@pytest.mark.asyncio
+async def test_return_not_found_patch_toggle_public_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{999999999}/toggle/status/is-public",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 404
+
+    assert data['body'] is None
+    assert data['code'] == 404
+    assert data['message'] == "Search not found"
+    assert data['status'] == False
+
+@pytest.mark.asyncio
+async def test_return_forbbirn_patch_toggle_noti_saved_search():
+    user_data = await create_and_login_user()
+    user_data_two = await create_and_login_user()
+    saved_search_data = await create_saved_search(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{saved_search_data.id}/toggle/status/notifications-enabled",
+            headers={"Authorization": f"Bearer {user_data_two.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 403
+
+    assert data['body'] is None
+    assert data['message'] == "You cannot to change status this search"
+    assert data['code'] == 403
+
+@pytest.mark.asyncio
+async def test_patch_toggle_noti_saved_search():
+    user_data = await create_and_login_user()
+    saved_search_data = await create_saved_search(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{saved_search_data.id}/toggle/status/notifications-enabled",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data['body'] is not None
+    assert data['body']['id'] == saved_search_data.id
+    assert data['body']['user_id'] == saved_search_data.user_id
+    assert data['body']['notifications_enabled'] == (not saved_search_data.notifications_enabled)
+    assert data['message'] == "Search changed status notifications enabled with successfully"
+    assert data['code'] == 200
+
+@pytest.mark.asyncio
+async def test_return_bad_request_patch_toggle_noti_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{0}/toggle/status/notifications-enabled",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 400
+
+    assert data['body'] is None
+    assert data['code'] == 400
+    assert data['message'] == "Id is required"
+    assert data['status'] == False
+
+@pytest.mark.asyncio
+async def test_return_not_found_patch_toggle_noti_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{999999999}/toggle/status/notifications-enabled",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 404
+
+    assert data['body'] is None
+    assert data['code'] == 404
+    assert data['message'] == "Search not found"
+    assert data['status'] == False
+
+@pytest.mark.asyncio
+async def test_return_forbbirn_delete_saved_search():
+    user_data = await create_and_login_user()
+    user_data_two = await create_and_login_user()
+    saved_search_data = await create_saved_search(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.delete(
+            f"{URL}/{saved_search_data.id}",headers={"Authorization": f"Bearer {user_data_two.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 403
+
+    assert data['body'] is None
+    assert data['message'] == "You cannot to delete this search"
+    assert data['code'] == 403
+
+@pytest.mark.asyncio
+async def test_delete_saved_search():
+    user_data = await create_and_login_user()
+    saved_search_data = await create_saved_search(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.delete(
+            f"{URL}/{saved_search_data.id}",headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data['body'] is None
+    assert data['message'] == "Search deleted with successfully"
+    assert data['code'] == 200
+
+@pytest.mark.asyncio
+async def test_return_bad_request_delete_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.delete(
+            f"{URL}/{0}",headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 400
+
+    assert data['body'] is None
+    assert data['code'] == 400
+    assert data['message'] == "Id is required"
+    assert data['status'] == False
+
+@pytest.mark.asyncio
+async def test_return_not_found_delete_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.delete(
+            f"{URL}/{999999999}",headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 404
+
+    assert data['body'] is None
+    assert data['code'] == 404
+    assert data['message'] == "Search not found"
+    assert data['status'] == False
+
+@pytest.mark.asyncio
+async def test_return_bad_request_get_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.get(
+            f"{URL}/{0}",headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 400
+
+    assert data['body'] is None
+    assert data['code'] == 400
+    assert data['message'] == "Id is required"
+    assert data['status'] == False
+
+@pytest.mark.asyncio
+async def test_return_not_found_get_saved_search():
+    user_data = await create_and_login_user()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.get(
+            f"{URL}/{999999999}",headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 404
+
+    assert data['body'] is None
+    assert data['code'] == 404
+    assert data['message'] == "Search not found"
+    assert data['status'] == False
 
 @pytest.mark.asyncio
 async def test_get_saved_search():
