@@ -20,7 +20,6 @@ class CreateSavedSearchDTO(ORJSONModel):
     description: str | None
     is_public: bool
     last_executed_at: datetime | None
-    execution_count: int
     notifications_enabled: bool
 
     def to_entity(self):
@@ -32,7 +31,6 @@ class CreateSavedSearchDTO(ORJSONModel):
             description = self.description,
             is_public = self.is_public,
             last_executed_at = self.last_executed_at,
-            execution_count = self.execution_count,
             notifications_enabled = self.notifications_enabled,
         )
 
