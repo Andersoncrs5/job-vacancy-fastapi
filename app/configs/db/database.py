@@ -86,6 +86,23 @@ class SavedSearchEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="searchs")
 
+    def to_out(self):
+        from app.schemas.saved_search_schemas import SavedSearchOUT
+
+        return SavedSearchOUT(
+            id = self.id,
+            user_id = self.user_id,
+            name = self.name,
+            query = self.query,
+            description = self.description,
+            is_public = self.is_public,
+            last_executed_at = str(self.last_executed_at),
+            execution_count = self.execution_count,
+            notifications_enabled = self.notifications_enabled,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
+
 class MySkillEntity(Base):
     __tablename__ = "my_skills"
 
