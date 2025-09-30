@@ -3,10 +3,20 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final, Optional
-from sqlalchemy import DateTime, String, func, Text, ForeignKey, Boolean, Integer, BigInteger, Enum, Date, JSON
+from sqlalchemy import (
+    DateTime, ARRAY, String, 
+    func, Text, ForeignKey, 
+    Boolean, Integer, BigInteger, 
+    Enum, Date, JSON, Numeric
+)
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
-from app.configs.db.enums import MediaType, ProficiencyEnum, EmploymentTypeEnum, EmploymentStatusEnum
+from app.configs.db.enums import (
+    MediaType, ProficiencyEnum, EmploymentTypeEnum, 
+    EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
+    EducationLevelEnum, VacancyStatusEnum
+)
+
 
 load_dotenv()
 
@@ -264,6 +274,7 @@ class EnterpriseEntity(Base):
     posts: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="enterprise")
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="enterprise")
     employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="enterprise")
+    vacancies: Mapped[list["VacancyEntity"]] = relationship("VacancyEntity", back_populates="enterprise")
 
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
@@ -279,6 +290,45 @@ class EnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class VacancyEntity(Base):
+    __tablename__ = "vacancies"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprises.id"), nullable=False)
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+    employment_type: Mapped[EmploymentTypeEnum] = mapped_column(Enum(EmploymentTypeEnum), nullable=False)
+    experience_level: Mapped[ExperienceLevelEnum] = mapped_column(Enum(ExperienceLevelEnum), nullable=False)
+    education_level: Mapped[EducationLevelEnum | None] = mapped_column(Enum(EducationLevelEnum), nullable=True)
+
+    seniority: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    salary_min: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    salary_max: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
+    requirements: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    responsibilities: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    benefits: Mapped[str | None] = mapped_column(String(300), nullable=True)
+
+    status: Mapped[VacancyStatusEnum] = mapped_column(Enum(VacancyStatusEnum), default=VacancyStatusEnum.OPEN, nullable=False)
+
+    openings: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    application_deadline: Mapped[datetime | None] = mapped_column(Date, nullable=True)
+
+    views_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    applications_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    last_application_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="vacancies")
+
+    # skills: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="vacancy")
 
 class EmployeeEnterpriseEntity(Base):
     __tablename__ = "employees_enterprise"
