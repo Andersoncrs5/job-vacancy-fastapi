@@ -6,3 +6,5 @@ requisitos.txt
 
 pycache/
 .pytest_cache/
+
+code.txt
