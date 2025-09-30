@@ -8,6 +8,10 @@ from app.utils.enums.sum_red import SumRedEnum
 class SavedSearchServiceBase(ABC):
 
     @abstractmethod
+    async def toggle_notifications_enabled(self, save: SavedSearchEntity) -> SavedSearchEntity:
+        pass
+    
+    @abstractmethod
     async def toggle_is_public(self, save: SavedSearchEntity) -> SavedSearchEntity:
         pass
     
