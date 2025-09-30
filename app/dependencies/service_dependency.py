@@ -32,6 +32,13 @@ from app.repositories.providers.employee_enterprise_repository_provider import E
 from app.services.providers.employee_enterprise_service_provider import EmployeeEnterpriseServiceProvider
 from app.repositories.providers.review_enterprise_repository_provider import ReviewEnterpriseRepositoryProvider
 from app.services.providers.review_enterprise_service_provider import ReviewEnterpriseServiceProvider
+from app.repositories.providers.saved_search_repository_provider import SavedSearchReposioryProvider
+from app.services.providers.saved_search_service_provider import SavedSearchServiceProvider
+
+
+def get_saved_search_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> SavedSearchServiceProvider:
+    repository: Final = SavedSearchReposioryProvider(db)
+    return SavedSearchServiceProvider(repository)
 
 def get_review_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> ReviewEnterpriseServiceProvider:
     repository: Final = ReviewEnterpriseRepositoryProvider(db)
