@@ -66,6 +66,8 @@ class UserEntity(Base):
     employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="owner")
     searchs: Mapped[list["SavedSearchEntity"]] = relationship("SavedSearchEntity", back_populates="owner")
 
+    areas: Mapped[list["AreaEntity"]] = relationship("AreaEntity", back_populates="owner")
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -252,6 +254,25 @@ class IndustryEntity(Base):
             updated_at = str(self.updated_at),
         )
 
+class AreaEntity(Base):
+    __tablename__ = "areas"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="areas")
+
+    vacancies: Mapped[list["VacancyEntity"]] = relationship(
+        "VacancyEntity", 
+        back_populates="area"
+    )
+
 class EnterpriseEntity(Base):
     __tablename__ = "enterprises"
 
@@ -296,6 +317,7 @@ class VacancyEntity(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprises.id"), nullable=False)
+    area_id: Mapped[int] = mapped_column(ForeignKey("areas.id"), nullable=False) 
 
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
@@ -327,6 +349,7 @@ class VacancyEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="vacancies")
+    area: Mapped["AreaEntity"] = relationship("AreaEntity", back_populates="vacancies")
 
     # skills: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="vacancy")
 
