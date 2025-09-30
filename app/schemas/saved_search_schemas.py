@@ -15,7 +15,7 @@ class SavedSearchOUT(ORJSONModel):
     created_at: datetime | str
     updated_at: datetime | str
 
-class CreateSavedSearchOUT(ORJSONModel):
+class CreateSavedSearchDTO(ORJSONModel):
     name: str
     query: dict
     description: str | None
@@ -24,7 +24,7 @@ class CreateSavedSearchOUT(ORJSONModel):
     execution_count: int
     notifications_enabled: bool
 
-class UpdateSavedSearchOUT(ORJSONModel):
+class UpdateSavedSearchDTO(ORJSONModel):
     name: str | None
     query: dict | None
     description: str | None
