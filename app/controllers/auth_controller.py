@@ -21,7 +21,7 @@ router: Final[APIRouter] = APIRouter(
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401
     },
     deprecated=False,
-    )
+)
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
@@ -155,6 +155,9 @@ async def refresh_token_method(
     status_code=status.HTTP_200_OK,
     response_model=ResponseBody[Tokens],
     description="endpoint to login user",
+    responses = {
+        403: RESPONSE_403,
+    }
 )
 async def login(
     dto: LoginDTO,
@@ -169,6 +172,20 @@ async def login(
                 content=dict(ResponseBody[None](
                     code=401,
                     message="Login invalid",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        if user.is_block == True:
+            return ORJSONResponse(
+                status_code=403,
+                content=dict(ResponseBody[None](
+                    code=403,
+                    message="You are blocked",
                     status=False,
                     body=None,
                     timestamp=str(datetime.now()),
