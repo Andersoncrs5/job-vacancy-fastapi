@@ -19,12 +19,53 @@ from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdateP
 from app.configs.db.enums import ProficiencyEnum
 from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
 from app.schemas.employee_enterprise_schemas import *
+from app.schemas.saved_search_schemas import CreateSavedSearchDTO, SavedSearchOUT
 from datetime import date
 
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def create_saved_search(user_data):
+    URL: Final[str] = '/api/v1/saved-search'
+    num = random.randint(10000,10000000000000)
+
+    dto = CreateSavedSearchDTO(
+        name = f"any query {num}",
+        query = dict({"name__ilike": "any"}),
+        description = None,
+        is_public = True,
+        last_executed_at = None,
+        notifications_enabled = False
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(
+            f"{URL}", json=dto.model_dump(mode="json"),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['body']['id'] is not None
+    assert data['body']['user_id'] == user_data.out.id
+    assert data['body']['name'] == dto.name
+
+    return SavedSearchOUT(
+        id = data['body']['id'],
+        user_id = data['body']['user_id'],
+        name = data['body']['name'],
+        query = data['body']['query'],
+        description = data['body']['description'],
+        is_public = data['body']['is_public'],
+        last_executed_at = None if data['body']['last_executed_at'] is None else str(data['body']['last_executed_at']),
+        execution_count = data['body']['execution_count'],
+        notifications_enabled = data['body']['notifications_enabled'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
 
 async def create_review(user_data, enterprise_data, user_data_two):
     URL = "/api/v1/review-enterprise"
