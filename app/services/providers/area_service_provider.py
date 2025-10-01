@@ -4,6 +4,9 @@ from typing import List
 from app.schemas.area_schemas import UpdateAreaDTO, CreateAreaDTO
 from app.services.base.area_service_base import AreaServiceBase
 from app.repositories.providers.area_repository_provider import AreaRepositoryProvider
+from datetime import datetime
+from app.utils.res.response_body import ResponseBody
+from fastapi import HTTPException, status
 
 class AreaServiceProvider(AreaServiceBase):
     def __init__(self, repository: AreaRepositoryProvider):
@@ -26,6 +29,26 @@ class AreaServiceProvider(AreaServiceBase):
         return await self.repository.exists_by_name(name)
 
     async def update(self, area: AreaEntity, dto: UpdateAreaDTO) -> AreaEntity:
+        
+        if dto.name != None and area.name != dto.name:
+            check = await self.repository.exists_by_name(dto.name)
+
+            if check == True:
+                raise HTTPException(
+                    status_code=409,
+                    detail=dict(ResponseBody[None](
+                        code=409,
+                        message=f"Name {dto.name} is in use!",
+                        status=False,
+                        body=None,
+                        timestamp=str(datetime.now()),
+                        version = 1,
+                        path = None
+                    ))
+                )
+
+            area.name = dto.name
+
         if dto.description != None:
             area.description = dto.description
 
