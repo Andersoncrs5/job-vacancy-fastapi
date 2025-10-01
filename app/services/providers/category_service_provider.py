@@ -1,8 +1,6 @@
 from app.services.base.category_service_base import *
 from app.configs.db.database import CategoryEntity
 from fastapi import HTTPException, status
-from app.schemas.category_schemas import CreateCategoryDTO, UpdateCategoryDTO
-from app.utils.filter.category_filter import CategoryFilter
 from app.repositories.providers.category_repository_provider import CategoryRepositoryProvider
 from typing import Final
 from app.utils.enums.sum_red import SumRedEnum
