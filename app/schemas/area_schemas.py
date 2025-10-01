@@ -5,7 +5,7 @@ from app.configs.orjson.orjson_config import ORJSONModel
 class AreaOUT(ORJSONModel):
     id: int
     name: str
-    description: str
+    description: str | None
     is_active: bool
     user_id: int
     created_at: datetime | str
