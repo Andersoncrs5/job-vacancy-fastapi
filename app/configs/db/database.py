@@ -405,6 +405,15 @@ class VacancySkillEntity(Base):
     vacancy_id: Mapped[int] = mapped_column(ForeignKey("vacancies.id"), primary_key=True)
     skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id"), primary_key=True)
 
+    is_required: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    proficiency: Mapped[ProficiencyEnum | None] = mapped_column(Enum(ProficiencyEnum, name="proficiency_enum"), nullable=True)
+    years_experience: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    priority_level: Mapped[int | None] = mapped_column(Integer, nullable=True)  
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
     vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="skills")
     skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="vacancies")
 
