@@ -10,8 +10,7 @@ from app.utils.res.responses_http import *
 from app.schemas.vacancy_schemas import *
 from app.services.providers.vacancy_service_provider import VacancyServiceProvider
 from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination
-from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
 from app.utils.filter.vacancy_filter import VacancyFilter
 import uuid
