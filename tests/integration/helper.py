@@ -19,6 +19,7 @@ from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdateP
 from app.configs.db.enums import ProficiencyEnum
 from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
 from app.schemas.employee_enterprise_schemas import *
+from app.schemas.area_schemas import *
 from app.schemas.saved_search_schemas import CreateSavedSearchDTO, SavedSearchOUT
 from datetime import date
 
@@ -27,7 +28,34 @@ class UserTestData(BaseModel):
     tokens: Tokens
     out: UserOUT
 
-async def create_saved_search(user_data):
+async def create_area(user_data: UserTestData):
+    num = random.randint(10000,100000000000000)
+    URL: Final[str] = '/api/v1/area'
+    user_data = await create_and_login_user()
+
+    dto = CreateAreaDTO(
+        name = f"name {num}",
+        description = None,
+        is_active = True
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 201
+
+    return AreaOUT(
+        id = data['body']['id'],
+        name = data['body']['name'],
+        description = data['body']['description'],
+        is_active = data['body']['is_active'],
+        user_id = data['body']['user_id'],
+        created_at = str(data['body']['created_at']),
+        updated_at = str(data['body']['updated_at']),
+    )
+
+async def create_saved_search(user_data: UserTestData):
     URL: Final[str] = '/api/v1/saved-search'
     num = random.randint(10000,10000000000000)
 
