@@ -31,7 +31,7 @@ class AreaServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def create(self, dto: CreateAreaDTO) -> AreaEntity:
+    async def create(self, user_id: int, dto: CreateAreaDTO) -> AreaEntity:
         pass
 
     @abstractmethod
