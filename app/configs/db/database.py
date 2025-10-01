@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from typing import Final, Optional
+from typing import Final, Optional, List
 from sqlalchemy import (
     DateTime, ARRAY, String, 
     func, Text, ForeignKey, 
@@ -177,6 +177,7 @@ class SkillEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     my_skills: Mapped[list["MySkillEntity"]] = relationship("MySkillEntity", back_populates="skill")
+    vacancies: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="skill")
 
     def to_out(self):
         from app.schemas.skill_schemas import SkillOUT
@@ -366,7 +367,7 @@ class VacancyEntity(Base):
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="vacancies")
     area: Mapped["AreaEntity"] = relationship("AreaEntity", back_populates="vacancies")
 
-    # skills: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="vacancy")
+    skills: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="vacancy")
 
     def to_out(self):
         from app.schemas.vacancy_schemas import VacancyOUT
@@ -397,6 +398,15 @@ class VacancyEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class VacancySkillEntity(Base):
+    __tablename__ = "vacancy_skills"
+
+    vacancy_id: Mapped[int] = mapped_column(ForeignKey("vacancies.id"), primary_key=True)
+    skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id"), primary_key=True)
+
+    vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="skills")
+    skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="vacancies")
 
 class EmployeeEnterpriseEntity(Base):
     __tablename__ = "employees_enterprise"
