@@ -1,0 +1,72 @@
+from app.configs.db.enums import (
+    EmploymentTypeEnum, ExperienceLevelEnum, EducationLevelEnum, 
+    EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum
+)
+from datetime import datetime
+from app.configs.orjson.orjson_config import ORJSONModel
+
+class VacancyOUT(ORJSONModel):
+    id: int
+    enterprise_id: int
+    area_id: int
+    title: str
+    description: str
+    employment_type: EmploymentTypeEnum
+    experience_level: ExperienceLevelEnum
+    education_level: EducationLevelEnum | None
+    workplace_type: WorkplaceTypeEnum
+    seniority: int | None
+    salary_min: float | None
+    salary_max: float | None
+    currency: str | None
+    requirements: str | None
+    responsibilities: str | None
+    benefits: str | None
+    status: VacancyStatusEnum
+    openings: int
+    application_deadline: datetime | str | None
+    views_count: int
+    applications_count: int
+    last_application_at: datetime | str | None
+    created_at: datetime | str
+    updated_at: datetime | str
+
+class CreateVacancyDTO(ORJSONModel):
+    enterprise_id: int
+    area_id: int
+    title: str
+    description: str
+    employment_type: EmploymentTypeEnum
+    experience_level: ExperienceLevelEnum
+    education_level: EducationLevelEnum | None
+    workplace_type: WorkplaceTypeEnum
+    seniority: int | None
+    salary_min: float | None
+    salary_max: float | None
+    currency: str | None
+    requirements: str | None
+    responsibilities: str | None
+    benefits: str | None
+    status: VacancyStatusEnum
+    openings: int
+    application_deadline: datetime | None
+    
+
+class UpdateVacancyDTO(ORJSONModel):
+    area_id: int | None
+    title: str | None
+    description: str | None
+    employment_type: EmploymentTypeEnum | None
+    experience_level: ExperienceLevelEnum | None
+    education_level: EducationLevelEnum | None
+    workplace_type: WorkplaceTypeEnum | None
+    seniority: int | None
+    salary_min: float | None
+    salary_max: float | None
+    currency: str | None
+    requirements: str | None
+    responsibilities: str | None
+    benefits: str | None
+    status: VacancyStatusEnum | None
+    openings: int | None
+    application_deadline: datetime | None
