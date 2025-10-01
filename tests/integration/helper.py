@@ -17,7 +17,12 @@ from app.schemas.my_skill_schemas import *
 from app.schemas.review_enterprise_schemas import *
 from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdatePostEnterpriseDTO, PostEnterpriseOUT
 from app.configs.db.enums import ProficiencyEnum
-from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
+from app.configs.db.enums import (
+    MediaType, ProficiencyEnum, EmploymentTypeEnum, 
+    EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
+    EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum
+)
+from app.schemas.vacancy_schemas import *
 from app.schemas.employee_enterprise_schemas import *
 from app.schemas.area_schemas import *
 from app.schemas.saved_search_schemas import CreateSavedSearchDTO, SavedSearchOUT
@@ -27,6 +32,70 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def create_vacancy(user_data: UserTestData, area_data: AreaOUT):
+    URL: Final[str] = '/api/v1/vacancy'
+    dto = CreateVacancyDTO(
+        area_id = area_data.id,
+        title = "New vacancy",
+        description = "Des of vacancy",
+        employment_type = EmploymentTypeEnum.full_time,
+        experience_level = ExperienceLevelEnum.INTERN,
+        education_level = EducationLevelEnum.MASTER,
+        workplace_type = WorkplaceTypeEnum.REMOTE,
+        seniority = None,
+        salary_min = None,
+        salary_max = None,
+        currency = "USD",
+        requirements = None,
+        responsibilities = None,
+        benefits = None,
+        status = VacancyStatusEnum.OPEN,
+        openings = 1,
+        application_deadline = None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.post(URL, 
+            json=dict(dto), 
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+
+    assert response.status_code == 201
+    assert data["message"] == "Vacancy created with successfully"
+    assert data["code"] == 201
+    assert data['body']['id'] is not None
+    assert data['body']['area_id'] == dto.area_id
+    assert data['body']['title'] == dto.title
+
+    return VacancyOUT(
+        id = data['body']['id'],
+        enterprise_id = data['body']['enterprise_id'],
+        area_id = data['body']['area_id'],
+        title = data['body']['title'],
+        description = data['body']['description'],
+        employment_type = data['body']['employment_type'],
+        experience_level = data['body']['experience_level'],
+        education_level = data['body']['education_level'],
+        workplace_type = data['body']['workplace_type'],
+        seniority = data['body']['seniority'],
+        salary_min = data['body']['salary_min'],
+        salary_max = data['body']['salary_max'],
+        currency = data['body']['currency'],
+        requirements = data['body']['requirements'],
+        responsibilities = data['body']['requirements'],
+        benefits = data['body']['benefits'],
+        status = data['body']['status'],
+        openings = data['body']['openings'],
+        application_deadline = data['body']['application_deadline'],
+        views_count = data['body']['views_count'],
+        applications_count = data['body']['applications_count'],
+        last_application_at = data['body']['last_application_at'],
+        created_at = data['body']['created_at'],
+        updated_at = data['body']['updated_at'],
+    )
 
 async def create_area(user_data: UserTestData):
     num = random.randint(10000,100000000000000)
