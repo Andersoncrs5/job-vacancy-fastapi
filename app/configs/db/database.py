@@ -274,6 +274,19 @@ class AreaEntity(Base):
         back_populates="area"
     )
 
+    def to_out(self):
+        from app.schemas.area_schemas import AreaOUT
+
+        return AreaOUT(
+            id = self.id,
+            name = self.name,
+            description = self.description,
+            is_active = self.is_active,
+            user_id = self.user_id,
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
+
 class EnterpriseEntity(Base):
     __tablename__ = "enterprises"
 
