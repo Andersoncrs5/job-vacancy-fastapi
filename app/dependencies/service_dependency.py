@@ -34,7 +34,12 @@ from app.repositories.providers.review_enterprise_repository_provider import Rev
 from app.services.providers.review_enterprise_service_provider import ReviewEnterpriseServiceProvider
 from app.repositories.providers.saved_search_repository_provider import SavedSearchReposioryProvider
 from app.services.providers.saved_search_service_provider import SavedSearchServiceProvider
+from app.repositories.providers.area_repository_provider import AreaRepositoryProvider
+from app.services.providers.area_service_provider import AreaServiceProvider
 
+def get_area_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> AreaServiceProvider:
+    repository: Final = AreaRepositoryProvider(db)
+    return AreaServiceProvider(repository)
 
 def get_saved_search_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> SavedSearchServiceProvider:
     repository: Final = SavedSearchReposioryProvider(db)
