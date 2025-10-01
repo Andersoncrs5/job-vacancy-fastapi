@@ -32,7 +32,6 @@ class VacancyOUT(ORJSONModel):
     updated_at: datetime | str
 
 class CreateVacancyDTO(ORJSONModel):
-    enterprise_id: int
     area_id: int
     title: str
     description: str
@@ -50,6 +49,29 @@ class CreateVacancyDTO(ORJSONModel):
     status: VacancyStatusEnum
     openings: int
     application_deadline: datetime | None
+
+    def to_entity(self):
+        from app.configs.db.database import VacancyEntity
+
+        return VacancyEntity(
+            area_id = self.area_id,
+            title = self.title,
+            description = self.description,
+            employment_type = self.employment_type,
+            experience_level = self.experience_level,
+            education_level = self.education_level,
+            workplace_type = self.workplace_type,
+            seniority = self.seniority,
+            salary_min = self.salary_min,
+            salary_max = self.salary_max,
+            currency = self.currency,
+            requirements = self.currency,
+            responsibilities = self.responsibilities,
+            benefits = self.benefits,
+            status = self.status,
+            openings = self.openings,
+            application_deadline = self.application_deadline,
+        )
     
 
 class UpdateVacancyDTO(ORJSONModel):
