@@ -98,7 +98,15 @@ class JwtServiceProvider(JwtServiceBase):
         if scheme != "Bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authorization header invalid"
+                detail=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="Authorization header invalid",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
             )
         
         token: Final[str] = creden.credentials
@@ -108,7 +116,45 @@ class JwtServiceProvider(JwtServiceBase):
         if token_valided is None :
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authorization header invalid"
+                detail=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="Authorization header invalid",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        exp_timestamp = token_valided.get("exp")
+        if exp_timestamp is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="Token invalid",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        now = datetime.now(UTC).timestamp()
+        if now > float(exp_timestamp):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=dict(ResponseBody[None](
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message="Token invalid",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
             )
 
         return token
