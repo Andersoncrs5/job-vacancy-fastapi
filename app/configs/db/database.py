@@ -14,7 +14,7 @@ from sqlalchemy.pool import NullPool
 from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum, 
     EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
-    EducationLevelEnum, VacancyStatusEnum
+    EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum
 )
 
 
@@ -339,6 +339,8 @@ class VacancyEntity(Base):
     employment_type: Mapped[EmploymentTypeEnum] = mapped_column(Enum(EmploymentTypeEnum), nullable=False)
     experience_level: Mapped[ExperienceLevelEnum] = mapped_column(Enum(ExperienceLevelEnum), nullable=False)
     education_level: Mapped[EducationLevelEnum | None] = mapped_column(Enum(EducationLevelEnum), nullable=True)
+
+    workplace_type: Mapped[WorkplaceTypeEnum] = mapped_column(Enum(WorkplaceTypeEnum), nullable=False)
 
     seniority: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
