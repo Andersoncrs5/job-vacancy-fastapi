@@ -9,6 +9,10 @@ class VacancyRepositoryProvider(VacancyRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def delete(self, vacancy: VacancyEntity):
+        await self.db.delete(vacancy)
+        await self.db.commit()
+
     async def exists_by_id(self, id: int) -> bool :
         result: Final[int | None] = await self.db.scalar(
             select(func.count(VacancyEntity.id)).where(VacancyEntity.id == id)

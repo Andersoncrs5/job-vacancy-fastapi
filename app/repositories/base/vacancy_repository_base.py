@@ -6,6 +6,10 @@ from typing import List
 class VacancyRepositoryBase(ABC):
     
     @abstractmethod
+    async def delete(self, vacancy: VacancyEntity):
+        pass
+
+    @abstractmethod
     async def get_all(self, filter: VacancyFilter) -> List[VacancyEntity]:
         pass
 
