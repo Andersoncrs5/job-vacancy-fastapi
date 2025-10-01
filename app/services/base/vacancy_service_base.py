@@ -7,6 +7,10 @@ from app.schemas.vacancy_schemas import CreateVacancyDTO, UpdateVacancyDTO
 class VacancyServiceBase(ABC):
 
     @abstractmethod
+    async def delete(self, vacancy: VacancyEntity):
+        pass
+    
+    @abstractmethod
     async def get_all(self, filter: VacancyFilter) -> List[VacancyEntity]:
         pass
 

@@ -15,6 +15,9 @@ class VacancyServiceProvider(VacancyServiceBase):
         self.repository = repository
         self.area_repository = area_repo
     
+    async def delete(self, vacancy: VacancyEntity):
+        await self.repository.delete(vacancy)
+
     async def update(self, vacancy: VacancyEntity, dto: UpdateVacancyDTO) -> VacancyEntity:
         updates = dto.model_dump(exclude_none=True)
 
