@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Enum
+from typing import final
 
 class MediaType(str, enum.Enum):
     IMAGE = "image"
@@ -10,6 +10,29 @@ class MediaType(str, enum.Enum):
     PDF = "pdf"
     TEXT = "text"
     ARCHIVE = "archive"
+
+@final
+class ApplicationStatusEnum(str, enum.Enum):
+    APPLIED = "applied"              
+    SCREENING = "screening"          
+    INTERVIEWING = "interviewing"    
+    OFFER_EXTENDED = "offer_extended"
+    HIRED = "hired"                  
+    REJECTED = "rejected"            
+
+@final
+class SkillCategoryEnum(str, enum.Enum):
+    TECHNICAL = "technical"
+    SOFTSKILL = "soft_skill"
+    LANGUAGE = "language"
+    CERTIFICATION = "certification"
+    TOOL = "tool"
+
+@final
+class WorkplaceTypeEnum(str, enum.Enum):
+    REMOTE = "remote"
+    HYBRID = "hybrid"
+    ONSITE = "onsite"
 
 class ProficiencyEnum(str, enum.Enum):
     basic = "Basic"
