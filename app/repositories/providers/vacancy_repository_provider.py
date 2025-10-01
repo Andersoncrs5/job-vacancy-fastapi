@@ -40,7 +40,7 @@ class VacancyRepositoryProvider(VacancyRepositoryBase):
 
         return vacancy
 
-    async def get_all(self, filter: VacancyFilter) -> List[VacancyEntity]:
+    async def get_all(self, filter: VacancyFilter) -> list[VacancyEntity]:
         result = await self.db.execute(
             filter.filter(select(VacancyEntity))
         )

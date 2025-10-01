@@ -10,7 +10,7 @@ class VacancyRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self, filter: VacancyFilter) -> List[VacancyEntity]:
+    async def get_all(self, filter: VacancyFilter) -> list[VacancyEntity]:
         pass
 
     @abstractmethod
