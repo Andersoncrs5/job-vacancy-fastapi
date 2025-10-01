@@ -8,13 +8,148 @@ import pytest
 import random
 from app.schemas.vacancy_schemas import *
 from app.configs.db.enums import (
-    MediaType, ProficiencyEnum, EmploymentTypeEnum, 
+    MediaType, EmploymentTypeEnum, 
     EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum
 )
 
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = '/api/v1/vacancy'
+
+@pytest.mark.asyncio
+async def test_return_bad_request_patch_vacancy():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+    area_data = await create_area(user_data)
+    vacancy_data = await create_vacancy(user_data, area_data)
+
+    dto = UpdateVacancyDTO(
+        area_id =  None,
+        title =  "Vacancy any",
+        description =  None,
+        employment_type =  None,
+        experience_level =  None,
+        education_level =  None,
+        workplace_type =  None,
+        seniority =  None,
+        salary_min =  None,
+        salary_max =  None,
+        currency =  None,
+        requirements =  None,
+        responsibilities =  None,
+        benefits =  None,
+        status =  None,
+        openings =  None,
+        application_deadline =  None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{0}", 
+            json=dto.model_dump(mode="json"),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 400
+
+    assert data['message'] == "Id is required"
+    assert data['code'] == 400
+
+    assert body is None
+
+@pytest.mark.asyncio
+async def test_return_not_found_patch_vacancy():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+    area_data = await create_area(user_data)
+    vacancy_data = await create_vacancy(user_data, area_data)
+
+    dto = UpdateVacancyDTO(
+        area_id =  None,
+        title =  "Vacancy any",
+        description =  None,
+        employment_type =  None,
+        experience_level =  None,
+        education_level =  None,
+        workplace_type =  None,
+        seniority =  None,
+        salary_min =  None,
+        salary_max =  None,
+        currency =  None,
+        requirements =  None,
+        responsibilities =  None,
+        benefits =  None,
+        status =  None,
+        openings =  None,
+        application_deadline =  None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{9999999}", 
+            json=dto.model_dump(mode="json"),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 404
+
+    assert data['message'] == "Vacancy not found"
+    assert data['code'] == 404
+
+    assert body is None
+
+@pytest.mark.asyncio
+async def test_patch_vacancy():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+    area_data = await create_area(user_data)
+    vacancy_data = await create_vacancy(user_data, area_data)
+
+    dto = UpdateVacancyDTO(
+        area_id =  None,
+        title =  "Vacancy any",
+        description =  None,
+        employment_type =  None,
+        experience_level =  None,
+        education_level =  None,
+        workplace_type =  None,
+        seniority =  None,
+        salary_min =  None,
+        salary_max =  None,
+        currency =  None,
+        requirements =  None,
+        responsibilities =  None,
+        benefits =  None,
+        status =  None,
+        openings =  None,
+        application_deadline =  None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{vacancy_data.id}", 
+            json=dto.model_dump(mode="json"),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 200
+
+    assert data['message'] == "Vacancy updated with successfully"
+    assert data['code'] == 200
+
+    assert body is not None
+    assert body['id'] == vacancy_data.id
+    assert body['enterprise_id'] == vacancy_data.enterprise_id
+    assert body['title'] == dto.title
 
 @pytest.mark.asyncio
 async def test_get_all_vacancy():
