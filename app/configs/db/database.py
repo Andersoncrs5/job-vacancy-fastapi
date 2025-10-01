@@ -17,7 +17,6 @@ from app.configs.db.enums import (
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum
 )
 
-
 load_dotenv()
 
 DATABASE_URL: Final[str | None] = os.getenv("DATABASE_URL")
@@ -368,6 +367,36 @@ class VacancyEntity(Base):
     area: Mapped["AreaEntity"] = relationship("AreaEntity", back_populates="vacancies")
 
     # skills: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="vacancy")
+
+    def to_out(self):
+        from app.schemas.vacancy_schemas import VacancyOUT
+
+        return VacancyOUT(
+            id = self.id,
+            enterprise_id = self.enterprise_id,
+            area_id = self.area_id,
+            title = self.title,
+            description = self.description,
+            employment_type = self.employment_type,
+            experience_level = self.experience_level,
+            education_level = self.education_level,
+            workplace_type = self.workplace_type,
+            seniority = self.seniority,
+            salary_min = self.salary_min,
+            salary_max = self.salary_max,
+            currency = self.currency,
+            requirements = self.requirements,
+            responsibilities = self.responsibilities,
+            benefits = self.benefits,
+            status = self.status,
+            openings = self.openings,
+            application_deadline = str(self.application_deadline),
+            views_count = self.views_count,
+            applications_count= self.applications_count,
+            last_application_at = str(self.last_application_at),
+            created_at = str(self.created_at),
+            updated_at = str(self.updated_at),
+        )
 
 class EmployeeEnterpriseEntity(Base):
     __tablename__ = "employees_enterprise"
