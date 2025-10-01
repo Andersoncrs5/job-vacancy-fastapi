@@ -402,6 +402,7 @@ class VacancyEntity(Base):
 class VacancySkillEntity(Base):
     __tablename__ = "vacancy_skills"
 
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     vacancy_id: Mapped[int] = mapped_column(ForeignKey("vacancies.id"), primary_key=True)
     skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id"), primary_key=True)
 
