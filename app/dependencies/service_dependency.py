@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
+from typing import Final
 from app.configs.db.database import get_db
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
 from app.services.providers.skill_service_provider import SkillServiceProvider
@@ -23,7 +24,6 @@ from app.services.providers.category_service_provider import CategoryServiceProv
 from app.services.providers.post_user_service_provider import PostUserServiceProvider
 from app.services.providers.jwt_service_provider import JwtServiceProvider
 from app.services.base.jwt_service_base import JwtServiceBase
-from typing import Final
 from app.repositories.providers.post_enterprise_repository_provider import PostEnterpriseRepositoryProvider
 from app.services.providers.post_enterprise_service_provider import PostEnterpriseServiceProvider
 from app.repositories.providers.favorite_posts_enterprise_repository_provider import FavoritePostEnterpriseRepositoryProvider
@@ -36,6 +36,13 @@ from app.repositories.providers.saved_search_repository_provider import SavedSea
 from app.services.providers.saved_search_service_provider import SavedSearchServiceProvider
 from app.repositories.providers.area_repository_provider import AreaRepositoryProvider
 from app.services.providers.area_service_provider import AreaServiceProvider
+from app.repositories.providers.vacancy_repository_provider import VacancyRepositoryProvider
+from app.services.providers.vacancy_service_provider import VacancyServiceProvider
+
+def get_vacancy_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> VacancyServiceProvider:
+    area_repository: Final = AreaRepositoryProvider(db)
+    repository: Final = VacancyRepositoryProvider(db)
+    return VacancyServiceProvider(repository, area_repository)
 
 def get_area_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> AreaServiceProvider:
     repository: Final = AreaRepositoryProvider(db)
