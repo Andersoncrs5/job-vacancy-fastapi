@@ -23,6 +23,8 @@ class CreateVacancySkillDTO(ORJSONModel):
         from app.configs.db.database import VacancySkillEntity
 
         return VacancySkillEntity(
+            vacancy_id = self.vacancy_id,
+            skill_id = self.skill_id,
             is_required = self.is_required,
             proficiency = self.proficiency,
             years_experience = self.years_experience,
