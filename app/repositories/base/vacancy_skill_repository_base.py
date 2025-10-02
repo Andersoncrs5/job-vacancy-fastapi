@@ -5,7 +5,7 @@ from app.schemas.vacancy_skill_schemas import VacancySkillOUT
 class VacancySkillRepositoryBase(ABC):
 
     @abstractmethod
-    async def get_all(session, vacancy_id: int) -> list[VacancySkillOUT]:
+    async def get_all(self, vacancy_id: int) -> list[VacancySkillEntity]:
         pass
 
     @abstractmethod
