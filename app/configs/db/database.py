@@ -38,7 +38,7 @@ async def get_db():
 class UserEntity(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True, index=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -83,9 +83,9 @@ class UserEntity(Base):
 class SavedSearchEntity(Base):
     __tablename__ = "saved_searches"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), index=True , nullable=False)
     query: Mapped[dict] = mapped_column(JSON, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -169,7 +169,7 @@ class MySkillEntity(Base):
 class SkillEntity(Base):
     __tablename__ = "skills"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -193,7 +193,7 @@ class SkillEntity(Base):
 class CurriculumEntity(Base):
     __tablename__ = "curriculums"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), unique=True, nullable=False)
 
@@ -221,7 +221,7 @@ class CurriculumEntity(Base):
 class IndustryEntity(Base):
     __tablename__ = "industries"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -258,7 +258,7 @@ class IndustryEntity(Base):
 class AreaEntity(Base):
     __tablename__ = "areas"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -290,8 +290,8 @@ class AreaEntity(Base):
 class EnterpriseEntity(Base):
     __tablename__ = "enterprises"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
 
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     website_url: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -329,11 +329,11 @@ class EnterpriseEntity(Base):
 class VacancyEntity(Base):
     __tablename__ = "vacancies"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprises.id"), nullable=False)
     area_id: Mapped[int] = mapped_column(ForeignKey("areas.id"), nullable=False) 
 
-    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
 
     employment_type: Mapped[EmploymentTypeEnum] = mapped_column(Enum(EmploymentTypeEnum), nullable=False)
@@ -402,7 +402,7 @@ class VacancyEntity(Base):
 class VacancySkillEntity(Base):
     __tablename__ = "vacancy_skills"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     vacancy_id: Mapped[int] = mapped_column(ForeignKey("vacancies.id"), primary_key=True)
     skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id"), primary_key=True)
 
@@ -421,7 +421,7 @@ class VacancySkillEntity(Base):
 class EmployeeEnterpriseEntity(Base):
     __tablename__ = "employees_enterprise"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
@@ -466,7 +466,7 @@ class EmployeeEnterpriseEntity(Base):
 class ReviewEnterprise(Base):
     __tablename__ = "reviews_enterprise"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     rating: Mapped[int] = mapped_column(Integer, nullable=False)
 
     title: Mapped[str] = mapped_column(String(80), nullable=False)
@@ -526,8 +526,8 @@ class ReviewEnterprise(Base):
 class PostEnterpriseEntity(Base):
     __tablename__ = "posts_enterprise"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     url_image: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -558,7 +558,7 @@ class PostEnterpriseEntity(Base):
 class FavoritePostEnterpriseEntity(Base):
     __tablename__ = "favorite_posts_enterprise"
     
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     post_enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_enterprise.id"))
@@ -571,8 +571,8 @@ class FavoritePostEnterpriseEntity(Base):
 class CategoryEntity(Base):
     __tablename__ = "categories"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -616,8 +616,8 @@ class CategoryEntity(Base):
 class PostUserEntity(Base):
     __tablename__ = "posts_user"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     url_image: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -683,7 +683,7 @@ class MediaPostUserEntity(Base):
 class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
 
