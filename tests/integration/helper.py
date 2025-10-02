@@ -5,6 +5,7 @@ from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO
 from app.schemas.user_schemas import CreateUserDTO, LoginDTO, UserOUT
 from app.schemas.enterprise_schemas import *
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO, PostUserOUT
+from app.schemas.vacancy_skill_schemas import CreateVacancySkillDTO, UpdateVacancySkillDTO
 from main import app
 from typing import Final
 from app.schemas.curriculum_schemas import *
@@ -32,6 +33,35 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def add_skill_into_vacancy(user_data, vacancy_data, skill_data) -> int:
+    URL: Final[str] = '/api/v1/vacancy-skill'
+    
+    dto = CreateVacancySkillDTO(
+        vacancy_id = vacancy_data.id,
+        skill_id = skill_data.id,
+        is_required = True,
+        proficiency = ProficiencyEnum.basic,
+        years_experience = 2,
+        priority_level = 3,
+        notes = None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(
+            f"{URL}", 
+            json=dto.model_dump(mode="json"),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 201
+
+    assert body is not None
+    assert isinstance(body, int) == True
+
+    return body
 
 async def create_vacancy(user_data: UserTestData, area_data: AreaOUT):
     URL: Final[str] = '/api/v1/vacancy'
