@@ -38,6 +38,12 @@ from app.repositories.providers.area_repository_provider import AreaRepositoryPr
 from app.services.providers.area_service_provider import AreaServiceProvider
 from app.repositories.providers.vacancy_repository_provider import VacancyRepositoryProvider
 from app.services.providers.vacancy_service_provider import VacancyServiceProvider
+from app.repositories.providers.vacancy_skill_repository_provider import VacancySkillRepositoryProvider
+from app.services.providers.vacancy_skill_service_provider import VacancySkillServiceProvider
+
+def get_vacancy_skill_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> VacancySkillServiceProvider:
+    repository: Final = VacancySkillRepositoryProvider(db)
+    return VacancySkillServiceProvider(repository)
 
 def get_vacancy_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> VacancyServiceProvider:
     area_repository: Final = AreaRepositoryProvider(db)
