@@ -29,6 +29,22 @@ class CreateAddressUserDTO(ORJSONModel):
     zipcode: str
     address_type: AddressTypeEnum
     is_default: bool
+
+    def to_entity(self):
+        from app.configs.db.database import AddressUserEntity
+
+        return AddressUserEntity(
+            street = self.street,
+            number = self.number,
+            complement = self.complement,
+            district = self.district,
+            city = self.city,
+            state = self.state,
+            country = self.country,
+            zipcode = self.zipcode,
+            address_type = self.address_type,
+            is_default = self.is_default,
+        )
     
 class UpdateAddressUserDTO(ORJSONModel):
     street: str | None
