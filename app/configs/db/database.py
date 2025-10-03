@@ -14,7 +14,8 @@ from sqlalchemy.pool import NullPool
 from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum, 
     EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
-    EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum
+    EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum,
+    AddressTypeEnum
 )
 
 load_dotenv()
@@ -67,6 +68,7 @@ class UserEntity(Base):
     searchs: Mapped[list["SavedSearchEntity"]] = relationship("SavedSearchEntity", back_populates="owner")
 
     areas: Mapped[list["AreaEntity"]] = relationship("AreaEntity", back_populates="owner")
+    address: Mapped["AddressUserEntity"] = relationship("AddressUserEntity", back_populates="owner")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -79,6 +81,37 @@ class UserEntity(Base):
             created_at = str(self.created_at),
             bio = self.bio,
         )
+
+class AddressUserEntity(Base):
+    __tablename__ = "addresses_user"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
+
+    street: Mapped[str] = mapped_column(String(255), nullable=False)
+    number: Mapped[str] = mapped_column(String(50), nullable=True)
+    complement: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    district: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    city: Mapped[str] = mapped_column(String(100), nullable=False)
+    state: Mapped[str] = mapped_column(String(100), nullable=False)
+    country: Mapped[str] = mapped_column(String(100), nullable=False, default="Brasil")
+    zipcode: Mapped[str] = mapped_column(String(20), nullable=True)
+
+    address_type: Mapped[AddressTypeEnum] = mapped_column(
+        Enum(AddressTypeEnum, name="address_type_enum"),
+        nullable=False,
+        default=AddressTypeEnum.RESIDENTIAL
+    )
+
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="addresses")
 
 class SavedSearchEntity(Base):
     __tablename__ = "saved_searches"
