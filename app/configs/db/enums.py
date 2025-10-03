@@ -1,6 +1,12 @@
 import enum
 from typing import final
 
+class AddressTypeEnum(str, enum.Enum):
+    RESIDENTIAL = "residential"
+    COMMERCIAL = "commercial"
+    BILLING = "billing"
+    SHIPPING = "shipping"
+
 class MediaType(str, enum.Enum):
     IMAGE = "image"
     VIDEO = "video"
