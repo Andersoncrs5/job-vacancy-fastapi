@@ -40,6 +40,12 @@ from app.repositories.providers.vacancy_repository_provider import VacancyReposi
 from app.services.providers.vacancy_service_provider import VacancyServiceProvider
 from app.repositories.providers.vacancy_skill_repository_provider import VacancySkillRepositoryProvider
 from app.services.providers.vacancy_skill_service_provider import VacancySkillServiceProvider
+from app.repositories.providers.address_user_repository_provider import AddressUserRepositoryProvider
+from app.services.providers.address_user_service_provider import AddressUserServiceProvider
+
+def get_address_user_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> AddressUserServiceProvider:
+    repository: Final = AddressUserRepositoryProvider(db)
+    return AddressUserServiceProvider(repository)
 
 def get_vacancy_skill_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> VacancySkillServiceProvider:
     repository: Final = VacancySkillRepositoryProvider(db)
