@@ -111,7 +111,27 @@ class AddressUserEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="addresses")
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="address")
+
+    def to_out(self):
+        from app.schemas.address_user_schemas import AddressUserOUT
+
+        return AddressUserOUT(
+            id = self.id,
+            user_id = self.user_id,
+            street = self.street,
+            number = self.number,
+            complement = self.complement,
+            district = self.district,
+            city = self.city,
+            state = self.state,
+            country = self.country,
+            zipcode = self.zipcode,
+            address_type = self.address_type,
+            is_default = self.is_default,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
 
 class SavedSearchEntity(Base):
     __tablename__ = "saved_searches"
