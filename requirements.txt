@@ -5,6 +5,7 @@ sqlalchemy
 asyncpg
 python-jose[cryptography]
 passlib[bcrypt]
+argon2-cffi
 python-dotenv
 pytest
 fastapi-filter
