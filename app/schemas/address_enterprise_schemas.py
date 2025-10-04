@@ -59,4 +59,5 @@ class UpdateAddressEnterpriseDTO(ORJSONModel):
     zipcode: str | None
     address_type: AddressTypeEnum | None
     is_default: bool | None
+    is_public: bool | None
     
