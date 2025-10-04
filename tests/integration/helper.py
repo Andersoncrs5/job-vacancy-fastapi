@@ -18,6 +18,7 @@ from app.schemas.my_skill_schemas import *
 from app.schemas.review_enterprise_schemas import *
 from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdatePostEnterpriseDTO, PostEnterpriseOUT
 from app.configs.db.enums import ProficiencyEnum
+from app.schemas.address_user_schemas import *
 from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum, 
     EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
@@ -33,6 +34,53 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def create_address_user(user_data: UserTestData):
+    URL: Final[str] = "/api/v1/address-user"
+
+    dto = CreateAddressUserDTO(
+        street = "Any ST",
+        number = "12",
+        complement = None,
+        district = None,
+        city = "A",
+        state = "B",
+        country = "C",
+        zipcode = "12345",
+        address_type = AddressTypeEnum.RESIDENTIAL,
+        is_default = True,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(
+            f"{URL}", 
+            json=dict(dto), 
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['body']['id'] is not None
+    assert data['body']['user_id'] == user_data.out.id
+    assert data['body']['street'] == dto.street
+
+    return AddressUserOUT(
+        id = data['body']['id'],
+        user_id = data['body']['user_id'],
+        street = data['body']['street'],
+        number = data['body']['number'],
+        complement = data['body']['complement'],
+        district = data['body']['district'],
+        city = data['body']['city'],
+        state = data['body']['state'],
+        country = data['body']['country'],
+        zipcode = data['body']['zipcode'],
+        address_type = data['body']['address_type'],
+        is_default = data['body']['is_default'],
+        created_at = data['body']['created_at'],
+        updated_at = data['body']['updated_at'],
+    )
 
 async def add_skill_into_vacancy(user_data, vacancy_data, skill_data) -> int:
     URL: Final[str] = '/api/v1/vacancy-skill'
