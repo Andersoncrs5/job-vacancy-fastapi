@@ -6,7 +6,8 @@ from app.controllers import (
     skill_controller, my_skill_controller, post_enterprise_controller,
     favorite_post_enterprise_controller, employee_enterprise_controller,
     review_enterprise_controller, saved_search_controller, area_controller,
-    vacancy_controller, vacancy_skill_controller, address_user_controller
+    vacancy_controller, vacancy_skill_controller, address_user_controller,
+    address_enterprise_controller
 )
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
@@ -45,7 +46,12 @@ app: Final[FastAPI] = FastAPI(
     lifespan=lifespan,
     title="Job vacancy in FastAPI",
     version="1.0.0",
-    default_response_class=ORJSONResponse
+    default_response_class=ORJSONResponse,
+    contact={
+        "name": "Anderson C. R. da S.",  
+        "url": "https://github.com/Andersoncrs5", 
+        "email": "anderson.c.rms2005@gmail.com" 
+    }
 )
 
 @app.middleware("http")
@@ -55,6 +61,7 @@ async def add_request_id(request, call_next):
     response = await call_next(request)
     return response
 
+app.include_router(address_enterprise_controller.router)
 app.include_router(address_user_controller.router)
 app.include_router(vacancy_skill_controller.router)
 app.include_router(vacancy_controller.router)
