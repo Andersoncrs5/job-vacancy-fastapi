@@ -43,10 +43,10 @@ class UserEntity(Base):
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True, index=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    password: Mapped[str] = mapped_column(String(500), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_block: Mapped[bool] = mapped_column(Boolean, default=False)
-    avatar_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     refresh_token: Mapped[str | None] = mapped_column(String(), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -364,6 +364,8 @@ class EnterpriseEntity(Base):
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="enterprise")
     employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="enterprise")
     vacancies: Mapped[list["VacancyEntity"]] = relationship("VacancyEntity", back_populates="enterprise")
+
+    address: Mapped["AddressEnterpriseEntity"] = relationship("AddressEnterpriseEntity", back_populates="enterprise")
 
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
