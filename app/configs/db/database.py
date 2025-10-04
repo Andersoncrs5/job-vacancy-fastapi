@@ -358,6 +358,7 @@ class EnterpriseEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="enterprise")
+    address: Mapped["UserEntity"] = relationship("UserEntity", back_populates="enterprise")
     industry: Mapped["IndustryEntity"] = relationship("IndustryEntity", back_populates="enterprises")
     posts: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="enterprise")
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="enterprise")
@@ -377,6 +378,59 @@ class EnterpriseEntity(Base):
             industry_id = self.industry_id,
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
+        )
+
+class AddressEnterpriseEntity(Base):
+    __tablename__ = "addresses_enterprise"
+
+    enterprise_id: Mapped[int] = mapped_column(
+        ForeignKey("enterprises.id"),
+        nullable=False, 
+        index=True,
+        primary_key=True, 
+    )
+
+    street: Mapped[str] = mapped_column(String(255), nullable=False)
+    number: Mapped[str] = mapped_column(String(50), nullable=True)
+    complement: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    district: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    city: Mapped[str] = mapped_column(String(100), nullable=False)
+    state: Mapped[str] = mapped_column(String(100), nullable=False)
+    country: Mapped[str] = mapped_column(String(100), nullable=False)
+    zipcode: Mapped[str] = mapped_column(String(20), nullable=True)
+
+    address_type: Mapped[AddressTypeEnum] = mapped_column(
+        Enum(AddressTypeEnum, name="address_type_enum"),
+        nullable=False,
+        default=AddressTypeEnum.RESIDENTIAL
+    )
+
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="address")
+
+    def to_out(self):
+        from app.schemas.address_enterprise_schemas import AddressEnterpriseOUT
+
+        return AddressEnterpriseOUT(
+            enterprise_id = self.enterprise_id,
+            street = self.street,
+            number = self.number,
+            complement = self.complement,
+            district = self.district,
+            city = self.city,
+            state = self.state,
+            country = self.country,
+            zipcode = self.zipcode,
+            address_type = self.address_type,
+            is_default = self.is_default,
+            is_public = self.is_public,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
         )
 
 class VacancyEntity(Base):
