@@ -411,7 +411,6 @@ async def delete(
                     path = None
                 ))
             )
-    
 
 @router.post(
     '',
