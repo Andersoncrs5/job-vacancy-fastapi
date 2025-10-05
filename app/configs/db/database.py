@@ -72,6 +72,20 @@ class UserEntity(Base):
 
     applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="user")
 
+    following_relationships: Mapped[List["FollowerRelationshipEntity"]] = relationship(
+        "FollowerRelationshipEntity",
+        back_populates="follower",
+        foreign_keys="[FollowerRelationshipEntity.follower_id]",
+        cascade="all, delete-orphan",
+    )
+
+    followers_relationships: Mapped[List["FollowerRelationshipEntity"]] = relationship(
+        "FollowerRelationshipEntity",
+        back_populates="followed",
+        foreign_keys="[FollowerRelationshipEntity.followed_id]",
+        cascade="all, delete-orphan",
+    )
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -83,6 +97,19 @@ class UserEntity(Base):
             created_at = str(self.created_at),
             bio = self.bio,
         )
+
+class FollowerRelationshipEntity(Base):
+    __tablename__ = "follower_relationships"
+
+    follower_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)
+    followed_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    follower: Mapped["UserEntity"] = relationship("UserEntity", foreign_keys=[follower_id],
+                                                  back_populates="following_relationships")
+    followed: Mapped["UserEntity"] = relationship("UserEntity", foreign_keys=[followed_id],
+                                                  back_populates="followers_relationships")
 
 class AddressUserEntity(Base):
     __tablename__ = "addresses_user"
