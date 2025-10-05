@@ -15,7 +15,7 @@ from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum,
     EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum,
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum,
-    AddressTypeEnum, ApplicationStatusEnum
+    AddressTypeEnum, ApplicationStatusEnum, ApplicationSourceEnum
 )
 
 load_dotenv()
@@ -544,6 +544,17 @@ class ApplicationEntity(Base):
         nullable=False
     )
 
+    is_viewed: Mapped[bool] = mapped_column(Boolean, default=False)
+    priority_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rating: Mapped[int | None] = mapped_column(Integer,
+                                               nullable=True)
+    feedback: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    source: Mapped[ApplicationSourceEnum | None] = mapped_column(
+        Enum(ApplicationSourceEnum, name="application_source_enum"),
+        nullable=True
+    )
+
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
@@ -595,7 +606,7 @@ class EmployeeEnterpriseEntity(Base):
             end_date = str(self.end_date),
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
-        )        
+        )
 
 class ReviewEnterprise(Base):
     __tablename__ = "reviews_enterprise"
@@ -621,7 +632,7 @@ class ReviewEnterprise(Base):
     employment_status: Mapped[EmploymentStatusEnum] = mapped_column(
         Enum(EmploymentStatusEnum, name="employment_status_enum"), nullable=False
     )
-    
+
     helpful_votes: Mapped[int] = mapped_column(Integer, default=0)
     unhelpful_votes: Mapped[int] = mapped_column(Integer, default=0)
 
@@ -633,7 +644,7 @@ class ReviewEnterprise(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="reviews")
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="reviews")
-    
+
     def to_out(self):
         from app.schemas.review_enterprise_schemas import ReviewEnterpriseOUT
 
