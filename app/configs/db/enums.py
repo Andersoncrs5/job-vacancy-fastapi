@@ -19,6 +19,7 @@ class MediaType(str, enum.Enum):
 
 @final
 class ApplicationStatusEnum(str, enum.Enum):
+    PENDING = "pending"
     APPLIED = "applied"              
     SCREENING = "screening"          
     INTERVIEWING = "interviewing"    
