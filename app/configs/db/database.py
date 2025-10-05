@@ -563,6 +563,24 @@ class ApplicationEntity(Base):
     user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="applications")
     vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="applications")
 
+    def to_out(self):
+        from app.schemas.application_schemas import ApplicationOUT
+
+        return ApplicationOUT(
+            id = self.id,
+            user_id = self.user_id,
+            vacancy_id = self.vacancy_id,
+            status = self.status,
+            is_viewed = self.is_viewed,
+            priority_level = self.priority_level,
+            rating = self.rating,
+            feedback = self.feedback,
+            source = self.source,
+            notes = self.notes,
+            applied_at = self.applied_at,
+            updated_at = self.updated_at,
+        )
+
 class EmployeeEnterpriseEntity(Base):
     __tablename__ = "employees_enterprise"
 
