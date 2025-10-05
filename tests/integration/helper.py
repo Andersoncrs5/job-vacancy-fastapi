@@ -1,43 +1,79 @@
 import random
-from httpx import ASGITransport, AsyncClient
-from app.configs.db.enums import MediaType
-from app.schemas.address_enterprise_schemas import CreateAddressEnterpriseDTO, AddressEnterpriseOUT
-from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO
-from app.schemas.user_schemas import CreateUserDTO, LoginDTO, UserOUT
-from app.schemas.enterprise_schemas import *
-from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO, PostUserOUT
-from app.schemas.vacancy_skill_schemas import CreateVacancySkillDTO, UpdateVacancySkillDTO
-from main import app
-from typing import Final
-from app.schemas.curriculum_schemas import *
-from pydantic import BaseModel
-from app.utils.res.tokens import Tokens
-from app.schemas.category_schemas import *
-from app.schemas.industry_schemas import *
-from app.schemas.skill_schemas import *
-from app.schemas.my_skill_schemas import *
-from app.schemas.review_enterprise_schemas import *
-from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdatePostEnterpriseDTO, PostEnterpriseOUT
-from app.configs.db.enums import ProficiencyEnum
-from app.schemas.address_user_schemas import *
-from app.configs.db.enums import (
-    MediaType, ProficiencyEnum, EmploymentTypeEnum, 
-    EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
-    EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum
-)
-from app.schemas.vacancy_schemas import *
-from app.schemas.employee_enterprise_schemas import *
-from app.schemas.area_schemas import *
-from app.schemas.saved_search_schemas import CreateSavedSearchDTO, SavedSearchOUT
 from datetime import date
+from typing import Final
+
+from httpx import ASGITransport, AsyncClient
+
+from app.configs.db.enums import (
+    MediaType, ProficiencyEnum
+)
+from app.schemas.address_enterprise_schemas import CreateAddressEnterpriseDTO, AddressEnterpriseOUT
+from app.schemas.address_user_schemas import *
+from app.schemas.application_schemas import ApplicationOUT
+from app.schemas.area_schemas import *
+from app.schemas.category_schemas import *
+from app.schemas.curriculum_schemas import *
+from app.schemas.employee_enterprise_schemas import *
+from app.schemas.enterprise_schemas import *
+from app.schemas.industry_schemas import *
+from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO, MediaPostUserOUT
+from app.schemas.my_skill_schemas import *
+from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, PostEnterpriseOUT
+from app.schemas.post_user_schemas import CreatePostUserDTO, PostUserOUT
+from app.schemas.review_enterprise_schemas import *
+from app.schemas.saved_search_schemas import CreateSavedSearchDTO, SavedSearchOUT
+from app.schemas.skill_schemas import *
+from app.schemas.user_schemas import CreateUserDTO, LoginDTO, UserOUT
+from app.schemas.vacancy_schemas import *
+from app.schemas.vacancy_skill_schemas import CreateVacancySkillDTO
+from app.utils.res.tokens import Tokens
+from main import app
 
 class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
 
-async def create_address_to_enterprise(user_data: UserTestData, enterprise_data: EnterpriseOUT):
-    URL: Final[str] = "/api/v1/address-enterprise"
+async def create_application(user_data: UserTestData, vacancy_data: VacancyOUT):
+    URL: Final[str] = "/api/v1/application"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(
+            f"{URL}/{vacancy_data.id}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    assert response.status_code == 201
+
+    data = response.json()
+    body = response.json()['body']
+
+    assert data['message'] == 'Application sent successfully'
+    assert data['code'] == 201
+    assert data['status'] == True
+
+    assert body['id'] is not None
+    assert isinstance(body['id'], int)
+    assert body['vacancy_id'] == vacancy_data.id
+    assert body['user_id'] == user_data.out.id
+
+    return ApplicationOUT(
+        id = body['id'],
+        user_id = body['user_id'],
+        vacancy_id = body['vacancy_id'],
+        status = body['status'],
+        is_viewed = body['is_viewed'],
+        priority_level = body['priority_level'],
+        rating = body['rating'],
+        feedback = body['feedback'],
+        source = body['source'],
+        notes = body['notes'],
+        applied_at = body['applied_at'],
+        updated_at = body['updated_at'],
+    )
+
+async def create_address_to_enterprise(user_data: UserTestData, enterprise_data: EnterpriseOUT) -> AddressEnterpriseOUT:
+    URL = "/api/v1/address-enterprise"
 
     dto = CreateAddressEnterpriseDTO(
         street = "Any ST",
@@ -54,7 +90,7 @@ async def create_address_to_enterprise(user_data: UserTestData, enterprise_data:
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(
+        response = await acdc.post(
             f"{URL}",
             json=dict(dto),
             headers={"Authorization": f"Bearer {user_data.tokens.token}"}
@@ -86,8 +122,8 @@ async def create_address_to_enterprise(user_data: UserTestData, enterprise_data:
         updated_at = data['body']['updated_at'],
     )
 
-async def create_address_user(user_data: UserTestData):
-    URL: Final[str] = "/api/v1/address-user"
+async def create_address_user(user_data: UserTestData) -> AddressUserOUT:
+    URL = "/api/v1/address-user"
 
     dto = CreateAddressUserDTO(
         street = "Any ST",
@@ -103,7 +139,7 @@ async def create_address_user(user_data: UserTestData):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(
+        response = await acdc.post(
             f"{URL}", 
             json=dict(dto), 
             headers={"Authorization": f"Bearer {user_data.tokens.token}"}
@@ -134,7 +170,7 @@ async def create_address_user(user_data: UserTestData):
     )
 
 async def add_skill_into_vacancy(user_data, vacancy_data, skill_data) -> int:
-    URL: Final[str] = '/api/v1/vacancy-skill'
+    URL = '/api/v1/vacancy-skill'
     
     dto = CreateVacancySkillDTO(
         vacancy_id = vacancy_data.id,
@@ -147,7 +183,7 @@ async def add_skill_into_vacancy(user_data, vacancy_data, skill_data) -> int:
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(
+        response = await acdc.post(
             f"{URL}", 
             json=dto.model_dump(mode="json"),
             headers={"Authorization": f"Bearer {user_data.tokens.token}"}
@@ -162,8 +198,8 @@ async def add_skill_into_vacancy(user_data, vacancy_data, skill_data) -> int:
 
     return body
 
-async def create_vacancy(user_data: UserTestData, area_data: AreaOUT):
-    URL: Final[str] = '/api/v1/vacancy'
+async def create_vacancy(user_data: UserTestData, area_data: AreaOUT) -> VacancyOUT:
+    URL = '/api/v1/vacancy'
     dto = CreateVacancyDTO(
         area_id = area_data.id,
         title = "New vacancy",
@@ -226,9 +262,9 @@ async def create_vacancy(user_data: UserTestData, area_data: AreaOUT):
         updated_at = data['body']['updated_at'],
     )
 
-async def create_area(user_data: UserTestData):
+async def create_area(user_data: UserTestData) -> AreaOUT:
     num = random.randint(10000,100000000000000)
-    URL: Final[str] = '/api/v1/area'
+    URL = '/api/v1/area'
     user_data = await create_and_login_user()
 
     dto = CreateAreaDTO(
@@ -238,7 +274,7 @@ async def create_area(user_data: UserTestData):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -253,8 +289,8 @@ async def create_area(user_data: UserTestData):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_saved_search(user_data: UserTestData):
-    URL: Final[str] = '/api/v1/saved-search'
+async def create_saved_search(user_data: UserTestData) -> SavedSearchOUT:
+    URL = '/api/v1/saved-search'
     num = random.randint(10000,10000000000000)
 
     dto = CreateSavedSearchDTO(
@@ -267,7 +303,7 @@ async def create_saved_search(user_data: UserTestData):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(
+        response = await acdc.post(
             f"{URL}", json=dto.model_dump(mode="json"),
             headers={"Authorization": f"Bearer {user_data.tokens.token}"}
         )
@@ -293,7 +329,7 @@ async def create_saved_search(user_data: UserTestData):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_review(user_data, enterprise_data, user_data_two):
+async def create_review(user_data, enterprise_data, user_data_two) -> ReviewEnterpriseOUT:
     URL = "/api/v1/review-enterprise"
 
     dto = CreateReviewEnterpriseDTO(
@@ -311,7 +347,7 @@ async def create_review(user_data, enterprise_data, user_data_two):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(
+        response = await acdc.post(
             URL,
             json=dto.model_dump(mode="json"),
             headers={"Authorization": f"Bearer {user_data_two.tokens.token}"}
@@ -349,7 +385,7 @@ async def create_review(user_data, enterprise_data, user_data_two):
         updated_at=str(data["body"]["updated_at"]),
     )
 
-async def create_employee(user_data: UserTestData, enterprise_data, user_data_two: UserTestData):
+async def create_employee(user_data: UserTestData, enterprise_data, user_data_two: UserTestData) -> EmployeeEnterpriseOUT:
     URL = "/api/v1/employee-enterprise"
     dto = CreateEmployeeEnterpriseDTO(
         user_id = user_data_two.out.id,
@@ -361,7 +397,7 @@ async def create_employee(user_data: UserTestData, enterprise_data, user_data_tw
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(f"{URL}", json=dto.model_dump(mode="json"), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await acdc.post(f"{URL}", json=dto.model_dump(mode="json"), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -388,10 +424,10 @@ async def create_employee(user_data: UserTestData, enterprise_data, user_data_tw
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_favorite_post_enterprise(user_data, post_enterprise):
-    URL: Final[str] = '/api/v1/favorite-post-enterprise'
+async def create_favorite_post_enterprise(user_data, post_enterprise) -> int:
+    URL = '/api/v1/favorite-post-enterprise'
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response: Final = await ac.post(f"{URL}/{post_enterprise.id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await ac.post(f"{URL}/{post_enterprise.id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -403,8 +439,8 @@ async def create_favorite_post_enterprise(user_data, post_enterprise):
 
     return int(data['body'])
 
-async def create_post_enterprise(user_data, enterprise_data, category_data):
-    URL: Final[str] = "/api/v1/post-enterprise"
+async def create_post_enterprise(user_data, enterprise_data, category_data) -> PostEnterpriseOUT :
+    URL = "/api/v1/post-enterprise"
     num = random.randint(10000,10000000000000)
 
     dto = CreatePostEnterpriseDTO(
@@ -414,7 +450,7 @@ async def create_post_enterprise(user_data, enterprise_data, category_data):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response: Final = await ac.post(f"{URL}/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await ac.post(f"{URL}/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -440,8 +476,8 @@ async def create_post_enterprise(user_data, enterprise_data, category_data):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_my_skill(user_data, skill):
-    URL: Final[str] = '/api/v1/my-skill'
+async def create_my_skill(user_data, skill) -> MySkillOUT:
+    URL = '/api/v1/my-skill'
 
     dto = CreateMySkillDTO(
         skill_id = skill.id,
@@ -453,7 +489,7 @@ async def create_my_skill(user_data, skill):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(f"{URL}", json=dto.model_dump(mode="json"), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await acdc.post(f"{URL}", json=dto.model_dump(mode="json"), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201    
@@ -476,8 +512,8 @@ async def create_my_skill(user_data, skill):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_skill(user_data):
-    URL: Final[str] = '/api/v1/skill'
+async def create_skill(user_data) -> SkillOUT:
+    URL = '/api/v1/skill'
     num = random.randint(10000,100000000000000)
 
     dto = CreateSkillDTO(
@@ -485,8 +521,7 @@ async def create_skill(user_data):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
-
+        response = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -502,8 +537,8 @@ async def create_skill(user_data):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_curriculum(user_data):
-    URL: Final[str] = '/api/v1/curriculum'
+async def create_curriculum(user_data) -> CurriculumOUT:
+    URL = '/api/v1/curriculum'
 
     dto = CreateCurriculumDTO(
         title = "a little about me",
@@ -511,7 +546,7 @@ async def create_curriculum(user_data):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await acdc.post(f"{URL}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -532,8 +567,8 @@ async def create_curriculum(user_data):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_media_post_user(user_data: UserTestData, post_user_data: PostUserOUT):
-    URL: Final[str] = '/api/v1/media-post-user'
+async def create_media_post_user(user_data: UserTestData, post_user_data: PostUserOUT) -> MediaPostUserOUT:
+    URL = '/api/v1/media-post-user'
     
     dto = CreateMediaPostUserDTO(
         url = "https://picsum.photos/200/300",
@@ -545,7 +580,7 @@ async def create_media_post_user(user_data: UserTestData, post_user_data: PostUs
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
-        response: Final = await acdc.post(f"{URL}/{post_user_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await acdc.post(f"{URL}/{post_user_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -556,7 +591,6 @@ async def create_media_post_user(user_data: UserTestData, post_user_data: PostUs
     assert data['body']['id'] is not None
     assert data['body']['post_id'] == post_user_data.id
 
-    from app.schemas.media_post_user_schemas import MediaPostUserOUT
     return MediaPostUserOUT(
         id = data['body']['id'],
         url = data['body']['url'],
@@ -570,8 +604,8 @@ async def create_media_post_user(user_data: UserTestData, post_user_data: PostUs
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_favorite_post_user(user_data: UserTestData, category_data: CategoryOUT, post_data: PostUserOUT):
-    URL: Final[str] = '/api/v1/favorite-post-user'
+async def create_favorite_post_user(user_data: UserTestData, category_data: CategoryOUT, post_data: PostUserOUT) -> int:
+    URL = '/api/v1/favorite-post-user'
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.post(f"{URL}/{post_data.id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -589,9 +623,9 @@ async def create_favorite_post_user(user_data: UserTestData, category_data: Cate
 
     return int(data['body'])
 
-async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT):
-    num: Final = random.randint(1000,1000000000000000)
-    URL: Final[str] = '/api/v1/enterprise'
+async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT) -> EnterpriseOUT:
+    num = random.randint(1000,1000000000000000)
+    URL = '/api/v1/enterprise'
 
     dto = CreateEnterpriseDTO(
         name = f'name {num}',
@@ -603,7 +637,7 @@ async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.post(F"{URL}/{industry_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
-    data: Final = response.json()
+    data = response.json()
 
     assert response.status_code == 201
 
@@ -627,11 +661,11 @@ async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT)
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_industry(user_data: UserTestData):
-    URL: Final[str] = '/api/v1/industry'
-    num: Final = random.randint(1000,10000000000000)
+async def create_industry(user_data: UserTestData) -> IndustryOUT:
+    URL = '/api/v1/industry'
+    num = random.randint(1000,10000000000000)
 
-    dto: Final = CreateIndustryDTO(
+    dto = CreateIndustryDTO(
         name = f"name {num}",
         description = None,
         icon_url = None,
@@ -642,7 +676,7 @@ async def create_industry(user_data: UserTestData):
 
     assert response.status_code == 201
 
-    data: Final = response.json()        
+    data = response.json()
 
     assert data['message'] == "Industry created with successfully"
     assert data['code'] == 201
@@ -668,9 +702,9 @@ async def create_industry(user_data: UserTestData):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_post_user(user_data: UserTestData, category_data: CategoryOUT):
+async def create_post_user(user_data: UserTestData, category_data: CategoryOUT) -> PostUserOUT:
     num = random.randint(10000,100000000000)
-    URL: Final[str] = "/api/v1/post-user"
+    URL = "/api/v1/post-user"
 
     dto = CreatePostUserDTO(
         title = f"title {num}",
@@ -679,7 +713,7 @@ async def create_post_user(user_data: UserTestData, category_data: CategoryOUT):
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response: Final = await ac.post(f"{URL}/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+        response = await ac.post(f"{URL}/{category_data.id}", json=dict(dto), headers={"Authorization": f"Bearer {user_data.tokens.token}"})
 
     data = response.json()
     assert response.status_code == 201
@@ -704,7 +738,7 @@ async def create_post_user(user_data: UserTestData, category_data: CategoryOUT):
         updated_at = str(data['body']['updated_at']),
     )
 
-async def create_category(user_data: UserTestData):
+async def create_category(user_data: UserTestData) -> CategoryOUT:
     num = random.randint(100000,10000000000000)
 
     dto = CreateCategoryDTO(
@@ -780,7 +814,7 @@ async def create_and_login_user() -> UserTestData:
     assert data["token"] is not None
     assert data["refresh_token"] is not None
 
-    URL: Final[str] = "/api/v1/user"
+    URL = "/api/v1/user"
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(URL + f"/{dto.email}", headers={"Authorization": f"Bearer {data["token"]}"})
