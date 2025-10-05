@@ -12,10 +12,10 @@ from sqlalchemy import (
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
 from app.configs.db.enums import (
-    MediaType, ProficiencyEnum, EmploymentTypeEnum, 
-    EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum, 
+    MediaType, ProficiencyEnum, EmploymentTypeEnum,
+    EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum,
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum,
-    AddressTypeEnum
+    AddressTypeEnum, ApplicationStatusEnum
 )
 
 load_dotenv()
@@ -69,6 +69,8 @@ class UserEntity(Base):
 
     areas: Mapped[list["AreaEntity"]] = relationship("AreaEntity", back_populates="owner")
     address: Mapped["AddressUserEntity"] = relationship("AddressUserEntity", back_populates="owner")
+
+    applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="user")
 
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
@@ -477,6 +479,7 @@ class VacancyEntity(Base):
     area: Mapped["AreaEntity"] = relationship("AreaEntity", back_populates="vacancies")
 
     skills: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="vacancy")
+    applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="vacancy")
 
     def to_out(self):
         from app.schemas.vacancy_schemas import VacancyOUT
@@ -526,6 +529,28 @@ class VacancySkillEntity(Base):
 
     vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="skills")
     skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="vacancies")
+
+class ApplicationEntity(Base):
+    __tablename__ = "applications"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    vacancy_id: Mapped[int] = mapped_column(ForeignKey("vacancies.id"), nullable=False)
+
+    status: Mapped[ApplicationStatusEnum] = mapped_column(
+        Enum(ApplicationStatusEnum, name="application_status_enum"),
+        default=ApplicationStatusEnum.PENDING,
+        nullable=False
+    )
+
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
+                                                 onupdate=func.now(), nullable=False)
+
+    user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="applications")
+    vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="applications")
 
 class EmployeeEnterpriseEntity(Base):
     __tablename__ = "employees_enterprise"
