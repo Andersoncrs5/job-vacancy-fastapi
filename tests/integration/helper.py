@@ -1,6 +1,7 @@
 import random
 from httpx import ASGITransport, AsyncClient
 from app.configs.db.enums import MediaType
+from app.schemas.address_enterprise_schemas import CreateAddressEnterpriseDTO, AddressEnterpriseOUT
 from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO
 from app.schemas.user_schemas import CreateUserDTO, LoginDTO, UserOUT
 from app.schemas.enterprise_schemas import *
@@ -34,6 +35,56 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def create_address_to_enterprise(user_data: UserTestData, enterprise_data: EnterpriseOUT):
+    URL: Final[str] = "/api/v1/address-enterprise"
+
+    dto = CreateAddressEnterpriseDTO(
+        street = "Any ST",
+        number = "12",
+        complement = None,
+        district = None,
+        city = "A",
+        state = "B",
+        country = "C",
+        zipcode = "12345",
+        address_type = AddressTypeEnum.RESIDENTIAL,
+        is_default = True,
+        is_public = True
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(
+            f"{URL}",
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 201
+
+    assert data['body']['enterprise_id'] == enterprise_data.id
+    assert data['body']['street'] == dto.street
+    assert data['body']['number'] == dto.number
+    assert data['body']['address_type'] == dto.address_type
+    assert data['body']['city'] == dto.city
+
+    return AddressEnterpriseOUT(
+        enterprise_id = data['body']['enterprise_id'],
+        street = data['body']['street'],
+        number = data['body']['number'],
+        complement = data['body']['complement'],
+        district = data['body']['district'],
+        city = data['body']['city'],
+        state = data['body']['state'],
+        country = data['body']['country'],
+        zipcode = data['body']['zipcode'],
+        address_type = data['body']['address_type'],
+        is_default = data['body']['is_default'],
+        is_public = data['body']['is_public'],
+        created_at = data['body']['created_at'],
+        updated_at = data['body']['updated_at'],
+    )
 
 async def create_address_user(user_data: UserTestData):
     URL: Final[str] = "/api/v1/address-user"
