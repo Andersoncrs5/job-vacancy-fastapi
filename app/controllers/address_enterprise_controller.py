@@ -27,7 +27,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 @router.patch(
     "/toggle/status/is-public",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody[AddressEnterpriseOUT],
     responses={
         404: RESPONSE_404,
         400: RESPONSE_400,
@@ -75,15 +75,17 @@ async def patch_toggle_status_is_public(
                 ))
             )
 
-        await address_service.toggle_is_public(address)
+        address_updated = await address_service.toggle_is_public(address)
+
+        out = address_updated.to_out()
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody[dict](
                 message="Address status is public changed with successfully",
                 code=status.HTTP_200_OK,
                 status=True,
-                body=None,
+                body=dict(out),
                 timestamp=str(datetime.now()),
                 version = 1,
                 path = None
