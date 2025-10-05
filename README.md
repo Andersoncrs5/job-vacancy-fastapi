@@ -1,3 +1,9 @@
 # JOB VACANCY SYSTEM IN FASTAPI
 
 start date: 9/17/25
+
+## Features
+
+- docker
+- python 3.17.4
+- postgres 18
