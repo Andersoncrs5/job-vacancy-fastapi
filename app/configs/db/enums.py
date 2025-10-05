@@ -17,6 +17,13 @@ class MediaType(str, enum.Enum):
     TEXT = "text"
     ARCHIVE = "archive"
 
+class ApplicationSourceEnum(str, enum.Enum):
+    WEBSITE = "WEBSITE"
+    LINKEDIN = "LINKEDIN"
+    REFERRAL = "REFERRAL"
+    EMAIL = "EMAIL"
+    OTHER = "OTHER"
+
 @final
 class ApplicationStatusEnum(str, enum.Enum):
     PENDING = "pending"
