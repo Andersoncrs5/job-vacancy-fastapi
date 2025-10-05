@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.configs.db.database import ApplicationEntity
 from app.repositories.base.application_repository_base import ApplicationRepositoryBase
 from app.utils.filter.applications_filter import ApplicationFilter
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
+
 
 class ApplicationRepositoryProvider(ApplicationRepositoryBase):
     def __init__(self, db: AsyncSession):
@@ -35,6 +36,18 @@ class ApplicationRepositoryProvider(ApplicationRepositoryBase):
 
         return bool(result and result > 0)
 
+    async def exists_by_application(self, user_id: int, vacancy_id: int) -> bool:
+        stmt = select(func.count(ApplicationEntity.id)).where(
+            and_(
+                ApplicationEntity.user_id == user_id,
+                ApplicationEntity.vacancy_id == vacancy_id,
+            )
+        )
+
+        result = await self.db.scalar(stmt)
+
+        return bool(result and result > 0)
+
     async def save(self, app: ApplicationEntity) -> ApplicationEntity:
         app.updated_at = datetime.datetime.now()
         await self.db.commit()
@@ -43,6 +56,8 @@ class ApplicationRepositoryProvider(ApplicationRepositoryBase):
         return app
 
     async def add(self, app: ApplicationEntity) -> ApplicationEntity:
+        app.applied_at = datetime.datetime.now()
+
         self.db.add(app)
         await self.db.commit()
         await self.db.refresh(app)

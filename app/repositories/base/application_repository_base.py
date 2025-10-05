@@ -19,6 +19,10 @@ class ApplicationRepositoryBase(ABC):
         pass
 
     @abstractmethod
+    async def exists_by_application(self, user_id: int, vacancy_id: int) -> bool:
+        pass
+
+    @abstractmethod
     async def save(self, app: ApplicationEntity) -> ApplicationEntity:
         pass
 
