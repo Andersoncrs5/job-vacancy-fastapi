@@ -1,0 +1,42 @@
+from sqlalchemy import BigInteger, ForeignKey, DateTime, Boolean, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
+from datetime import datetime
+
+# Importe sua Base e UserEntity
+
+class NotificationPreferenceEntity(Base):
+    __tablename__ = "notification_preferences"
+
+    # Quem está RECEBENDO as notificações (o seguidor)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id"), primary_key=True, index=True
+    )
+
+    # De quem ele está RECEBENDO as notificações (o seguido)
+    receive_user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id"), primary_key=True, index=True
+    )
+
+    # O que você quer receber:
+    receive_posts: Mapped[bool] = mapped_column(Boolean, default=True)
+    receive_comments: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Exemplo: Se você for implementar lives ou stories
+    receive_lives: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    # Relações para UserEntity (opcional, mas bom para integridade)
+
+    # Usuário que configurou a preferência
+    owner: Mapped["UserEntity"] = relationship(
+        "UserEntity", foreign_keys=[user_id], back_populates="notification_settings"
+    )
+
+    # Usuário cuja notificação está sendo configurada (o seguido)
+    source_user: Mapped["UserEntity"] = relationship(
+        "UserEntity", foreign_keys=[receive_user_id], back_populates="preference_sources"
+    )
