@@ -36,7 +36,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 async def patch_toggle_status_is_public(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
-    address_service: AddressEnterpriseServiceProvider = Depends(get_address_user_service_provider_dependency),
+    address_service: AddressEnterpriseServiceProvider = Depends(get_address_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -115,7 +115,7 @@ async def patch_toggle_status_is_public(
 async def exists_by_id(
     enterprise_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
-    address_service: AddressEnterpriseServiceProvider = Depends(get_address_user_service_provider_dependency),
+    address_service: AddressEnterpriseServiceProvider = Depends(get_address_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -178,7 +178,7 @@ async def patch(
     dto: UpdateAddressEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
-    address_service: AddressEnterpriseServiceProvider = Depends(get_address_user_service_provider_dependency),
+    address_service: AddressEnterpriseServiceProvider = Depends(get_address_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -260,7 +260,7 @@ async def patch(
 async def delete(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
-    address_service: AddressEnterpriseServiceProvider = Depends(get_address_user_service_provider_dependency),
+    address_service: AddressEnterpriseServiceProvider = Depends(get_address_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -340,7 +340,7 @@ async def delete(
 async def get_by_id(
     enterprise_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
-    address_service: AddressEnterpriseServiceProvider = Depends(get_address_user_service_provider_dependency),
+    address_service: AddressEnterpriseServiceProvider = Depends(get_address_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -376,7 +376,7 @@ async def get_by_id(
                 ))
             )
 
-        if address.is_public == False:
+        if not address.is_public:
             return ORJSONResponse(
                 status_code=403,
                 content=dict(ResponseBody[None](
@@ -424,14 +424,14 @@ async def get_by_id(
     status_code=200,
     response_model=ResponseBody[AddressEnterpriseOUT],   
     responses={
-        400: RESPONSE_400,
+        404: RESPONSE_404,
     }
 )
 async def create(
     dto: CreateAddressEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
-    address_service: AddressEnterpriseServiceProvider = Depends(get_address_user_service_provider_dependency),
+    address_service: AddressEnterpriseServiceProvider = Depends(get_address_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -454,13 +454,13 @@ async def create(
                 ))
             )
 
-        address: Final = await address_service.get_by_enterprise_id(enterprise.id)
-        if address is None:
+        address: Final = await address_service.exists_by_enterprise_id(enterprise.id)
+        if address:
             return ORJSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_403_FORBIDDEN,
                 content=dict(ResponseBody[None](
-                    code=status.HTTP_404_NOT_FOUND,
-                    message="Address not found",
+                    code=status.HTTP_403_FORBIDDEN,
+                    message="Address already exists",
                     status=False,
                     body=None,
                     timestamp=str(datetime.now()),
