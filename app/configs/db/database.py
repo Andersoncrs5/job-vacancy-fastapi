@@ -86,6 +86,12 @@ class UserEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    following_enterprises_relationships: Mapped[List["FollowerRelationshipEnterpriseEntity"]] = relationship(
+        "FollowerRelationshipEnterpriseEntity",
+        back_populates="follower",
+        cascade="all, delete-orphan",
+    )
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -398,6 +404,11 @@ class EnterpriseEntity(Base):
 
     address: Mapped["AddressEnterpriseEntity"] = relationship("AddressEnterpriseEntity", back_populates="enterprise")
 
+    followers_relationships: Mapped[List["FollowerRelationshipEnterpriseEntity"]] = relationship(
+        "FollowerRelationshipEnterpriseEntity",
+        back_populates="followed_enterprise",cascade="all, delete-orphan",
+    )
+
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
 
@@ -412,6 +423,35 @@ class EnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class FollowerRelationshipEnterpriseEntity(Base):
+    __tablename__ = "follower_relationships_enterprise"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id")
+    )
+
+    enterprise_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("enterprises.id")
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    follower: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        foreign_keys=[user_id],
+        back_populates="following_enterprises_relationships"
+    )
+
+    followed_enterprise: Mapped["EnterpriseEntity"] = relationship(
+        "EnterpriseEntity",
+        foreign_keys=[enterprise_id],
+        back_populates="followers_relationships"
+    )
 
 class AddressEnterpriseEntity(Base):
     __tablename__ = "addresses_enterprise"
