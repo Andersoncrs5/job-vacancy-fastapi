@@ -27,7 +27,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 @router.get(
     "/{user_id}/exists",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,   
     responses={
         400: RESPONSE_400_ID_REQUIRED,
     }
@@ -42,7 +42,7 @@ async def exists_by_id(
     if user_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -89,7 +89,7 @@ async def exists_by_id(
 @router.patch(
     "",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,   
     responses={
         404: RESPONSE_404,
         400: RESPONSE_400,
@@ -111,7 +111,7 @@ async def patch(
         if address is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Address not found",
                     status=False,
@@ -156,7 +156,7 @@ async def patch(
 @router.delete(
     "",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,   
     responses={
         404: RESPONSE_404,
         400: RESPONSE_400,
@@ -177,7 +177,7 @@ async def delete(
         if address is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Address not found",
                     status=False,
@@ -192,7 +192,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Address deleted with successfully",
                 code=status.HTTP_200_OK,
                 status=True,
@@ -220,7 +220,7 @@ async def delete(
 @router.get(
     "/{user_id}",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,   
     responses={
         404: RESPONSE_404_CATEGORY,
         400: RESPONSE_400_ID_REQUIRED,
@@ -236,7 +236,7 @@ async def get_by_id(
     if user_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -254,7 +254,7 @@ async def get_by_id(
         if address is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Address not found",
                     status=False,
@@ -314,10 +314,10 @@ async def create(
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         check: Final[bool] = await address_service.exists_by_user_id(user_id)
-        if check == True:
+        if check:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message=f"You already have a address",
                     status=False,
@@ -332,7 +332,7 @@ async def create(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,

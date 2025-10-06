@@ -1,16 +1,13 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import AddressEnterpriseEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.address_enterprise_schemas import *
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+from app.configs.db.database import AddressEnterpriseEntity
+from app.dependencies.service_dependency import *
+from app.schemas.address_enterprise_schemas import *
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/address-enterprise", 
@@ -49,7 +46,7 @@ async def patch_toggle_status_is_public(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -64,7 +61,7 @@ async def patch_toggle_status_is_public(
         if address is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Address not found",
                     status=False,
@@ -109,7 +106,7 @@ async def patch_toggle_status_is_public(
 @router.get(
     "/{enterprise_id}/exists",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,
     responses={
         400: RESPONSE_400_ID_REQUIRED,
     }
@@ -124,7 +121,7 @@ async def exists_by_id(
     if enterprise_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -170,7 +167,7 @@ async def exists_by_id(
 @router.patch(
     "",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,
     responses={
         404: RESPONSE_404,
         400: RESPONSE_400,
@@ -193,7 +190,7 @@ async def patch(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -208,7 +205,7 @@ async def patch(
         if address is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Address not found",
                     status=False,
@@ -253,7 +250,7 @@ async def patch(
 @router.delete(
     "",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,
     responses={
         404: RESPONSE_404,
         400: RESPONSE_400,
@@ -275,7 +272,7 @@ async def delete(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -290,7 +287,7 @@ async def delete(
         if address is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Address not found",
                     status=False,
@@ -305,7 +302,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Address deleted with successfully",
                 code=status.HTTP_200_OK,
                 status=True,
@@ -333,7 +330,7 @@ async def delete(
 @router.get(
     "/{enterprise_id}",
     status_code=200,
-    response_model=ResponseBody[None],   
+    response_model=ResponseBody,
     responses={
         404: RESPONSE_404_CATEGORY,
         400: RESPONSE_400_ID_REQUIRED,
@@ -349,7 +346,7 @@ async def get_by_id(
     if enterprise_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -367,7 +364,7 @@ async def get_by_id(
         if address is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Address not found",
                     status=False,
@@ -381,7 +378,7 @@ async def get_by_id(
         if not address.is_public:
             return ORJSONResponse(
                 status_code=403,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=403,
                     message="Address display blocked by enterprise",
                     status=False,
@@ -445,7 +442,7 @@ async def create(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -460,7 +457,7 @@ async def create(
         if address:
             return ORJSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_403_FORBIDDEN,
                     message="Address already exists",
                     status=False,

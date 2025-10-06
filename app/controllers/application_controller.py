@@ -27,7 +27,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 @router.patch(
     "/{id}",
     status_code=200,
-    response_model=ResponseBody[None],
+    response_model=ResponseBody,
 )
 async def patch(
     id: int,
@@ -40,7 +40,7 @@ async def patch(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -59,7 +59,7 @@ async def patch(
         if not user:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -74,7 +74,7 @@ async def patch(
         if not app:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Application not found",
                     status=False,
@@ -119,7 +119,7 @@ async def patch(
 @router.delete(
     "/{id}",
     status_code=200,
-    response_model=ResponseBody[None],
+    response_model=ResponseBody,
 )
 async def delete(
     id: int,
@@ -131,7 +131,7 @@ async def delete(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -150,7 +150,7 @@ async def delete(
         if not user:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -165,7 +165,7 @@ async def delete(
         if not app:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Application not found",
                     status=False,
@@ -179,7 +179,7 @@ async def delete(
         if app.user_id != user.id:
             return ORJSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_403_FORBIDDEN,
                     message="You are not authorized to removed this application",
                     status=False,
@@ -194,7 +194,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_200_OK,
                 message="Application removed with successfully",
                 status=True,
@@ -273,7 +273,7 @@ async def create(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -292,7 +292,7 @@ async def create(
         if not user:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -307,7 +307,7 @@ async def create(
         if exists_application:
             return ORJSONResponse(
                 status_code=status.HTTP_409_CONFLICT,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_409_CONFLICT,
                     message="You have already applied for this position!",
                     status=False,
@@ -322,7 +322,7 @@ async def create(
         if vacancy is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Vacancy not found",
                     status=False,
@@ -336,7 +336,7 @@ async def create(
         if vacancy.application_deadline and vacancy.application_deadline < datetime.now().date():
             return ORJSONResponse(
                 status_code=400,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=400,
                     message="Vacancy is closed",
                     status=False,

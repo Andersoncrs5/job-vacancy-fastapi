@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import AreaEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.area_schemas import *
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
-from app.utils.filter.area_filter import AreaFilter
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import AreaEntity
+from app.dependencies.service_dependency import *
+from app.schemas.area_schemas import *
 from app.services.providers.area_service_provider import AreaServiceProvider
+from app.utils.filter.area_filter import AreaFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/area", 
@@ -45,7 +45,7 @@ async def patch(
         if id <= 0:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -62,7 +62,7 @@ async def patch(
         if area is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Area not found",
                     status=False,
@@ -124,7 +124,7 @@ async def toggle_status_active(
         if id <= 0:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -141,7 +141,7 @@ async def toggle_status_active(
         if area is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Area not found",
                     status=False,
@@ -203,7 +203,7 @@ async def delete(
         if id <= 0:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -220,7 +220,7 @@ async def delete(
         if area is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Area not found",
                     status=False,
@@ -235,7 +235,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=200,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Area deleted with successfully",
                 code=200,
                 status=True,
@@ -280,7 +280,7 @@ async def get_by_id(
         if id <= 0:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -297,7 +297,7 @@ async def get_by_id(
         if area is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Area not found",
                     status=False,
@@ -398,10 +398,10 @@ async def post(
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         user: Final[bool] = await user_service.exists_by_id(user_id)
-        if user == False:
+        if not user:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -413,10 +413,10 @@ async def post(
             )
         
         check_exists_name: Final[bool] = await area_service.exists_by_name(dto.name)
-        if check_exists_name == True:
+        if check_exists_name:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message=f"Name {dto.name} is in use! Try another name",
                     status=False,

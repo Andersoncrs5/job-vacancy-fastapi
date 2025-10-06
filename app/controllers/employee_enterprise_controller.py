@@ -1,18 +1,17 @@
-from app.configs.db.database import EmployeeEnterpriseEntity
 from app.utils.filter.employee_enterprise_filter import EmployeeEnterpriseFilter
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import EmployeeEnterpriseEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.employee_enterprise_schemas import *
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import EmployeeEnterpriseEntity, UserEntity
+from app.dependencies.service_dependency import *
+from app.schemas.employee_enterprise_schemas import *
 from app.services.providers.employee_enterprise_service_provider import EmployeeEnterpriseServiceProvider
+from app.utils.filter.employee_enterprise_filter import EmployeeEnterpriseFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/employee-enterprise",
@@ -42,7 +41,7 @@ async def patch(
     if employee_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -62,7 +61,7 @@ async def patch(
         if employee is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Employee not found",
                     status=False,
@@ -124,7 +123,7 @@ async def delete(
     if employee_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -144,7 +143,7 @@ async def delete(
         if employee is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Employee not found",
                     status=False,
@@ -159,7 +158,7 @@ async def delete(
         
         return ORJSONResponse(
                 status_code=200,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=200,
                     message="Employee deleted with successfully",
                     status=True,
@@ -199,7 +198,7 @@ async def get_by_id(
     if employee_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -219,7 +218,7 @@ async def get_by_id(
         if employee is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Employee not found",
                     status=False,
@@ -314,7 +313,7 @@ async def create(
         if user_id == dto.user_id:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message="You cannot add yourself",
                     status=False,
@@ -329,7 +328,7 @@ async def create(
         if enterprise is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Enterprise not found",
                     status=False,
@@ -344,7 +343,7 @@ async def create(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -356,10 +355,10 @@ async def create(
             )
 
         check_exists_user: Final[bool] = await employee_enterprise_service.exists_by_user_id(dto.user_id)
-        if check_exists_user == True:
+        if check_exists_user:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message="User already exists",
                     status=False,

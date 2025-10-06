@@ -30,13 +30,13 @@ class AreaServiceProvider(AreaServiceBase):
 
     async def update(self, area: AreaEntity, dto: UpdateAreaDTO) -> AreaEntity:
         
-        if dto.name != None and area.name != dto.name:
+        if dto.name is not None and area.name != dto.name:
             check = await self.repository.exists_by_name(dto.name)
 
-            if check == True:
+            if check:
                 raise HTTPException(
                     status_code=409,
-                    detail=dict(ResponseBody[None](
+                    detail=dict(ResponseBody(
                         code=409,
                         message=f"Name {dto.name} is in use!",
                         status=False,
@@ -49,10 +49,10 @@ class AreaServiceProvider(AreaServiceBase):
 
             area.name = dto.name
 
-        if dto.description != None:
+        if dto.description is not None:
             area.description = dto.description
 
-        if dto.is_active != None:
+        if dto.is_active is not None:
             area.is_active = dto.is_active
 
         return await self.repository.save(area)

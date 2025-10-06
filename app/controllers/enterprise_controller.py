@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import EnterpriseEntity, UserEntity, IndustryEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.enterprise_schemas import *
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
-from app.utils.filter.enterprise_filter import EnterpriseFilter
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import EnterpriseEntity, UserEntity, IndustryEntity
+from app.dependencies.service_dependency import *
+from app.schemas.enterprise_schemas import *
+from app.utils.filter.enterprise_filter import EnterpriseFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/enterprise", 
@@ -127,7 +126,7 @@ async def update(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -138,12 +137,12 @@ async def update(
                 ))
             )
         
-        if dto.industry_id != None and dto.industry_id != enterprise.industry_id:
+        if dto.industry_id is not None and dto.industry_id != enterprise.industry_id:
             check: bool = await industry_service.exists_by_id(dto.industry_id)
-            if check == False:
+            if not check:
                 return ORJSONResponse(
                     status_code=status.HTTP_409_CONFLICT,
-                    content=dict(ResponseBody[None](
+                    content=dict(ResponseBody(
                         code=status.HTTP_409_CONFLICT,
                         message="Industry not exists",
                         status=False,
@@ -161,7 +160,7 @@ async def update(
             if check :
                 return ORJSONResponse(
                     status_code=status.HTTP_409_CONFLICT,
-                    content=dict(ResponseBody[None](
+                    content=dict(ResponseBody(
                         code=status.HTTP_409_CONFLICT,
                         message="Enterprise name '{dto.name}' is already in use",
                         status=False,
@@ -227,7 +226,7 @@ async def delete_my_enterprise(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -242,7 +241,7 @@ async def delete_my_enterprise(
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Enterprise deleted with successfully",
                 code=status.HTTP_200_OK,
                 status=True,
@@ -290,7 +289,7 @@ async def get_my_enterprise(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -348,7 +347,7 @@ async def get(
     if id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -368,7 +367,7 @@ async def get(
         if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Enterprise not found",
                     status=False,
@@ -429,7 +428,7 @@ async def create(
     if industry_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -446,10 +445,10 @@ async def create(
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
         exists_by_name = await enterprise_service.exists_by_name(dto.name)
-        if exists_by_name == True :
+        if exists_by_name:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message=f"Name {dto.name} are in use",
                     status=False,
@@ -461,10 +460,10 @@ async def create(
             )
 
         exists_enterprise: Final[bool] = await enterprise_service.exists_by_user_id(user_id)
-        if exists_enterprise == True :
+        if exists_enterprise:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message="You already have a enterprise",
                     status=False,
@@ -479,7 +478,7 @@ async def create(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -494,7 +493,7 @@ async def create(
         if industry is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Industry not found",
                     status=False,

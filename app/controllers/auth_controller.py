@@ -1,17 +1,16 @@
-from fastapi import APIRouter, Depends, status
-from app.schemas.user_schemas import CreateUserDTO, LoginDTO
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.tokens import Tokens
-from app.utils.res.responses_http import *
-from app.schemas.user_schemas import CreateUserDTO
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.dependencies.service_dependency import *
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer
+
+from app.configs.db.database import UserEntity
+from app.dependencies.service_dependency import *
+from app.schemas.user_schemas import CreateUserDTO
+from app.schemas.user_schemas import LoginDTO
 from app.services.providers.crypto_service import verify_password
+from app.utils.res.responses_http import *
+from app.utils.res.tokens import Tokens
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/auth", 
@@ -83,7 +82,7 @@ async def refresh_token_method(
         if check_token is None:
             return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="You are not authorized",
                     status=False,
@@ -100,7 +99,7 @@ async def refresh_token_method(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="You are not authorized",
                     status=False,
@@ -169,7 +168,7 @@ async def login(
         if user is None:
             return ORJSONResponse(
                 status_code=401,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=401,
                     message="Login invalid",
                     status=False,
@@ -180,10 +179,10 @@ async def login(
                 ))
             )
 
-        if user.is_block == True:
+        if user.is_block:
             return ORJSONResponse(
                 status_code=403,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=403,
                     message="You are blocked",
                     status=False,
@@ -194,10 +193,10 @@ async def login(
                 ))
             )
 
-        if verify_password(dto.password,user.password) == False :
+        if not verify_password(dto.password, user.password):
             return ORJSONResponse(
                 status_code=401,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=401,
                     message="Login invalid",
                     status=False,
@@ -253,7 +252,7 @@ async def login(
     description="endpoint to register new user",
     responses={
         409: {
-           "model": ResponseBody[None],
+           "model": ResponseBody,
            "description": "Email already exists"
         }
     }
@@ -269,7 +268,7 @@ async def resgiter(
         if check :
             return ORJSONResponse(
                 status_code=status.HTTP_409_CONFLICT,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_409_CONFLICT,
                     message="Email already in use",
                     status=False,
