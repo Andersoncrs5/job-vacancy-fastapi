@@ -19,7 +19,7 @@ REFRESH_TOKEN_EXPIRE_MINUTES: Final[str | None] = os.getenv("REFRESH_TOKEN_EXPIR
 class JwtServiceProvider(JwtServiceBase):
 
     def create_access_token(self, user: UserEntity) -> str:
-        if ACCESS_TOKEN_EXPIRE_MINUTES == None or SECRET_KEY == None or ALGORITHM == None:
+        if ACCESS_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY == None or ALGORITHM == None:
             raise ValueError("ACCESS_TOKEN_EXPIRE_MINUTES is not defined")
         
         payload: Final = {
@@ -34,7 +34,7 @@ class JwtServiceProvider(JwtServiceBase):
         return token
 
     def create_refresh_token(self, user: UserEntity) -> str:
-        if REFRESH_TOKEN_EXPIRE_MINUTES == None or SECRET_KEY == None or ALGORITHM == None:
+        if REFRESH_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY == None or ALGORITHM == None:
             raise ValueError("REFRESH_TOKEN_EXPIRE_MINUTES is not defined")
         
         payload: Final = {
@@ -72,7 +72,7 @@ class JwtServiceProvider(JwtServiceBase):
         if id is None or id <= 0:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=dict(ResponseBody[None](
+                detail=dict(ResponseBody(
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="You are not authorized",
                     status=False,
@@ -98,7 +98,7 @@ class JwtServiceProvider(JwtServiceBase):
         if scheme != "Bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=dict(ResponseBody[None](
+                detail=dict(ResponseBody(
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="Authorization header invalid",
                     status=False,
@@ -116,7 +116,7 @@ class JwtServiceProvider(JwtServiceBase):
         if token_valided is None :
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=dict(ResponseBody[None](
+                detail=dict(ResponseBody(
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="Authorization header invalid",
                     status=False,
@@ -131,7 +131,7 @@ class JwtServiceProvider(JwtServiceBase):
         if exp_timestamp is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=dict(ResponseBody[None](
+                detail=dict(ResponseBody(
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="Token invalid",
                     status=False,
@@ -146,7 +146,7 @@ class JwtServiceProvider(JwtServiceBase):
         if now > float(exp_timestamp):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=dict(ResponseBody[None](
+                detail=dict(ResponseBody(
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="Token invalid",
                     status=False,

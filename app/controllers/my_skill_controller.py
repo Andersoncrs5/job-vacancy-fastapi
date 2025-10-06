@@ -1,19 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import SkillEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.my_skill_schemas import *
-from app.services.providers.skill_service_provider import SkillServiceProvider
-from app.services.providers.my_skill_service_provider import MySkillServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
-from app.utils.filter.my_skill_filter import MySkillFilter
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
 from app.configs.db.database import MySkillEntity
-import json
+from app.dependencies.service_dependency import *
+from app.schemas.my_skill_schemas import *
+from app.utils.filter.my_skill_filter import MySkillFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/my-skill", 
@@ -30,7 +26,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 @router.get(
     '/{skill_int}/exists',
     status_code = status.HTTP_200_OK,
-    response_model = ResponseBody[None],
+    response_model = ResponseBody,
     responses = {
         404: RESPONSE_404
     }
@@ -44,7 +40,7 @@ async def exists(
     if skill_int <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -92,7 +88,7 @@ async def exists(
 @router.get(
     '/{skill_int}',
     status_code = status.HTTP_200_OK,
-    response_model = ResponseBody[None],
+    response_model = ResponseBody,
     responses = {
         404: RESPONSE_404
     }
@@ -108,7 +104,7 @@ async def get(
     if skill_int <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -128,7 +124,7 @@ async def get(
         if my is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"My Skill not found",
                     status=False,
@@ -225,7 +221,7 @@ async def update(
     if skill_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -245,7 +241,7 @@ async def update(
         if my_skill is None:
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message="My Skill not found",
                     status=False,
@@ -257,10 +253,10 @@ async def update(
             )
 
         check = await user_service.exists_by_id(user_id)
-        if check == False:
+        if not check:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -305,7 +301,7 @@ async def update(
 @router.delete(
     '/{skill_int}',
     status_code = status.HTTP_200_OK,
-    response_model = ResponseBody[None],
+    response_model = ResponseBody,
     responses = {
         404: RESPONSE_404,
         400: RESPONSE_400
@@ -322,7 +318,7 @@ async def delete(
     if skill_int <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -342,7 +338,7 @@ async def delete(
         if my is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"My Skill not found",
                     status=False,
@@ -357,7 +353,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=200,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="My Skill removed with successfully",
                 code=200,
                 status=True,
@@ -405,10 +401,10 @@ async def create(
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         
         check_my_skill_exists = await my_skill_service.exists_by_skill_id_and_user_id(dto.skill_id, user_id)
-        if check_my_skill_exists == True:
+        if check_my_skill_exists:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message="Skill already was added",
                     status=False,
@@ -420,10 +416,10 @@ async def create(
             )
 
         check = await user_service.exists_by_id(user_id)
-        if check == False:
+        if not check:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -435,10 +431,10 @@ async def create(
             )
 
         check_skill = await skill_service.exists_by_id(dto.skill_id)
-        if check_skill == False:
+        if not check_skill:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Skill not found",
                     status=False,

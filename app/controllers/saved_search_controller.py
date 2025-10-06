@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import SavedSearchEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.saved_search_schemas import *
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import SavedSearchEntity
+from app.dependencies.service_dependency import *
+from app.schemas.saved_search_schemas import *
 from app.utils.filter.saved_search_filter import SavedSearchFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/saved-search", 
@@ -43,7 +42,7 @@ async def patch_by_id(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -63,7 +62,7 @@ async def patch_by_id(
         if save is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Search not found",
                     status=False,
@@ -77,7 +76,7 @@ async def patch_by_id(
         if user_id != save.user_id :
             return ORJSONResponse(
                 status_code=403,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=403,
                     message=f"You cannot to update this search",
                     status=False,
@@ -138,7 +137,7 @@ async def toggle_is_public(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -157,7 +156,7 @@ async def toggle_is_public(
         if save is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Search not found",
                     status=False,
@@ -171,7 +170,7 @@ async def toggle_is_public(
         if user_id != save.user_id :
             return ORJSONResponse(
                 status_code=403,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=403,
                     message=f"You cannot to change status this search",
                     status=False,
@@ -232,7 +231,7 @@ async def toggle_notifications_enabled(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -251,7 +250,7 @@ async def toggle_notifications_enabled(
         if save is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Search not found",
                     status=False,
@@ -265,7 +264,7 @@ async def toggle_notifications_enabled(
         if user_id != save.user_id :
             return ORJSONResponse(
                 status_code=403,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=403,
                     message=f"You cannot to change status this search",
                     status=False,
@@ -326,7 +325,7 @@ async def delete_by_id(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -345,7 +344,7 @@ async def delete_by_id(
         if save is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Search not found",
                     status=False,
@@ -359,7 +358,7 @@ async def delete_by_id(
         if user_id != save.user_id :
             return ORJSONResponse(
                 status_code=403,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=403,
                     message=f"You cannot to delete this search",
                     status=False,
@@ -374,7 +373,7 @@ async def delete_by_id(
 
         return ORJSONResponse(
             status_code=200,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Search deleted with successfully",
                 code=200,
                 status=True,
@@ -449,7 +448,7 @@ async def get_by_id(
     if id <= 0:
         return ORJSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 code=status.HTTP_400_BAD_REQUEST,
                 message="Id is required",
                 status=False,
@@ -467,7 +466,7 @@ async def get_by_id(
         if save is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Search not found",
                     status=False,
@@ -527,10 +526,10 @@ async def create(
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         
         exists = await user_service.exists_by_id(user_id)
-        if exists == False:
+        if not exists:
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     message="User not found",
                     code=404,
                     status=True,

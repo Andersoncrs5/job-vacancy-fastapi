@@ -1,18 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import ReviewEnterprise, UserEntity, EnterpriseEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.review_enterprise_schemas import *
-from app.services.providers.skill_service_provider import SkillServiceProvider
-from app.services.providers.my_skill_service_provider import MySkillServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime, timedelta
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import EnterpriseEntity
+from app.dependencies.service_dependency import *
+from app.schemas.review_enterprise_schemas import *
 from app.utils.filter.review_enterprise_filter import ReviewEnterpriseFilter
-import json
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/review-enterprise", 
@@ -45,7 +42,7 @@ async def patch(
     if view_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -65,7 +62,7 @@ async def patch(
         if view is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Review not found",
                     status=False,
@@ -79,7 +76,7 @@ async def patch(
         if datetime.now(view.created_at.tzinfo) - view.created_at > timedelta(days=7):
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="You cannot update a review after 7 days of creation",
                     status=False,
@@ -139,7 +136,7 @@ async def delete(
     if view_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -159,7 +156,7 @@ async def delete(
         if view is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Review not found",
                     status=False,
@@ -174,7 +171,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=200,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Review deleted with successfully",
                 code=200,
                 status=True,
@@ -217,7 +214,7 @@ async def get_by_id(
     if view_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -237,7 +234,7 @@ async def get_by_id(
         if view is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Review not found",
                     status=False,
@@ -302,10 +299,10 @@ async def create(
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         
         check_exists_employee = await employee_enterprise_service.exists_by_user_id(user_id)
-        if check_exists_employee == False:
+        if not check_exists_employee:
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message="you are not or were not an employee",
                     status=False,
@@ -320,7 +317,7 @@ async def create(
         if enterprise == None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Enterprise not found",
                     status=False,
@@ -334,7 +331,7 @@ async def create(
         if user_id == enterprise.user_id:
             return ORJSONResponse(
                 status_code=403,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=403,
                     message="You cannot add a review in your enterprise",
                     status=False,
@@ -346,10 +343,10 @@ async def create(
             )
 
         user: Final[bool] = await user_service.exists_by_id(user_id)
-        if user == False:
+        if not user:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -361,10 +358,10 @@ async def create(
             )
 
         check_exists_review: Final[bool] = await review_enterprise_service.exists_by_user_id(user_id)
-        if check_exists_review == True:
+        if check_exists_review:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message="You already have a review to this enterprise",
                     status=False,

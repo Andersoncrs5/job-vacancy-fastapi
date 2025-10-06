@@ -1,14 +1,16 @@
-from app.services.base.vacancy_service_base import VacancyServiceBase
-from app.repositories.providers.vacancy_repository_provider import VacancyRepositoryProvider
-from app.repositories.providers.area_repository_provider import AreaRepositoryProvider
-from typing import Final
-from fastapi import HTTPException, status
-from app.utils.res.response_body import ResponseBody
 from datetime import datetime
-from app.configs.db.database import VacancyEntity
-from app.utils.filter.vacancy_filter import VacancyFilter
 from typing import List
+
+from fastapi import HTTPException, status
+
+from app.configs.db.database import VacancyEntity
+from app.repositories.providers.area_repository_provider import AreaRepositoryProvider
+from app.repositories.providers.vacancy_repository_provider import VacancyRepositoryProvider
 from app.schemas.vacancy_schemas import CreateVacancyDTO, UpdateVacancyDTO
+from app.services.base.vacancy_service_base import VacancyServiceBase
+from app.utils.filter.vacancy_filter import VacancyFilter
+from app.utils.res.response_body import ResponseBody
+
 
 class VacancyServiceProvider(VacancyServiceBase):
     def __init__(self, repository: VacancyRepositoryProvider, area_repo: AreaRepositoryProvider):
@@ -24,13 +26,13 @@ class VacancyServiceProvider(VacancyServiceBase):
         for field, value in updates.items():
             setattr(vacancy, field, value)
 
-        if dto.area_id != None:
+        if dto.area_id is not None:
             check = await self.area_repository.exists_by_id(dto.area_id)
 
-            if check == False:
+            if not check:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=dict(ResponseBody[None](
+                    detail=dict(ResponseBody(
                         code = status.HTTP_404_NOT_FOUND,
                         message = f"Area not found",
                         body=None,

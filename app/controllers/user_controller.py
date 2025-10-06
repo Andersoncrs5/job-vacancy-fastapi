@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.user_schemas import UserOUT, UpdateUserDTO
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.dependencies.service_dependency import *
 from datetime import datetime
-from app.utils.filter.user_filter import UserFilter
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import UserEntity
+from app.dependencies.service_dependency import *
+from app.schemas.user_schemas import UserOUT, UpdateUserDTO
+from app.utils.filter.user_filter import UserFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/user", 
@@ -45,7 +44,7 @@ async def get_user(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -88,7 +87,7 @@ async def get_user(
 @router.delete(
     '',
     status_code=200,
-    response_model=ResponseBody[None],
+    response_model=ResponseBody,
     description="endpoint to delete user"
 )
 async def delete(
@@ -105,7 +104,7 @@ async def delete(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -120,7 +119,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="User deleted with successfully",
                 code=status.HTTP_200_OK,
                 status=True,
@@ -164,7 +163,7 @@ async def me(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -224,7 +223,7 @@ async def update(
         if user_id is None:
             return ORJSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_401_UNAUTHORIZED,
                     message="You are not authorized",
                     status=False,
@@ -239,7 +238,7 @@ async def update(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,

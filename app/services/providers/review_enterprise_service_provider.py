@@ -10,34 +10,34 @@ class ReviewEnterpriseServiceProvider(ReviewEnterpriseRepositoryProvider):
         self.repository = repository
 
     async def update(self, view: ReviewEnterprise, dto: UpdateReviewEnterpriseDTO) -> ReviewEnterprise:
-        if dto.rating != None:
+        if dto.rating is not None:
             view.rating = dto.rating
 
-        if dto.title != None:
+        if dto.title is not None:
             view.title = dto.title
 
-        if dto.description != None:
+        if dto.description is not None:
             view.description = dto.description
 
-        if dto.pros != None:
+        if dto.pros is not None:
             view.pros = dto.pros
 
-        if dto.cons != None:
+        if dto.cons is not None:
             view.cons = dto.cons
 
-        if dto.would_recommend != None:
+        if dto.would_recommend is not None:
             view.would_recommend = dto.would_recommend
 
-        if dto.position != None:
+        if dto.position is not None:
             view.position = dto.position
 
-        if dto.salary_range != None:
+        if dto.salary_range is not None:
             view.salary_range = dto.salary_range
 
-        if dto.employment_type != None:
+        if dto.employment_type is not None:
             view.employment_type = dto.employment_type
 
-        if dto.employment_status != None:
+        if dto.employment_status is not None:
             view.employment_status = dto.employment_status
 
         return await self.repository.save(view)

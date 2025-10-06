@@ -1,18 +1,16 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity, MediaPostUserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.enums.sum_red import SumRedEnum
-from app.utils.filter.medias_post_user_filter import MediaPostUserFilter
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.media_post_user_schemas import *
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
-from app.utils.filter.post_user_filter import PostUserFilter
 from datetime import datetime
 from typing import Final, List
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import MediaPostUserEntity
+from app.dependencies.service_dependency import *
+from app.schemas.media_post_user_schemas import *
+from app.utils.filter.medias_post_user_filter import MediaPostUserFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/media-post-user", 
@@ -44,7 +42,7 @@ async def update(
     if media_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Post user id is required",
                     status=False,
@@ -64,7 +62,7 @@ async def update(
         if media is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Media not found",
                     status=False,
@@ -157,7 +155,7 @@ async def get_by_id(
     if media_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Post user id is required",
                     status=False,
@@ -177,7 +175,7 @@ async def get_by_id(
         if media is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Media not found",
                     status=False,
@@ -234,7 +232,7 @@ async def delete(
     if media_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Post user id is required",
                     status=False,
@@ -254,7 +252,7 @@ async def delete(
         if media is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Media not found",
                     status=False,
@@ -269,7 +267,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=200,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Media deleted with successfully",
                 code=200,
                 status=True,
@@ -313,7 +311,7 @@ async def create(
     if post_user_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Post user id is required",
                     status=False,
@@ -333,7 +331,7 @@ async def create(
         if check >= 10:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message="Limit to midia by post are 10",
                     status=False,
@@ -345,10 +343,10 @@ async def create(
             )  
 
         post_user: Final[bool] = await post_user_service.exists_by_id(post_user_id)
-        if post_user == False:
+        if not post_user:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Post user not found",
                     status=False,

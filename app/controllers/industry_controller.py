@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import IndustryEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.industry_schemas import *
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
-from app.utils.filter.industry_filter import IndustryFilter
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import IndustryEntity, UserEntity
+from app.dependencies.service_dependency import *
+from app.schemas.industry_schemas import *
+from app.utils.filter.industry_filter import IndustryFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/industry", 
@@ -72,11 +71,8 @@ async def check_name_exists(
     response_model=ResponseBody[IndustryOUT],
     status_code=status.HTTP_201_CREATED,
     responses={
-        404: RESPONSE_404_USER,
-        409: {
-            "model": ResponseBody[None],
-            "description": "When Industry name already exists"
-        }
+        404: RESPONSE_404,
+        409: RESPONSE_409
     }
 )
 async def create(
@@ -91,10 +87,10 @@ async def create(
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         check_name: Final[bool] = await industry_service.exists_by_name(dto.name)
-        if check_name == True:
+        if check_name:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message=f"Industry name: {dto.name} already exists",
                     status=False,
@@ -109,7 +105,7 @@ async def create(
         if user is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="User not found",
                     status=False,
@@ -168,7 +164,7 @@ async def toggle_status_is_active(
     if industry_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -187,7 +183,7 @@ async def toggle_status_is_active(
         if industry is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Industry not found",
                     status=False,
@@ -247,7 +243,7 @@ async def put(
     if industry_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -266,7 +262,7 @@ async def put(
         if industry is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Industry not found",
                     status=False,
@@ -311,7 +307,7 @@ async def put(
 @router.delete(
     "/{industry_id}",
     status_code=status.HTTP_200_OK,
-    response_model=ResponseBody[None],
+    response_model=ResponseBody,
     responses={
         404: RESPONSE_404_INDUSTRY
     }
@@ -325,7 +321,7 @@ async def delete(
     if industry_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -344,7 +340,7 @@ async def delete(
         if industry is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Industry not found",
                     status=False,
@@ -359,7 +355,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Industry deleted with successfully",
                 code=status.HTTP_200_OK,
                 status=True,
@@ -401,7 +397,7 @@ async def get(
     if industry_id <= 0:
         return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_400_BAD_REQUEST,
                     message="Id is required",
                     status=False,
@@ -420,7 +416,7 @@ async def get(
         if industry is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Industry not found",
                     status=False,

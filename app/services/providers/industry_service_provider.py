@@ -24,7 +24,7 @@ class IndustryServiceProvider(IndustryServiceBase):
             if check_name :
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail=dict(ResponseBody[None](
+                    detail=dict(ResponseBody(
                         code = status.HTTP_409_CONFLICT,
                         message = f"Industry name '{dto.name}' is already in use",
                         body=None,

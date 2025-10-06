@@ -1,13 +1,15 @@
-from app.services.base.skill_service_base import SkillServiceBase
-from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
-from typing import Final
-from app.utils.filter.skill_filter import SkillFilter
-from fastapi import HTTPException
-from app.configs.db.database import SkillEntity
-from app.schemas.skill_schemas import SkillOUT, CreateSkillDTO, UpdateSkillDTO
-from typing import List
 from datetime import datetime
+from typing import List
+
+from fastapi import HTTPException
+
+from app.configs.db.database import SkillEntity
+from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
+from app.schemas.skill_schemas import CreateSkillDTO, UpdateSkillDTO
+from app.services.base.skill_service_base import SkillServiceBase
+from app.utils.filter.skill_filter import SkillFilter
 from app.utils.res.response_body import ResponseBody
+
 
 class SkillServiceProvider(SkillServiceBase):
     def __init__(self, repository: SkillRepositoryProvider):
@@ -23,12 +25,12 @@ class SkillServiceProvider(SkillServiceBase):
 
     async def update(self, skill: SkillEntity, dto: UpdateSkillDTO) -> SkillEntity:
 
-        if dto.name != None and skill.name != dto.name:
+        if dto.name is not None and skill.name != dto.name:
             check_name = await self.repository.exists_by_name(dto.name)
-            if check_name == True:
+            if check_name:
                 raise HTTPException(
                     status_code=409, 
-                    detail=dict(ResponseBody[None](
+                    detail=dict(ResponseBody(
                         message=f"Name {dto.name} is in use",
                         code=409,
                         status=False,

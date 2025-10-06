@@ -1,17 +1,15 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import SkillEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.skill_schemas import *
-from app.services.providers.skill_service_provider import SkillServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.configs.db.database import SkillEntity
+from app.dependencies.service_dependency import *
+from app.schemas.skill_schemas import *
 from app.utils.filter.skill_filter import SkillFilter
-import uuid
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/skill", 
@@ -94,7 +92,7 @@ async def toggle_is_active(
         if skill is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Skill not found",
                     status=False,
@@ -159,7 +157,7 @@ async def update(
         if skill is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Skill not found",
                     status=False,
@@ -255,7 +253,7 @@ async def delete(
         if skill is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Skill not found",
                     status=False,
@@ -270,7 +268,7 @@ async def delete(
 
         return ORJSONResponse(
             status_code=200,
-            content=dict(ResponseBody[None](
+            content=dict(ResponseBody(
                 message="Skill deleted with successfully",
                 code=200,
                 status=True,
@@ -317,7 +315,7 @@ async def get_by_id(
         if skill is None :
             return ORJSONResponse(
                 status_code=404,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=404,
                     message=f"Skill not found",
                     status=False,
@@ -376,10 +374,10 @@ async def create(
         jwt_service.valid_credentials(credentials)
         
         check: Final[bool] = await skill_service.exists_by_name(dto.name)
-        if check == True :
+        if check:
             return ORJSONResponse(
                 status_code=409,
-                content=dict(ResponseBody[None](
+                content=dict(ResponseBody(
                     code=409,
                     message=f"Skill name {dto.name} already exists",
                     status=False,
