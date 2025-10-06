@@ -101,8 +101,10 @@ class UserEntity(Base):
 class FollowerRelationshipEntity(Base):
     __tablename__ = "follower_relationships"
 
-    follower_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)
-    followed_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    follower_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    followed_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
