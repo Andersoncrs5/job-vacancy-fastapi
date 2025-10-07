@@ -34,6 +34,17 @@ class UserTestData(BaseModel):
     tokens: Tokens
     out: UserOUT
 
+async def create_follow_enterprise(user_data, enterprise_data: EnterpriseOUT):
+    URL: Final[str] = "/api/v1/follow-enterprise"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.post(
+            f"{URL}/{enterprise_data.id}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    assert response.status_code == 201
+
 async def create_follow_user(follower_data: UserTestData, followed_data: UserTestData):
     URL = "/api/v1/follow"
 
