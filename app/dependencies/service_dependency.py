@@ -3,9 +3,11 @@ from fastapi import Depends
 from typing import Final
 from app.configs.db.database import get_db
 from app.repositories.providers.application_repository_provider import ApplicationRepositoryProvider
+from app.repositories.providers.follow_enterprise_repository_provider import FollowEnterpriseRepositoryProvider
 from app.repositories.providers.follow_repository_provider import FollowRepositoryProvider
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
 from app.services.providers.application_service_provider import ApplicationServiceProvider
+from app.services.providers.follow_enterprise_service_provider import FollowEnterpriseServiceProvider
 from app.services.providers.follow_service_provider import FollowServiceProvider
 from app.services.providers.skill_service_provider import SkillServiceProvider
 from app.repositories.providers.my_skill_repository_provider import MySkillRepositoryProvider
@@ -48,6 +50,10 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_follow_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> FollowEnterpriseServiceProvider:
+    repository: Final = FollowEnterpriseRepositoryProvider(db)
+    return FollowEnterpriseServiceProvider(repository)
 
 def get_follow_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> FollowServiceProvider:
     repository: Final = FollowRepositoryProvider(db)
