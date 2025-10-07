@@ -1,6 +1,10 @@
 import enum
 from typing import final
 
+class ReactionTypeEnum(str, enum.Enum):
+    LIKE = "like"
+    DISLIKE = "dislike"
+
 class AddressTypeEnum(str, enum.Enum):
     RESIDENTIAL = "residential"
     COMMERCIAL = "commercial"
