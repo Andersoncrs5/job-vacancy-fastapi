@@ -15,7 +15,7 @@ from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum,
     EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum,
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum,
-    AddressTypeEnum, ApplicationStatusEnum, ApplicationSourceEnum
+    AddressTypeEnum, ApplicationStatusEnum, ApplicationSourceEnum, ReactionTypeEnum
 )
 
 load_dotenv()
@@ -90,6 +90,12 @@ class UserEntity(Base):
         "FollowerRelationshipEnterpriseEntity",
         back_populates="follower",
         cascade="all, delete-orphan",
+    )
+
+    post_reactions: Mapped[List["ReactionPostUserEntity"]] = relationship(
+        "ReactionPostUserEntity",
+        back_populates="user",
+        cascade="all, delete-orphan"
     )
 
     def to_user_out(self):
@@ -882,6 +888,39 @@ class PostUserEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class ReactionPostUserEntity(Base):
+    __tablename__ = "reaction_posts_user"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id")
+    )
+    post_user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("posts_user.id")
+    )
+
+    reaction_type: Mapped[ReactionTypeEnum] = mapped_column(
+        Enum(ReactionTypeEnum, name="reaction_type_enum"), nullable=False
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    user: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        foreign_keys=[user_id],
+        back_populates="post_reactions"
+    )
+
+    post: Mapped["PostUserEntity"] = relationship(
+        "PostUserEntity",
+        foreign_keys=[post_user_id],
+        back_populates="reactions"
+    )
+
 
 class MediaPostUserEntity(Base):
     __tablename__ = "medias_post_user"
