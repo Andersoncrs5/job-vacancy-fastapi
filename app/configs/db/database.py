@@ -4,10 +4,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final, Optional, List
 from sqlalchemy import (
-    DateTime, ARRAY, String, 
-    func, Text, ForeignKey, 
-    Boolean, Integer, BigInteger, 
-    Enum, Date, JSON, Numeric
+    DateTime, ARRAY, String,
+    func, Text, ForeignKey,
+    Boolean, Integer, BigInteger,
+    Enum, Date, JSON, Numeric, UniqueConstraint
 )
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
@@ -426,6 +426,10 @@ class EnterpriseEntity(Base):
 
 class FollowerRelationshipEnterpriseEntity(Base):
     __tablename__ = "follower_relationships_enterprise"
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "enterprise_id", name="uq_user_enterprise_follow"),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
