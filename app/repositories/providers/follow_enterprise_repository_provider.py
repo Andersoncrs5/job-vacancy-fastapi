@@ -25,7 +25,7 @@ class FollowEnterpriseRepositoryProvider(FollowEnterpriseRepositoryBase):
 
     async def get_by_user_id_and_enterprise_id(self, user_id: int,
                                                enterprise_id: int) -> FollowerRelationshipEnterpriseEntity | None:
-        stmt = select(FollowerRelationshipEnterpriseEntity.id).where(
+        stmt = select(FollowerRelationshipEnterpriseEntity).where(
             and_(
                 FollowerRelationshipEnterpriseEntity.user_id == user_id,
                 FollowerRelationshipEnterpriseEntity.enterprise_id == enterprise_id,
