@@ -3,11 +3,13 @@ from fastapi import Depends
 from typing import Final
 from app.configs.db.database import get_db
 from app.repositories.providers.application_repository_provider import ApplicationRepositoryProvider
+from app.repositories.providers.comment_post_user_repository_provider import CommentPostUserRepositoryProvider
 from app.repositories.providers.follow_enterprise_repository_provider import FollowEnterpriseRepositoryProvider
 from app.repositories.providers.follow_repository_provider import FollowRepositoryProvider
 from app.repositories.providers.reaction_post_enterprise_provider import ReactionPostEnterpriseRepositoryProvider
 from app.repositories.providers.reaction_post_user_repository_provider import ReactionPostUserRepositoryProvider
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
+from app.services.providers.comment_post_user_service_provider import CommentPostUserServiceProvider
 from app.services.providers.reaction_post_enterprise_service_provider import ReactionPostEnterpriseServiceProvider
 from app.services.providers.reaction_post_user_service_provider import ReactionPostUserServiceProvider
 from app.services.providers.application_service_provider import ApplicationServiceProvider
@@ -54,6 +56,10 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_comment_post_user_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> CommentPostUserServiceProvider:
+    repository = CommentPostUserRepositoryProvider(db)
+    return CommentPostUserServiceProvider(repository)
 
 def get_reaction_post_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> ReactionPostEnterpriseServiceProvider:
     repository = ReactionPostEnterpriseRepositoryProvider(db)
