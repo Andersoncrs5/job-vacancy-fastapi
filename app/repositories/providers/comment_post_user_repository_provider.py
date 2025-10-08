@@ -12,8 +12,15 @@ class CommentPostUserRepositoryProvider(CommentPostUserRepositoryBase):
         self.db = db
 
     async def get_by_id(self, id: int) -> CommentPostUserEntity | None:
-        stmt = select(CommentPostUserEntity).where(
-            CommentPostUserEntity.id == id
+        stmt = (
+            select(CommentPostUserEntity)
+            .options(
+                joinedload(CommentPostUserEntity.user),
+                joinedload(CommentPostUserEntity.post),
+            )
+            .where(
+                CommentPostUserEntity.id == id
+            )
         )
 
         result = await self.db.execute(stmt)
