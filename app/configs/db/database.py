@@ -995,6 +995,25 @@ class CommentPostUserEntity(Base):
         back_populates="parent"
     )
 
+    def to_out(self):
+        from app.schemas.comment_post_user_schemas import CommentPostUserOUT
+
+        user_out = self.user.to_user_out() if self.user is not None else None
+        post_out = self.post.to_out() if self.post is not None else None
+
+        return CommentPostUserOUT(
+            id=self.id,
+            content=self.content,
+            user_id=self.user_id,
+            post_user_id=self.post_user_id,
+            parent_comment_id=self.parent_comment_id,
+            is_edited=self.is_edited,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            user=user_out,
+            post=post_out,
+        )
+
 class ReactionPostUserEntity(Base):
     __tablename__ = "reaction_posts_user"
 
