@@ -17,10 +17,19 @@ class CommentPostEnterpriseOUT(ORJSONModel):
     user: UserOUT
     post: PostEnterpriseOUT
 
-class CreateCommentPostUserDTO(ORJSONModel):
+class CreateCommentPostEnterpriseDTO(ORJSONModel):
     content: str
     post_enterprise_id: int
     parent_comment_id: int | None
 
-class UpdateCommentPostUserDTO(ORJSONModel):
+    def to_entity(self):
+        from app.configs.db.database import CommentPostEnterpriseEntity
+
+        return CommentPostEnterpriseEntity(
+            content=self.content,
+            post_enterprise_id=self.post_enterprise_id,
+            parent_comment_id=self.parent_comment_id,
+        )
+
+class UpdateCommentPostEnterpriseDTO(ORJSONModel):
     content: str | None
