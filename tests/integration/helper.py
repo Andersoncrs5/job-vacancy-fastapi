@@ -12,6 +12,7 @@ from app.schemas.address_user_schemas import *
 from app.schemas.application_schemas import ApplicationOUT
 from app.schemas.area_schemas import *
 from app.schemas.category_schemas import *
+from app.schemas.comment_post_user_schemas import CreateCommentPostUserDTO, CommentPostUserOUT
 from app.schemas.curriculum_schemas import *
 from app.schemas.employee_enterprise_schemas import *
 from app.schemas.enterprise_schemas import *
@@ -35,6 +36,75 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def create_comment_post_user(user_data: UserTestData, post_user_data: PostUserOUT):
+    URL: Final[str] = "/api/v1/comment-post-user"
+
+    dto = CreateCommentPostUserDTO(
+        content=("abc" * 50),
+        post_user_id=post_user_data.id,
+        parent_comment_id=None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.post(
+            f"{URL}",
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    assert response.status_code == 201
+
+    data = response.json()
+    body = response.json()['body']
+
+    assert data['code'] == 201
+    assert data['message'] == 'Comment created with successfully'
+    assert data['status'] == True
+
+    assert body['id'] is not None
+    assert isinstance(body['id'], int)
+    assert body['user_id'] == user_data.out.id
+    assert body['post_user_id'] == post_user_data.id
+
+    assert body['user']['id'] == user_data.out.id
+    assert body['post']['id'] == post_user_data.id
+
+    user = UserOUT(
+        id=body['user']['id'],
+        name=body['user']['name'],
+        email=body['user']['email'],
+        bio=body['user'].get('bio', None),
+        avatar_url=body['user'].get('avatar_url', None),
+        created_at=body['user']['created_at'],
+    )
+
+    post_dict = body['post']
+    post = PostUserOUT(
+        id=post_dict['id'],
+        title=post_dict['title'],
+        content=post_dict['content'],
+
+        url_image=post_dict.get('url_image', None),
+
+        user_id=post_dict['user_id'],
+        category_id=post_dict['category_id'],
+        created_at=post_dict['created_at'],
+        updated_at=post_dict['updated_at'],
+    )
+
+    return CommentPostUserOUT(
+        id = body['id'],
+        content = body['content'],
+        user_id = body['user_id'],
+        post_user_id = body.get('post_user_id'),
+        parent_comment_id= body.get('parent_comment_id', None),
+        is_edited = body['is_edited'],
+        created_at = body['created_at'],
+        updated_at = body['updated_at'],
+        user = user,
+        post = post,
+    )
 
 async def create_reaction_post_enterprise(user_data: UserTestData, post_data: PostEnterpriseOUT, reaction: ReactionTypeEnum):
     URL = "/api/v1/area/reaction-post-enterprise"
