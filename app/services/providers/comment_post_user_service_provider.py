@@ -7,7 +7,7 @@ from app.services.base.comment_post_user_service_base import CommentPostUserServ
 from app.utils.filter.comment_post_user_filter import CommentPostUserFilter
 
 
-class CommentPostUserServiceProvider(CommentPostUserServiceBase, ABC):
+class CommentPostUserServiceProvider(CommentPostUserServiceBase):
     def __init__(self, repository: CommentPostUserRepositoryProvider):
         self.repository = repository
 
