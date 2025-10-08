@@ -15,6 +15,35 @@ services:
     mem_limit: 512m  
     cpus: 1.0
 
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka_job_vacancy_fast
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_CLUSTER_ID: "PzXvJ4U8QnQYmJtZ"
+
+      KAFKA_BROKER_ID: 1
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT"
+
+      KAFKA_LOG_DIRS: "/tmp/kraft-storage"
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+    mem_limit: 1024m
+    cpus: 1.0
+
+    command: [ "/bin/sh", "-c", "kafka-storage format --dirs /tmp/kraft-storage --cluster-id $$KAFKA_CLUSTER_ID && /etc/confluent/docker/run" ]
+
 volumes:
   postgres_data:
     driver: local
