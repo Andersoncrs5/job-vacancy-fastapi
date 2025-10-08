@@ -8,7 +8,8 @@ from app.controllers import (
     review_enterprise_controller, saved_search_controller, area_controller,
     vacancy_controller, vacancy_skill_controller, address_user_controller,
     address_enterprise_controller, application_controller, follow_controller,
-    follow_enterprise_controller, reaction_post_user_controller, reaction_post_enterprise_controller
+    follow_enterprise_controller, reaction_post_user_controller, reaction_post_enterprise_controller,
+    comment_post_user_controller
 )
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
@@ -63,6 +64,7 @@ async def add_request_id(request, call_next):
     return response
 
 app.include_router(reaction_post_enterprise_controller.router)
+app.include_router(comment_post_user_controller.router)
 app.include_router(reaction_post_user_controller.router)
 app.include_router(address_enterprise_controller.router)
 app.include_router(follow_enterprise_controller.router)
