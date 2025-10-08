@@ -875,6 +875,12 @@ class PostUserEntity(Base):
     favorite_post_user: Mapped[list["FavoritePostUserEntity"]] = relationship("FavoritePostUserEntity", back_populates="post_user")
     medias: Mapped[list["MediaPostUserEntity"]] = relationship("MediaPostUserEntity", back_populates="post")
 
+    reactions: Mapped[List["ReactionPostUserEntity"]] = relationship(
+        "ReactionPostUserEntity",
+        back_populates="post",
+        cascade="all, delete-orphan"
+    )
+
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
 
@@ -893,6 +899,10 @@ class ReactionPostUserEntity(Base):
     __tablename__ = "reaction_posts_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'post_user_id', name='_user_post_uc'),
+    )
 
     user_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.id")
@@ -921,6 +931,16 @@ class ReactionPostUserEntity(Base):
         back_populates="reactions"
     )
 
+    def to_out_simple(self):
+        from app.schemas.reaction_post_user_schemas import ReactionPostUserOUT
+
+        return ReactionPostUserOUT(
+            id = self.id,
+            user_id = self.user_id,
+            post_user_id = self.post_user_id,
+            reaction_type = self.reaction_type,
+            created_at = self.created_at,
+        )
 
 class MediaPostUserEntity(Base):
     __tablename__ = "medias_post_user"
