@@ -14,8 +14,8 @@ class CommentPostUserOUT(ORJSONModel):
     is_edited: bool
     created_at: datetime
     updated_at: datetime
-    user: UserOUT
-    post: PostUserOUT
+    user: UserOUT | None
+    post: PostUserOUT | None
 
 class CreateCommentPostUserDTO(ORJSONModel):
     content: str
