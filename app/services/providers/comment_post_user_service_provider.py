@@ -33,4 +33,5 @@ class CommentPostUserServiceProvider(CommentPostUserServiceBase):
         if dto.content is not None:
             comment.content = dto.content
 
+        comment.is_edited = True
         return await self.repository.add(comment)
