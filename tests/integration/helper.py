@@ -20,6 +20,7 @@ from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO, MediaPos
 from app.schemas.my_skill_schemas import *
 from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, PostEnterpriseOUT
 from app.schemas.post_user_schemas import CreatePostUserDTO, PostUserOUT
+from app.schemas.reaction_post_enterprise_schemas import CreateReactionPostEnterpriseDTO
 from app.schemas.reaction_post_user_schemas import CreateReactionPostUserDTO
 from app.schemas.review_enterprise_schemas import *
 from app.schemas.saved_search_schemas import CreateSavedSearchDTO, SavedSearchOUT
@@ -34,6 +35,28 @@ class UserTestData(BaseModel):
     dto: CreateUserDTO
     tokens: Tokens
     out: UserOUT
+
+async def create_reaction_post_enterprise(user_data: UserTestData, post_data: PostEnterpriseOUT, reaction: ReactionTypeEnum):
+    URL = "/api/v1/area/reaction-post-enterprise"
+
+    dto = CreateReactionPostEnterpriseDTO(
+        post_enterprise_id=post_data.id,
+        reaction_type=reaction
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.post(
+            URL,
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["message"] == "Reaction added with successfully"
+    assert data["code"] == 201
+    assert data["status"] is True
+    assert data["body"] is None
 
 async def create_reaction_post_user(user_data: UserTestData, post_user_data: PostUserOUT, reaction: ReactionTypeEnum):
     URL = "/api/v1/area/reaction-post-user"
