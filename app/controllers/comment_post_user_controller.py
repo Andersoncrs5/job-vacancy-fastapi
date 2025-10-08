@@ -7,7 +7,8 @@ from fastapi_pagination import Page, add_pagination, paginate
 
 
 from app.dependencies.service_dependency import *
-from app.schemas.comment_post_user_schemas import CommentPostUserOUT, CreateCommentPostUserDTO
+from app.schemas.comment_post_user_schemas import CommentPostUserOUT, CreateCommentPostUserDTO, UpdateCommentPostUserDTO
+from app.utils.filter.comment_post_user_filter import CommentPostUserFilter
 from app.utils.res.responses_http import *
 
 URL = "/api/v1/comment-post-user"
@@ -23,6 +24,85 @@ router: Final[APIRouter] = APIRouter(
     )
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
+
+
+@router.patch(
+    "/{id}",
+    response_model=ResponseBody[CommentPostUserOUT],
+    status_code=status.HTTP_200_OK
+)
+async def patch(
+    id: int,
+    dto: UpdateCommentPostUserDTO,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if id <= 0:
+        return ORJSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=dict(ResponseBody(
+                code=status.HTTP_400_BAD_REQUEST,
+                message="Id is required",
+                status=False,
+                body=None,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        comment = await comment_service.get_by_id(id)
+        if comment is None :
+            return ORJSONResponse(
+                status_code=404,
+                content=dict(ResponseBody(
+                    code=404,
+                    message=f"Comment not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        comment_updated = await comment_service.update(comment, dto)
+
+        out = comment_updated.to_out()
+        out_dict = out.model_dump(by_alias=True)
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Comment updated with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=out_dict,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    except Exception as e:
+        print('Error :', e)
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
 
 @router.delete(
     "/{id}",
@@ -97,8 +177,6 @@ async def delete(
                 path=None
             ))
         )
-
-
 
 @router.get(
     "/{id}",
@@ -261,6 +339,37 @@ async def create(
 
     except Exception as e:
         print('Error :', e)
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=Page[CommentPostUserOUT],
+)
+async def get_all(
+    filter: CommentPostUserFilter = Depends(),
+    comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        jwt_service.valid_credentials(credentials)
+
+        comments = await comment_service.get_all(filter)
+
+        return paginate(comments)
+    except Exception as e:
         return ORJSONResponse(
             status_code=500,
             content=dict(ResponseBody[Any](
