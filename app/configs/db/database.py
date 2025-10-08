@@ -110,6 +110,12 @@ class UserEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    enterprise_post_comments: Mapped[List["CommentPostEnterpriseEntity"]] = relationship(
+        "CommentPostEnterpriseEntity",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -801,6 +807,12 @@ class PostEnterpriseEntity(Base):
         cascade="all, delete-orphan"
     )
 
+    comments: Mapped[List["CommentPostEnterpriseEntity"]] = relationship(
+        "CommentPostEnterpriseEntity",
+        back_populates="post",
+        cascade="all, delete-orphan",
+    )
+
     def to_out(self):
         from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
 
@@ -814,6 +826,51 @@ class PostEnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class CommentPostEnterpriseEntity(Base):
+    __tablename__ = "comments_posts_enterprise"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
+    post_enterprise_id: Mapped[int] = mapped_column(
+        ForeignKey("posts_enterprise.id", ondelete="CASCADE"), nullable=False
+    )
+
+    parent_comment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("comments_posts_enterprise.id", ondelete="CASCADE"), nullable=True
+    )
+
+    is_edited: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    user: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        back_populates="enterprise_post_comments"
+    )
+
+    post: Mapped["PostEnterpriseEntity"] = relationship(
+        "PostEnterpriseEntity",
+        back_populates="comments"
+    )
+
+    parent: Mapped["CommentPostEnterpriseEntity"] = relationship(
+        "CommentPostEnterpriseEntity",
+        remote_side=[id],
+        back_populates="replies"
+    )
+
+    replies: Mapped[List["CommentPostEnterpriseEntity"]] = relationship(
+        "CommentPostEnterpriseEntity",
+        back_populates="parent"
+    )
 
 class ReactionPostEnterpriseEntity(Base):
     __tablename__ = "reaction_posts_enterprise"
