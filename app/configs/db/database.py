@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import Final, Optional, List
 from sqlalchemy import (
-    DateTime, ARRAY, String,
+    DateTime, String,
     func, Text, ForeignKey,
     Boolean, Integer, BigInteger,
     Enum, Date, JSON, Numeric, UniqueConstraint
@@ -13,7 +13,7 @@ from datetime import datetime, date
 from sqlalchemy.pool import NullPool
 from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum,
-    EmploymentStatusEnum, ExperienceLevelEnum, EducationLevelEnum,
+    EmploymentStatusEnum, ExperienceLevelEnum,
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum,
     AddressTypeEnum, ApplicationStatusEnum, ApplicationSourceEnum, ReactionTypeEnum
 )
@@ -100,8 +100,14 @@ class UserEntity(Base):
 
     enterprise_post_reactions: Mapped[List["ReactionPostEnterpriseEntity"]] = relationship(  # <--- NOVO
         "ReactionPostEnterpriseEntity",
-        back_populates="user",  # Corresponde ao 'user' no novo modelo
+        back_populates="user",
         cascade="all, delete-orphan"
+    )
+
+    comments: Mapped[list["CommentPostUserEntity"]] = relationship(
+        "CommentPostUserEntity",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     def to_user_out(self):
@@ -930,6 +936,12 @@ class PostUserEntity(Base):
         cascade="all, delete-orphan"
     )
 
+    comments: Mapped[list["CommentPostUserEntity"]] = relationship(
+        "CommentPostUserEntity",
+        back_populates="post",
+        cascade="all, delete-orphan",
+    )
+
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
 
@@ -943,6 +955,45 @@ class PostUserEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class CommentPostUserEntity(Base):
+    __tablename__ = "comments_posts_user"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
+    post_user_id: Mapped[int] = mapped_column(
+        ForeignKey("posts_user.id", ondelete="CASCADE"), nullable=False
+    )
+
+    parent_comment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("comments_posts_user.id", ondelete="CASCADE"), nullable=True
+    )
+
+    is_edited: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="comments")
+
+    post: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="comments")
+
+    parent: Mapped["CommentPostUserEntity"] = relationship(
+        "CommentPostUserEntity",
+        remote_side=[id],
+        back_populates="replies"
+    )
+
+    replies: Mapped[List["CommentPostUserEntity"]] = relationship(
+        "CommentPostUserEntity",
+        back_populates="parent"
+    )
 
 class ReactionPostUserEntity(Base):
     __tablename__ = "reaction_posts_user"
