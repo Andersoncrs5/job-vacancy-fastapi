@@ -127,6 +127,12 @@ class UserEntity(Base):
 
     metric: Mapped["UserMetricEntity"] = relationship("UserMetricEntity", back_populates="owner", uselist=False)
 
+    favorite_comment_user: Mapped[List["FavoriteCommentPostUserEntity"]] = relationship(
+        "FavoriteCommentPostUserEntity",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -1148,6 +1154,12 @@ class CommentPostUserEntity(Base):
         back_populates="parent"
     )
 
+    favorites: Mapped[List["FavoriteCommentPostUserEntity"]] = relationship(
+        "FavoriteCommentPostUserEntity",
+        back_populates="comment",
+        cascade="all, delete-orphan"
+    )
+
     def to_out(self):
         from app.schemas.comment_post_user_schemas import CommentPostUserOUT
 
@@ -1166,6 +1178,31 @@ class CommentPostUserEntity(Base):
             user=user_out,
             post=post_out,
         )
+
+class FavoriteCommentPostUserEntity(Base):
+    __tablename__ = "favorite_comments_user"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
+    comment_user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("comments_posts_user.id"), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "comment_user_id", name="uq_user_comment_user_favorite"),
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    user: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        back_populates="favorite_comment_user"
+    )
+
+    comment: Mapped["CommentPostUserEntity"] = relationship(
+        "CommentPostUserEntity", back_populates="favorites"
+    )
 
 class ReactionPostUserEntity(Base):
     __tablename__ = "reaction_posts_user"
