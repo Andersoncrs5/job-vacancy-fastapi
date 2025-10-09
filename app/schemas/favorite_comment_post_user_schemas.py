@@ -6,15 +6,15 @@ from app.schemas.comment_post_enterprise_schemas import CommentPostEnterpriseOUT
 from app.schemas.user_schemas import UserOUT
 
 
-class FavoriteCommentPostUserOUT(ORJSONModel):
+class FavoriteCommentPostEnterpriseOUT(ORJSONModel):
     id: uuid.UUID
     user_id: int
     comment_enterprise_id: int
     created_at: datetime
-    owner: UserOUT
+    user: UserOUT
     comment: CommentPostEnterpriseOUT
 
-class FavoriteCommentPostUserSimpleOUT(ORJSONModel):
+class FavoriteCommentPostEnterpriseSimpleOUT(ORJSONModel):
     id: uuid.UUID
     user_id: int
     comment_enterprise_id: int
