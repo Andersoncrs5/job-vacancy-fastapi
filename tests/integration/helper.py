@@ -38,6 +38,17 @@ class UserTestData(BaseModel):
     tokens: Tokens
     out: UserOUT
 
+async def create_favorite_comment_user(user_data, comment_data):
+    URL = "/api/v1/favorite-comment-post-user"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.post(
+            f"{URL}/toggle-favorite/{comment_data.id}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+    assert response.status_code == 201
+
+
 async def create_favorite_comment(user_data: UserTestData, comment_data: CommentPostUserOUT):
     URL = "/api/v1/favorite-comment-post-enterprise"
 
@@ -48,9 +59,6 @@ async def create_favorite_comment(user_data: UserTestData, comment_data: Comment
         )
 
     assert response.status_code == 201
-
-    data = response.json()
-    body = response.json()['body']
 
 async def create_comment_enterprise_user(user_data: UserTestData, post_data: PostEnterpriseOUT):
     URL: Final[str] = "/api/v1/comment-post-enterprise"
