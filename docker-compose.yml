@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-    mem_limit: 512m  
+    mem_limit: 712m
     cpus: 1.0
 
   kafka:
