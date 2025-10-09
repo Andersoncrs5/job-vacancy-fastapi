@@ -1,4 +1,6 @@
 import os
+import uuid
+
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -11,6 +13,7 @@ from sqlalchemy import (
 )
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
+from sqlalchemy.dialects.postgresql import UUID
 from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum,
     EmploymentStatusEnum, ExperienceLevelEnum,
@@ -943,10 +946,14 @@ class CommentPostEnterpriseEntity(Base):
 class FavoriteCommentPostEnterpriseEntity(Base):
     __tablename__ = "favorite_comments_enterprise"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[uuid.UUID] = mapped_column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4 )
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
     comment_enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("comments_posts_enterprise.id"), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "comment_enterprise_id", name="uq_user_comment_favorite"),
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
