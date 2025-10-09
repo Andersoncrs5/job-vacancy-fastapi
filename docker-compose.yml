@@ -39,7 +39,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
-    mem_limit: 1024m
+    mem_limit: 1524m
     cpus: 1.0
 
     command: [ "/bin/sh", "-c", "kafka-storage format --dirs /tmp/kraft-storage --cluster-id $$KAFKA_CLUSTER_ID && /etc/confluent/docker/run" ]
