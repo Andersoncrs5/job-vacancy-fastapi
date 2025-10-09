@@ -22,10 +22,6 @@ class FavoriteCommentPostEnterpriseRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def save(self, favor: FavoriteCommentPostEnterpriseEntity) -> FavoriteCommentPostEnterpriseEntity:
-        pass
-
-    @abstractmethod
     async def delete(self, favor: FavoriteCommentPostEnterpriseEntity):
         pass
 
