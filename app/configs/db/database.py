@@ -68,7 +68,7 @@ class UserEntity(Base):
     searchs: Mapped[list["SavedSearchEntity"]] = relationship("SavedSearchEntity", back_populates="owner")
 
     areas: Mapped[list["AreaEntity"]] = relationship("AreaEntity", back_populates="owner")
-    address: Mapped["AddressUserEntity"] = relationship("AddressUserEntity", back_populates="owner")
+    address: Mapped["AddressUserEntity"] = relationship("AddressUserEntity", back_populates="owner",uselist=False)
 
     applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="user")
 
@@ -116,6 +116,8 @@ class UserEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    metric: Mapped["UserMetricEntity"] = relationship("UserMetricEntity", back_populates="owner", uselist=False)
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -127,6 +129,41 @@ class UserEntity(Base):
             created_at = str(self.created_at),
             bio = self.bio,
         )
+
+class UserMetricEntity(Base):
+    __tablename__ = "metric_users"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, primary_key=True
+    )
+
+    post_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    favorite_post_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    comment_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    favorite_comment_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    follower_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    followed_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    share_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    reaction_comment_given_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    reaction_comment_received_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    enterprise_follow_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    enterprise_follower_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    profile_view_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    vacancy_application_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
+                                                 onupdate=func.now(), nullable=False)
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="metric", uselist=False)
 
 class FollowerRelationshipEntity(Base):
     __tablename__ = "follower_relationships"
