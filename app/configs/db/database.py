@@ -116,6 +116,12 @@ class UserEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    favorite_comment_enterprise: Mapped[list["FavoriteCommentPostEnterpriseEntity"]] = relationship(
+        "FavoriteCommentPostEnterpriseEntity",
+        back_populates="owner",
+        cascade="all, delete-orphan"
+    )
+
     metric: Mapped["UserMetricEntity"] = relationship("UserMetricEntity", back_populates="owner", uselist=False)
 
     def to_user_out(self):
@@ -909,6 +915,12 @@ class CommentPostEnterpriseEntity(Base):
         back_populates="parent"
     )
 
+    favorites: Mapped[list["FavoriteCommentPostEnterpriseEntity"]] = relationship(
+        "FavoriteCommentPostEnterpriseEntity",
+        back_populates="comment",
+        cascade="all, delete-orphan"
+    )
+
     def to_out(self):
         from app.schemas.comment_post_enterprise_schemas import CommentPostEnterpriseOUT
 
@@ -927,6 +939,27 @@ class CommentPostEnterpriseEntity(Base):
             user=user_out,
             post=post_out,
         )
+
+class FavoriteCommentPostEnterpriseEntity(Base):
+    __tablename__ = "favorite_comments_enterprise"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
+    comment_enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("comments_posts_enterprise.id"), nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    owner: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        back_populates="favorite_comment_enterprise"
+    )
+
+    comment: Mapped["CommentPostEnterpriseEntity"] = relationship(
+        "CommentPostEnterpriseEntity", back_populates="favorites"
+    )
 
 class ReactionPostEnterpriseEntity(Base):
     __tablename__ = "reaction_posts_enterprise"
