@@ -75,6 +75,12 @@ class UserEntity(Base):
 
     applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="user")
 
+    comment_user_reactions: Mapped[List["ReactionCommentPostUserEntity"]] = relationship(
+        "ReactionCommentPostUserEntity",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     following_relationships: Mapped[List["FollowerRelationshipEntity"]] = relationship(
         "FollowerRelationshipEntity",
         back_populates="follower",
@@ -1160,6 +1166,12 @@ class CommentPostUserEntity(Base):
         cascade="all, delete-orphan"
     )
 
+    reactions: Mapped[List["ReactionCommentPostUserEntity"]] = relationship(
+        "ReactionCommentPostUserEntity",
+        back_populates="comment",
+        cascade="all, delete-orphan",
+    )
+
     def to_out(self):
         from app.schemas.comment_post_user_schemas import CommentPostUserOUT
 
@@ -1178,6 +1190,42 @@ class CommentPostUserEntity(Base):
             user=user_out,
             post=post_out,
         )
+
+class ReactionCommentPostUserEntity(Base):
+    __tablename__ = "reaction_comments_user"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'comment_user_id', name='_user_comment_user_uc'),
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id")
+    )
+    comment_user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("comments_posts_user.id")
+    )
+
+    reaction_type: Mapped[ReactionTypeEnum] = mapped_column(
+        Enum(ReactionTypeEnum, name="reaction_type_enum"), nullable=False
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    user: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        foreign_keys=[user_id],
+        back_populates="comment_user_reactions"
+    )
+
+    comment: Mapped["CommentPostUserEntity"] = relationship(
+        "CommentPostUserEntity",
+        foreign_keys=[comment_user_id],
+        back_populates="reactions"
+    )
 
 class FavoriteCommentPostUserEntity(Base):
     __tablename__ = "favorite_comments_user"
