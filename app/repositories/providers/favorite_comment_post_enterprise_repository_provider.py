@@ -1,10 +1,10 @@
 import uuid
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.configs.db.database import FavoriteCommentPostEnterpriseEntity
+from app.configs.db.database import FavoriteCommentPostEnterpriseEntity, CommentPostEnterpriseEntity
 from app.repositories.base.favorite_comment_post_enterprise_repository_base import \
     FavoriteCommentPostEnterpriseRepositoryBase
 
@@ -17,7 +17,10 @@ class FavoriteCommentPostEnterpriseRepositoryProvider(FavoriteCommentPostEnterpr
             self, user_id: int, comment_enterprise_id: int
     ) -> FavoriteCommentPostEnterpriseEntity | None:
         stmt = select(FavoriteCommentPostEnterpriseEntity).where(
-            FavoriteCommentPostEnterpriseEntity.id == id
+            and_(
+                FavoriteCommentPostEnterpriseEntity.user_id == user_id,
+                FavoriteCommentPostEnterpriseEntity.comment_enterprise_id == comment_enterprise_id,
+            )
         )
 
         result = await self.db.execute(stmt)
@@ -28,12 +31,15 @@ class FavoriteCommentPostEnterpriseRepositoryProvider(FavoriteCommentPostEnterpr
             self, user_id: int, comment_enterprise_id: int
     ) -> bool:
         stmt = select(func.count(FavoriteCommentPostEnterpriseEntity.id)).where(
-            FavoriteCommentPostEnterpriseEntity.id == id
+            and_(
+                FavoriteCommentPostEnterpriseEntity.user_id == user_id,
+                FavoriteCommentPostEnterpriseEntity.comment_enterprise_id == comment_enterprise_id,
+            )
         )
 
         result = await self.db.scalar(stmt)
 
-        return bool(result and result > 0)
+        return bool(result)
 
     async def add(self, favor: FavoriteCommentPostEnterpriseEntity) -> FavoriteCommentPostEnterpriseEntity:
         favor.id = uuid.uuid4()
@@ -48,17 +54,26 @@ class FavoriteCommentPostEnterpriseRepositoryProvider(FavoriteCommentPostEnterpr
         await self.db.delete(favor)
         await self.db.commit()
 
-    async def get_all(self, user_id: int | None, comment_enterprise_id: int | None) -> list[FavoriteCommentPostEnterpriseEntity]:
+    async def get_all(self, user_id: int | None, comment_enterprise_id: int | None) -> list[
+        FavoriteCommentPostEnterpriseEntity]:
         stmt = (
             select(FavoriteCommentPostEnterpriseEntity)
             .options(
-                joinedload(FavoriteCommentPostEnterpriseEntity.comment),
-                joinedload(FavoriteCommentPostEnterpriseEntity.owner),
+                joinedload(FavoriteCommentPostEnterpriseEntity.comment)
+
+                .joinedload(CommentPostEnterpriseEntity.user),
+
+                joinedload(FavoriteCommentPostEnterpriseEntity.comment)
+
+                .joinedload(CommentPostEnterpriseEntity.post),
+
+                joinedload(FavoriteCommentPostEnterpriseEntity.user),
             )
         )
 
         if user_id is not None:
             stmt = stmt.where(FavoriteCommentPostEnterpriseEntity.user_id == user_id)
+
         if comment_enterprise_id is not None:
             stmt = stmt.where(FavoriteCommentPostEnterpriseEntity.comment_enterprise_id == comment_enterprise_id)
 
