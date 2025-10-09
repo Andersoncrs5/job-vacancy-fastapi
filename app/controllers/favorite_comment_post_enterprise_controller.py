@@ -1,0 +1,214 @@
+from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi_pagination import Page, add_pagination, paginate
+
+from app.dependencies.service_dependency import *
+from app.schemas.favorite_comment_post_user_schemas import FavoriteCommentPostEnterpriseOUT
+from app.services.providers.user_service_provider import UserServiceProvider
+from app.utils.res.responses_http import *
+
+URL = "/api/v1/favorite-comment-post-enterprise"
+
+router: Final[APIRouter] = APIRouter(
+    prefix=URL,
+    tags=["Favorite Comment Post Enterprise"],
+    responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+    },
+    deprecated=False,
+)
+
+bearer_scheme: Final[HTTPBearer] = HTTPBearer()
+
+@router.get(
+    "",
+    response_model=Page[FavoriteCommentPostEnterpriseOUT],
+    status_code=status.HTTP_200_OK
+)
+async def get_all(
+    user_id: int | None = None,
+    comment_enterprise_id: int | None = None,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    favorite_comment_post_enterprise: FavoriteCommentPostEnterpriseServiceProvider = Depends(get_favorite_comment_post_enterprise_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        if (user_id and comment_enterprise_id) or (not user_id and not comment_enterprise_id):
+            return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody(
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="You must provide either user_id or comment_enterprise_id, not both.",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        if user_id:
+            user = await user_service.get_by_id(user_id)
+            if not user:
+                return ORJSONResponse(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    content=dict(ResponseBody(
+                        code=status.HTTP_404_NOT_FOUND,
+                        message="User not found",
+                        status=False,
+                        body=None,
+                        timestamp=str(datetime.now()),
+                        version=1,
+                        path=None
+                    ))
+                )
+
+        if comment_enterprise_id:
+            comment = await comment_service.get_by_id(comment_enterprise_id)
+            if not comment:
+                return ORJSONResponse(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    content=dict(ResponseBody(
+                        code=status.HTTP_404_NOT_FOUND,
+                        message="Comment not found",
+                        status=False,
+                        body=None,
+                        timestamp=str(datetime.now()),
+                        version=1,
+                        path=None
+                    ))
+                )
+
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        favors = await favorite_comment_post_enterprise.get_all(user_id, comment_enterprise_id)
+
+        return paginate(favors)
+    except Exception as e:
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+@router.post(
+    '/toggle-favorite/{comment_enterprise_id}',
+    response_model=ResponseBody,
+)
+async def toggle(
+    comment_enterprise_id: int,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    favorite_comment_post_enterprise: FavoriteCommentPostEnterpriseServiceProvider = Depends(get_favorite_comment_post_enterprise_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if comment_enterprise_id <= 0:
+        return ORJSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=dict(ResponseBody(
+                code=status.HTTP_400_BAD_REQUEST,
+                message="Id is required",
+                status=False,
+                body=None,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+
+        user = await user_service.get_by_id(user_id)
+        if not user:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        comment = await comment_service.exists_by_id(comment_enterprise_id)
+        if not comment:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Comment not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        favor = await favorite_comment_post_enterprise.get_by_user_id_and_comment_enterprise_id(user_id, comment_enterprise_id)
+
+        if favor:
+            await favorite_comment_post_enterprise.delete(favor)
+
+            return ORJSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=dict(ResponseBody(
+                    code=status.HTTP_200_OK,
+                    message="Comment removed with favorite",
+                    status=True,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        await favorite_comment_post_enterprise.create(user_id, comment_enterprise_id)
+
+        return ORJSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content=dict(ResponseBody(
+                code=status.HTTP_201_CREATED,
+                message="Comment saved with favorite",
+                status=True,
+                body=None,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+add_pagination(router)
