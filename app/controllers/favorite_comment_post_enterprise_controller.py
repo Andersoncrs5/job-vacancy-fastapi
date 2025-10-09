@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
 from app.dependencies.service_dependency import *
-from app.schemas.favorite_comment_post_user_schemas import FavoriteCommentPostEnterpriseOUT
+from app.schemas.favorite_comment_post_enterprise_schemas import FavoriteCommentPostEnterpriseOUT
 from app.services.providers.user_service_provider import UserServiceProvider
 from app.utils.res.responses_http import *
 
