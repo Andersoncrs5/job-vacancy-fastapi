@@ -121,7 +121,7 @@ class UserEntity(Base):
 
     favorite_comment_enterprise: Mapped[list["FavoriteCommentPostEnterpriseEntity"]] = relationship(
         "FavoriteCommentPostEnterpriseEntity",
-        back_populates="owner",
+        back_populates="user",
         cascade="all, delete-orphan"
     )
 
@@ -959,7 +959,7 @@ class FavoriteCommentPostEnterpriseEntity(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    owner: Mapped["UserEntity"] = relationship(
+    user: Mapped["UserEntity"] = relationship(
         "UserEntity",
         back_populates="favorite_comment_enterprise"
     )
