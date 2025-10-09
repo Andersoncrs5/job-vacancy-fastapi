@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -34,14 +36,9 @@ class FavoriteCommentPostEnterpriseRepositoryProvider(FavoriteCommentPostEnterpr
         return bool(result and result > 0)
 
     async def add(self, favor: FavoriteCommentPostEnterpriseEntity) -> FavoriteCommentPostEnterpriseEntity:
+        favor.id = uuid.uuid4()
 
         self.db.add(favor)
-        await self.db.commit()
-        await self.db.refresh(favor)
-
-        return favor
-
-    async def save(self, favor: FavoriteCommentPostEnterpriseEntity) -> FavoriteCommentPostEnterpriseEntity:
         await self.db.commit()
         await self.db.refresh(favor)
 
