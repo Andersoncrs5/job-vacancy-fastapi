@@ -12,6 +12,8 @@ from app.repositories.providers.favorite_comment_post_user_repository_provider i
     FavoriteCommentPostUserRepositoryProvider
 from app.repositories.providers.follow_enterprise_repository_provider import FollowEnterpriseRepositoryProvider
 from app.repositories.providers.follow_repository_provider import FollowRepositoryProvider
+from app.repositories.providers.reaction_comment_post_enterprise_repository_provider import \
+    ReactionCommentPostEnterpriseRepositoryProvider
 from app.repositories.providers.reaction_comment_post_user_repository_provider import \
     ReactionCommentPostUserRepositoryProvider
 from app.repositories.providers.reaction_post_enterprise_provider import ReactionPostEnterpriseRepositoryProvider
@@ -22,6 +24,8 @@ from app.services.providers.comment_post_user_service_provider import CommentPos
 from app.services.providers.favorite_comment_post_enterprise_service_provider import \
     FavoriteCommentPostEnterpriseServiceProvider
 from app.services.providers.favorite_comment_post_user_service_provider import FavoriteCommentPostUserServiceProvider
+from app.services.providers.reaction_comment_post_enterprise_service_provider import \
+    ReactionCommentPostEnterpriseServiceProvider
 from app.services.providers.reaction_comment_post_user_service_provider import ReactionCommentPostUserServiceProvider
 from app.services.providers.reaction_post_enterprise_service_provider import ReactionPostEnterpriseServiceProvider
 from app.services.providers.reaction_post_user_service_provider import ReactionPostUserServiceProvider
@@ -69,6 +73,10 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_reaction_comment_post_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> ReactionCommentPostEnterpriseServiceProvider:
+    repository = ReactionCommentPostEnterpriseRepositoryProvider(db)
+    return ReactionCommentPostEnterpriseServiceProvider(repository)
 
 def get_reaction_comment_post_user_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> ReactionCommentPostUserServiceProvider:
     repository = ReactionCommentPostUserRepositoryProvider(db)
