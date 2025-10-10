@@ -19,15 +19,17 @@ class ReactionCommentPostUserRepositoryProvider(ReactionCommentPostUserRepositor
             comment_user_id: int | None,
             reaction_type: ReactionTypeEnum | None
     ) -> list[ReactionCommentPostUserEntity]:
-        stmt = select(ReactionCommentPostUserEntity)
+        stmt = (
+            select(ReactionCommentPostUserEntity)
+        )
 
-        if not user_id:
+        if user_id is not None:
             stmt = stmt.where(ReactionCommentPostUserEntity.user_id == user_id)
 
-        if not comment_user_id:
+        if comment_user_id is not None:
             stmt = stmt.where(ReactionCommentPostUserEntity.comment_user_id == comment_user_id)
 
-        if not reaction_type:
+        if reaction_type is not None:
             stmt = stmt.where(ReactionCommentPostUserEntity.reaction_type == reaction_type)
 
         stmt = stmt.order_by(ReactionCommentPostUserEntity.created_at.desc())
