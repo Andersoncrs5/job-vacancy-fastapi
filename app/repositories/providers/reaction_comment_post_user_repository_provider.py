@@ -30,6 +30,8 @@ class ReactionCommentPostUserRepositoryProvider(ReactionCommentPostUserRepositor
         if not reaction_type:
             stmt = stmt.where(ReactionCommentPostUserEntity.reaction_type == reaction_type)
 
+        stmt = stmt.order_by(ReactionCommentPostUserEntity.created_at.desc())
+
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
