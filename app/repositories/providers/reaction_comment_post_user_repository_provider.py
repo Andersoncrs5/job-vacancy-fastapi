@@ -63,7 +63,7 @@ class ReactionCommentPostUserRepositoryProvider(ReactionCommentPostUserRepositor
 
         result = await self.db.scalar(stmt)
 
-        return bool(result and result > 0)
+        return bool(result)
 
     async def delete(self, react: ReactionCommentPostUserEntity):
         await self.db.delete(react)
