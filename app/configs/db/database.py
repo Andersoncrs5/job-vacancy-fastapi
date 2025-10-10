@@ -28,7 +28,7 @@ DATABASE_URL: Final[str | None] = os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
     raise ValueError("DATABASE_URL is None")
 
-engine: Final[AsyncEngine] = create_async_engine(DATABASE_URL, future=True, echo=True, poolclass=NullPool)
+engine: Final[AsyncEngine] = create_async_engine(DATABASE_URL, future=True, poolclass=NullPool)
 
 AsyncSessionLocal: Final[async_sessionmaker[AsyncSession]] = async_sessionmaker(engine, expire_on_commit=False)
 
@@ -1145,9 +1145,9 @@ class CommentPostUserEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="comments")
+    user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="comments", lazy="joined")
 
-    post: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="comments")
+    post: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="comments", lazy="joined")
 
     parent: Mapped["CommentPostUserEntity"] = relationship(
         "CommentPostUserEntity",
