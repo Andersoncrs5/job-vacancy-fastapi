@@ -22,6 +22,7 @@ from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO, MediaPos
 from app.schemas.my_skill_schemas import *
 from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, PostEnterpriseOUT
 from app.schemas.post_user_schemas import CreatePostUserDTO, PostUserOUT
+from app.schemas.reaction_comment_post_user_schemas import CreateReactionCommentPostUserDTO
 from app.schemas.reaction_post_enterprise_schemas import CreateReactionPostEnterpriseDTO
 from app.schemas.reaction_post_user_schemas import CreateReactionPostUserDTO
 from app.schemas.review_enterprise_schemas import *
@@ -38,6 +39,29 @@ class UserTestData(BaseModel):
     tokens: Tokens
     out: UserOUT
 
+async def create_react_comment_post_user(user_data_two: UserTestData, comment_data: CommentPostUserOUT, reaction_type: ReactionTypeEnum):
+    URL = "/api/v1/area/reaction-comment-user"
+
+    dto = CreateReactionCommentPostUserDTO(
+        comment_user_id=comment_data.id,
+        reaction_type=reaction_type
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.post(
+            URL,
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data_two.tokens.token}"}
+        )
+
+    assert response.status_code == 201
+    data = response.json()
+    body = response.json()['body']
+
+    assert data['code'] == 201
+
+    assert body is None
+
 async def create_favorite_comment_user(user_data, comment_data):
     URL = "/api/v1/favorite-comment-post-user"
 
@@ -47,7 +71,6 @@ async def create_favorite_comment_user(user_data, comment_data):
             headers={"Authorization": f"Bearer {user_data.tokens.token}"}
         )
     assert response.status_code == 201
-
 
 async def create_favorite_comment(user_data: UserTestData, comment_data: CommentPostUserOUT):
     URL = "/api/v1/favorite-comment-post-enterprise"
