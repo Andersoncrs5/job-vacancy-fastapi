@@ -1218,13 +1218,15 @@ class ReactionCommentPostUserEntity(Base):
     user: Mapped["UserEntity"] = relationship(
         "UserEntity",
         foreign_keys=[user_id],
-        back_populates="comment_user_reactions"
+        back_populates="comment_user_reactions",
+        lazy="joined"
     )
 
     comment: Mapped["CommentPostUserEntity"] = relationship(
         "CommentPostUserEntity",
         foreign_keys=[comment_user_id],
-        back_populates="reactions"
+        back_populates="reactions",
+        lazy="joined"
     )
 
 class FavoriteCommentPostUserEntity(Base):
