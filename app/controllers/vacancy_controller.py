@@ -7,6 +7,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 
 from app.dependencies.service_dependency import *
 from app.schemas.vacancy_schemas import *
+from app.utils.enums.sum_red import ColumnsVacancyMetricEnum, SumRedEnum
 from app.utils.filter.vacancy_filter import VacancyFilter
 from app.utils.res.responses_http import *
 
@@ -72,7 +73,7 @@ async def update(
             )
 
         vacancy = await vacancy_service.get_by_id(id)
-        if vacancy == None:
+        if vacancy is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody(
@@ -254,6 +255,7 @@ async def get_by_id(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
+    vacancy_metric_service: VacancyMetricServiceProvider = Depends(get_vacancy_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -291,7 +293,7 @@ async def get_by_id(
             )
 
         vacancy = await vacancy_service.get_by_id(id)
-        if vacancy == None:
+        if vacancy is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody(
@@ -306,6 +308,8 @@ async def get_by_id(
             )
 
         out = vacancy.to_out()
+
+        await vacancy_metric_service.update_metric(vacancy.id,  ColumnsVacancyMetricEnum.views_count, SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=200,
@@ -347,6 +351,7 @@ async def create(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     area_service = Depends(get_area_service_provider_dependency),
     vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
+    vacancy_metric_service: VacancyMetricServiceProvider = Depends(get_vacancy_metric_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -371,7 +376,7 @@ async def create(
             )
 
         exists_area = await area_service.get_by_id(dto.area_id)
-        if exists_area == None:
+        if exists_area is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody(
@@ -400,7 +405,7 @@ async def create(
             )
 
         enterprise = await enterprise_service.get_by_user_id(user_id)
-        if enterprise == None:
+        if enterprise is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody(
@@ -415,6 +420,7 @@ async def create(
             )
 
         vacancy_created = await vacancy_service.create(enterprise.id, dto)
+        await vacancy_metric_service.create(vacancy_created.id)
 
         out = vacancy_created.to_out()
 
