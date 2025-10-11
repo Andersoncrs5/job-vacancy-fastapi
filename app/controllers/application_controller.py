@@ -1,15 +1,15 @@
-from fastapi import APIRouter, Depends, status
+from datetime import datetime
+
+from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-
-from app.schemas.application_schemas import ApplicationOUT, UpdateApplicationDTO
-from app.utils.filter.applications_filter import ApplicationFilter
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.dependencies.service_dependency import *
 from fastapi_pagination import Page, add_pagination, paginate
-from datetime import datetime
+
+from app.dependencies.service_dependency import *
+from app.schemas.application_schemas import ApplicationOUT, UpdateApplicationDTO
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
+from app.utils.filter.applications_filter import ApplicationFilter
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/application",
@@ -124,6 +124,7 @@ async def patch(
 async def delete(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -191,6 +192,7 @@ async def delete(
             )
 
         await application_service.delete(app)
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.vacancy_application_count, SumRedEnum.RED)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -266,6 +268,7 @@ async def create(
         id: int,
         user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
         vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
+        user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
         application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
         jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
         credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -348,6 +351,8 @@ async def create(
             )
 
         applied = await application_service.create(vacancy.id, user_id)
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.vacancy_application_count,
+                                                   SumRedEnum.SUM)
 
         out = applied.to_out()
 
