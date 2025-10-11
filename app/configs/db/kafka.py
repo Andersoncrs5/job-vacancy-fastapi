@@ -2,7 +2,6 @@ from typing import Final
 from aiokafka import AIOKafkaProducer
 
 KAFKA_BROKER: Final[str] = "localhost:29092"
-KAFKA_TOPIC: Final[str] = "job_vacancy_topic"
+SUM_RED_METRIC_TOPIC: Final[str] = "sum_red_metric_topic"
 
-# NÃO inicialize aqui. Apenas declare o tipo
 producer: AIOKafkaProducer | None = None
