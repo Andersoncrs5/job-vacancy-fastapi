@@ -150,6 +150,12 @@ class UserEntity(Base):
         cascade="all, delete-orphan"
     )
 
+    enterprise_followers_relationships: Mapped[List["EnterpriseFollowsUserEntity"]] = relationship(
+        "EnterpriseFollowsUserEntity",
+        back_populates="followed_user",
+        cascade="all, delete-orphan",
+    )
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
@@ -516,6 +522,12 @@ class EnterpriseEntity(Base):
         back_populates="followed_enterprise",cascade="all, delete-orphan",
     )
 
+    following_users_relationships: Mapped[List["EnterpriseFollowsUserEntity"]] = relationship(
+        "EnterpriseFollowsUserEntity",
+        back_populates="follower_enterprise",
+        cascade="all, delete-orphan",  # Se a empresa for deletada, a relação desaparece
+    )
+
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
 
@@ -530,7 +542,6 @@ class EnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
-
 
 class EnterpriseMetricEntity(Base):
     __tablename__ = "enterprises_metric"
@@ -592,6 +603,39 @@ class FollowerRelationshipEnterpriseEntity(Base):
         "EnterpriseEntity",
         foreign_keys=[enterprise_id],
         back_populates="followers_relationships"
+    )
+
+class EnterpriseFollowsUserEntity(Base):
+    __tablename__ = "enterprise_follows_user"
+
+    __table_args__ = (
+        UniqueConstraint("enterprise_id", "user_id", name="uq_enterprise_user_follow"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    enterprise_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("enterprises.id")
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id")
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    follower_enterprise: Mapped["EnterpriseEntity"] = relationship(
+        "EnterpriseEntity",
+        foreign_keys=[enterprise_id],
+        back_populates="following_users_relationships"
+    )
+
+    followed_user: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        foreign_keys=[user_id],
+        back_populates="enterprise_followers_relationships"
     )
 
 class AddressEnterpriseEntity(Base):
