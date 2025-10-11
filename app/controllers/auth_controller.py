@@ -16,7 +16,7 @@ router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/auth", 
     tags=["Auth"],
     responses={
-        500: RESPONSE_500,
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401
     },
     deprecated=False,
@@ -75,7 +75,7 @@ async def refresh_token_method(
     refresh_token: str,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
-    ):
+):
     
     try:
         check_token = jwt_service.decode_token(refresh_token)
@@ -155,7 +155,7 @@ async def refresh_token_method(
     response_model=ResponseBody[Tokens],
     description="endpoint to login user",
     responses = {
-        403: RESPONSE_403,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
     }
 )
 async def login(
@@ -251,20 +251,18 @@ async def login(
     response_model=ResponseBody[Tokens],
     description="endpoint to register new user",
     responses={
-        409: {
-           "model": ResponseBody,
-           "description": "Email already exists"
-        }
+        status.HTTP_409_CONFLICT: RESPONSE_409
     }
 )
-async def resgiter(
+async def resister(
     dto: CreateUserDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
     try:
 
-        check: Final[bool] = await user_service.exists_by_email(dto.email)
+        check: Final[bool] = await user_service.exists_by_email(str(dto.email))
         if check :
             return ORJSONResponse(
                 status_code=status.HTTP_409_CONFLICT,
@@ -292,6 +290,8 @@ async def resgiter(
             exp_token = None,
             exp_refresh_token = None
         )
+
+        await user_metric_service.create(user_created.id)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
