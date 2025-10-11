@@ -1,3 +1,4 @@
+from aiokafka import AIOKafkaProducer
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from typing import Final
@@ -19,6 +20,8 @@ from app.repositories.providers.reaction_comment_post_user_repository_provider i
 from app.repositories.providers.reaction_post_enterprise_provider import ReactionPostEnterpriseRepositoryProvider
 from app.repositories.providers.reaction_post_user_repository_provider import ReactionPostUserRepositoryProvider
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
+from app.repositories.providers.user_metric_repository_provider import UserMetricRepositoryProvider
+from app.services.kafka_service import get_producer_dependency
 from app.services.providers.comment_post_enterprise_service_provider import CommentPostEnterpriseServiceProvider
 from app.services.providers.comment_post_user_service_provider import CommentPostUserServiceProvider
 from app.services.providers.favorite_comment_post_enterprise_service_provider import \
@@ -36,6 +39,7 @@ from app.services.providers.skill_service_provider import SkillServiceProvider
 from app.repositories.providers.my_skill_repository_provider import MySkillRepositoryProvider
 from app.services.providers.my_skill_service_provider import MySkillServiceProvider
 from app.repositories.providers.user_repository_provider import UserRepositoryProvider
+from app.services.providers.user_metric_service_provider import UserMetricServiceProvider
 from app.services.providers.user_service_provider import UserServiceProvider
 from app.repositories.providers.curriculum_repository_provider import CurriculumRepositoryProvider
 from app.services.providers.curriculum_service_provider import CurriculumServiceProvider
@@ -73,6 +77,13 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_user_metric_service_provider_dependency(
+        db: AsyncSession = Depends(get_db),
+        producer: AIOKafkaProducer = Depends(get_producer_dependency),
+) -> UserMetricServiceProvider:
+    repository = UserMetricRepositoryProvider(db)
+    return UserMetricServiceProvider(repository=repository, producer=producer)
 
 def get_reaction_comment_post_enterprise_service_provider_dependency(db: AsyncSession = Depends(get_db)) -> ReactionCommentPostEnterpriseServiceProvider:
     repository = ReactionCommentPostEnterpriseRepositoryProvider(db)
