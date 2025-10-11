@@ -1,4 +1,6 @@
+from aiokafka import AIOKafkaProducer
 from fastapi import FastAPI
+
 from app.controllers import (
     favorite_post_user_controller, auth_controller, user_controller,
     category_controller, post_user_controller, industry_controller,
@@ -20,6 +22,9 @@ from typing import Final
 import structlog
 import uuid
 
+from app.services.kafka_service import get_producer
+
+
 def setup_logging() -> structlog.BoundLogger:
     structlog.configure(
         processors=[
@@ -35,13 +40,14 @@ def setup_logging() -> structlog.BoundLogger:
 
 logger: Final[structlog.BoundLogger] = setup_logging()
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up the application...")
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    await get_producer()
 
     yield
     logger.info("Shutting down the application...")
