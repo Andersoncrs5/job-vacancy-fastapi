@@ -8,6 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.dependencies.service_dependency import *
 from app.schemas.favorite_comment_post_enterprise_schemas import FavoriteCommentPostEnterpriseOUT
 from app.services.providers.user_service_provider import UserServiceProvider
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
 from app.utils.res.responses_http import *
 
 URL = "/api/v1/favorite-comment-post-enterprise"
@@ -112,6 +113,7 @@ async def toggle(
     comment_enterprise_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     favorite_comment_post_enterprise: FavoriteCommentPostEnterpriseServiceProvider = Depends(get_favorite_comment_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -168,6 +170,7 @@ async def toggle(
 
         if favor:
             await favorite_comment_post_enterprise.delete(favor)
+            await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.favorite_comment_count, SumRedEnum.RED)
 
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
@@ -183,6 +186,7 @@ async def toggle(
             )
 
         await favorite_comment_post_enterprise.create(user_id, comment_enterprise_id)
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.favorite_comment_count, SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

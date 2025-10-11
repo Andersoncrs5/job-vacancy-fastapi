@@ -71,6 +71,7 @@ async def get_all(
 async def toggle(
     dto: CreateReactionCommentPostEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     reaction_service: ReactionCommentPostEnterpriseServiceProvider = Depends(get_reaction_comment_post_enterprise_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),

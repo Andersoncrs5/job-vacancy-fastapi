@@ -7,6 +7,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 
 from app.dependencies.service_dependency import *
 from app.schemas.follow_enterprise_schemas import FollowEnterpriseOUT
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
 from app.utils.res.responses_http import *
 
 URL = "/api/v1/follow-enterprise"
@@ -31,6 +32,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 async def delete(
     enterprise_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     follow_enterprise_service: FollowEnterpriseServiceProvider = Depends(get_follow_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -70,6 +72,10 @@ async def delete(
             )
 
         await follow_enterprise_service.delete(entity)
+
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.followed_count, SumRedEnum.RED )
+
+        # await user_metric_service.update_metric_v2(enterprise_id, ColumnUserMetricEnum.enterprise_follower_count, SumRedEnum.RED )
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -214,6 +220,7 @@ async def get_all(
 async def follow(
     enterprise_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     follow_enterprise_service: FollowEnterpriseServiceProvider = Depends(get_follow_enterprise_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -297,6 +304,7 @@ async def follow(
             )
 
         await follow_enterprise_service.create(user_id, enterprise_id)
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.followed_count, SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

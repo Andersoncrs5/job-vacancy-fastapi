@@ -1,15 +1,15 @@
 from datetime import datetime
-from typing import Final
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
-from app.configs.db.database import FollowerRelationshipEntity, UserEntity
+from app.configs.db.database import FollowerRelationshipEntity
 from app.dependencies.service_dependency import *
 from app.schemas.follow_schemas import FollowOUT
 from app.services.providers.follow_service_provider import FollowServiceProvider
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
 from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
@@ -92,6 +92,7 @@ async def delete(
     followed_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     follow_service: FollowServiceProvider = Depends(get_follow_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -144,6 +145,9 @@ async def delete(
             )
 
         await follow_service.delete(follow)
+
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.followed_count, SumRedEnum.RED)
+        await user_metric_service.update_metric_v2(followed_id, ColumnUserMetricEnum.follower_count, SumRedEnum.RED )
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -242,6 +246,7 @@ async def create(
     followed_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     follow_service: FollowServiceProvider = Depends(get_follow_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -294,6 +299,9 @@ async def create(
             )
 
         await follow_service.create(user_id, followed_id)
+
+        await user_metric_service.update_metric_v2(user_id,ColumnUserMetricEnum.followed_count,SumRedEnum.SUM)
+        await user_metric_service.update_metric_v2(followed_id,ColumnUserMetricEnum.follower_count,SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

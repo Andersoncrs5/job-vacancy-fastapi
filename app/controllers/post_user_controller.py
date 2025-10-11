@@ -8,7 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity
 from app.dependencies.service_dependency import *
 from app.schemas.post_user_schemas import *
-from app.utils.enums.sum_red import SumRedEnum
+from app.utils.enums.sum_red import SumRedEnum, ColumnUserMetricEnum
 from app.utils.filter.post_user_filter import PostUserFilter
 from app.utils.res.responses_http import *
 
@@ -36,6 +36,7 @@ async def delete(
     post_user_id: int,
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -71,8 +72,8 @@ async def delete(
                     version = 1,
                     path = None
                 ))
-            )  
-        
+            )
+
         await post_user_service.delete(post_user)
 
         category = await category_service.get_by_id(post_user.category_id)
@@ -88,9 +89,12 @@ async def delete(
                     version = 1,
                     path = None
                 ))
-            )  
+            )
 
         await category_service.sum_red_post_count(category, SumRedEnum.RED)
+
+        metric_user = await user_metric_service.get_by_id(user_id)
+        await user_metric_service.update_metric(metric_user, ColumnUserMetricEnum.post_count, SumRedEnum.RED)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -322,6 +326,7 @@ async def create(
     category_id: int,
     dto: CreatePostUserDTO,
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -393,6 +398,9 @@ async def create(
         post_user_created: Final[PostUserEntity] = await post_user_service.create(user, category, dto)
 
         await category_service.sum_red_post_count(category, SumRedEnum.SUM)
+
+        metric_user = await user_metric_service.get_by_id(user_id)
+        await user_metric_service.update_metric(metric_user, ColumnUserMetricEnum.post_count, SumRedEnum.SUM)
 
         post_user_out = post_user_created.to_out()
 

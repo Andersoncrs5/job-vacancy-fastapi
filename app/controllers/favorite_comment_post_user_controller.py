@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Final, Any
+from typing import Any
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
@@ -9,10 +9,8 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.dependencies.service_dependency import *
 from app.schemas.favorite_comment_post_user_schemas import FavoriteCommentPostUserOUT
 from app.services.base.jwt_service_base import JwtServiceBase
-from app.services.providers.comment_post_enterprise_service_provider import CommentPostEnterpriseServiceProvider
-from app.services.providers.favorite_comment_post_enterprise_service_provider import \
-    FavoriteCommentPostEnterpriseServiceProvider
 from app.services.providers.user_service_provider import UserServiceProvider
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
 from app.utils.res.response_body import ResponseBody
 from app.utils.res.responses_http import RESPONSE_500, RESPONSE_401
 
@@ -118,6 +116,7 @@ async def toggle(
     comment_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     favorite_comment_service: FavoriteCommentPostUserServiceProvider = Depends(get_favorite_comment_post_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -174,6 +173,8 @@ async def toggle(
 
         if favor:
             await favorite_comment_service.delete(favor)
+            await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.favorite_comment_count,
+                                                       SumRedEnum.RED)
 
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
@@ -189,6 +190,8 @@ async def toggle(
             )
 
         await favorite_comment_service.create(user_id, comment_id)
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.favorite_comment_count,
+                                                   SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
