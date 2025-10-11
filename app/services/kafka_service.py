@@ -1,16 +1,15 @@
 from aiokafka import AIOKafkaProducer
+from app.configs.db.kafka import KAFKA_BROKER
 
-from app.configs.db.kafka import KAFKA_BROKER, KAFKA_TOPIC
+async def get_producer_dependency():
+    producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BROKER)
 
-producer: AIOKafkaProducer | None = None
+    await producer.start()
 
-async def get_producer() -> AIOKafkaProducer:
-    global producer
-    if producer is None:
-        producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BROKER)
-        await producer.start()
-    return producer
+    try:
+        yield producer
+    finally:
+        await producer.stop()
 
-async def send_message(value: str, topic: str = KAFKA_TOPIC):
-    prod = await get_producer()
+async def send_message_to_kafka(prod: AIOKafkaProducer, value: str, topic: str):
     await prod.send_and_wait(topic, value.encode("utf-8"))
