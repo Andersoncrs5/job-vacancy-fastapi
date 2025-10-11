@@ -21,6 +21,7 @@ from app.repositories.providers.reaction_post_enterprise_provider import Reactio
 from app.repositories.providers.reaction_post_user_repository_provider import ReactionPostUserRepositoryProvider
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
 from app.repositories.providers.user_metric_repository_provider import UserMetricRepositoryProvider
+from app.repositories.providers.vacancy_metric_repository_provider import VacancyMetricRepositoryProvider
 from app.services.kafka_service import get_producer_dependency
 from app.services.providers.comment_post_enterprise_service_provider import CommentPostEnterpriseServiceProvider
 from app.services.providers.comment_post_user_service_provider import CommentPostUserServiceProvider
@@ -70,6 +71,7 @@ from app.services.providers.saved_search_service_provider import SavedSearchServ
 from app.repositories.providers.area_repository_provider import AreaRepositoryProvider
 from app.services.providers.area_service_provider import AreaServiceProvider
 from app.repositories.providers.vacancy_repository_provider import VacancyRepositoryProvider
+from app.services.providers.vacancy_metric_service_provider import VacancyMetricServiceProvider
 from app.services.providers.vacancy_service_provider import VacancyServiceProvider
 from app.repositories.providers.vacancy_skill_repository_provider import VacancySkillRepositoryProvider
 from app.services.providers.vacancy_skill_service_provider import VacancySkillServiceProvider
@@ -77,6 +79,13 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_vacancy_metric_service_provider_dependency(
+        db: AsyncSession = Depends(get_db),
+        producer: AIOKafkaProducer = Depends(get_producer_dependency),
+) -> VacancyMetricServiceProvider:
+    repository = VacancyMetricRepositoryProvider(db)
+    return VacancyMetricServiceProvider(repository=repository, producer=producer)
 
 def get_user_metric_service_provider_dependency(
         db: AsyncSession = Depends(get_db),
