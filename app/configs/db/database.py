@@ -131,7 +131,12 @@ class UserEntity(Base):
         cascade="all, delete-orphan"
     )
 
-    metric: Mapped["UserMetricEntity"] = relationship("UserMetricEntity", back_populates="owner", uselist=False)
+    metric: Mapped["UserMetricEntity"] = relationship(
+        "UserMetricEntity",
+        back_populates="owner",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     favorite_comment_user: Mapped[List["FavoriteCommentPostUserEntity"]] = relationship(
         "FavoriteCommentPostUserEntity",
@@ -173,18 +178,24 @@ class UserMetricEntity(Base):
     follower_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     followed_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
 
-    share_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    share_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False) #
+    connection_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False) #
+
+    blocked_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False) #
 
     reaction_comment_given_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     reaction_comment_received_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
 
     enterprise_follow_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
-    enterprise_follower_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    enterprise_follower_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False) #
 
-    profile_view_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    profile_view_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False) #
     vacancy_application_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
 
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
+    last_post_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
+
+    last_comment_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
@@ -377,6 +388,7 @@ class CurriculumEntity(Base):
 
     title: Mapped[str] = mapped_column(String(150), nullable=False)
     is_updated: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_visible: Mapped[bool] = mapped_column(Boolean, default=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -629,8 +641,6 @@ class VacancyEntity(Base):
     openings: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     application_deadline: Mapped[datetime | None] = mapped_column(Date, nullable=True)
 
-    views_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    applications_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     last_application_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -641,6 +651,13 @@ class VacancyEntity(Base):
 
     skills: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="vacancy")
     applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="vacancy")
+
+    metrics: Mapped["VacancyMetricEntity"] = relationship(
+        "VacancyMetricEntity",
+        back_populates="vacancy",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     def to_out(self):
         from app.schemas.vacancy_schemas import VacancyOUT
@@ -665,12 +682,29 @@ class VacancyEntity(Base):
             status = self.status,
             openings = self.openings,
             application_deadline = str(self.application_deadline),
-            views_count = self.views_count,
-            applications_count= self.applications_count,
             last_application_at = str(self.last_application_at),
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class VacancyMetricEntity(Base):
+    vacancy_id: Mapped[int] = mapped_column(
+        ForeignKey("vacancies.id"), nullable=False, primary_key=True
+    )
+
+    shortlists_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    shares_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="metrics")
+
+    views_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    applications_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    interview_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
+                                                 onupdate=func.now(), nullable=False)
 
 class VacancySkillEntity(Base):
     __tablename__ = "vacancy_skills"
