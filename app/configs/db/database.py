@@ -917,12 +917,14 @@ class CommentPostEnterpriseEntity(Base):
 
     user: Mapped["UserEntity"] = relationship(
         "UserEntity",
-        back_populates="enterprise_post_comments"
+        back_populates="enterprise_post_comments",
+        lazy="joined"
     )
 
     post: Mapped["PostEnterpriseEntity"] = relationship(
         "PostEnterpriseEntity",
-        back_populates="comments"
+        back_populates="comments",
+        lazy="joined"
     )
 
     parent: Mapped["CommentPostEnterpriseEntity"] = relationship(
