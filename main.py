@@ -22,9 +22,6 @@ from typing import Final
 import structlog
 import uuid
 
-from app.services.kafka_service import get_producer
-
-
 def setup_logging() -> structlog.BoundLogger:
     structlog.configure(
         processors=[
@@ -46,8 +43,6 @@ async def lifespan(app: FastAPI):
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-    await get_producer()
 
     yield
     logger.info("Shutting down the application...")
