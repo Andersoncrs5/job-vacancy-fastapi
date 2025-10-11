@@ -25,8 +25,6 @@ class VacancyOUT(ORJSONModel):
     status: VacancyStatusEnum
     openings: int
     application_deadline: datetime | str | None
-    views_count: int
-    applications_count: int
     last_application_at: datetime | str | None
     created_at: datetime | str
     updated_at: datetime | str
