@@ -18,3 +18,4 @@ class EventMessageMetric(ORJSONModel):
     entity: EntityEnum
     created_at: datetime
     source: str
+    metadata: dict
