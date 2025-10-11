@@ -9,6 +9,7 @@ from app.configs.db.database import CommentPostEnterpriseEntity
 from app.dependencies.service_dependency import *
 from app.schemas.comment_post_enterprise_schemas import CommentPostEnterpriseOUT, CreateCommentPostEnterpriseDTO, \
     UpdateCommentPostEnterpriseDTO
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
 from app.utils.filter.comment_post_enterprise_filter import CommentPostEnterpriseFilter
 from app.utils.res.responses_http import *
 
@@ -22,7 +23,7 @@ router: Final[APIRouter] = APIRouter(
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     },
     deprecated=False,
-    )
+)
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
@@ -113,6 +114,7 @@ async def patch(
 async def delete(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -133,6 +135,7 @@ async def delete(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        user_id = jwt_service.extract_user_id_v2(token)
 
         comment = await comment_service.get_by_id(id)
         if comment is None :
@@ -150,6 +153,8 @@ async def delete(
             )
 
         await comment_service.delete(comment)
+
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.comment_count, SumRedEnum.RED)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -255,6 +260,37 @@ async def get_by_id(
             ))
         )
 
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=Page[CommentPostEnterpriseOUT],
+)
+async def get_all(
+    filter: CommentPostEnterpriseFilter = Depends(),
+    comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        jwt_service.valid_credentials(credentials)
+
+        comments: list[CommentPostEnterpriseEntity] = await comment_service.get_all(filter)
+
+        return paginate(comments)
+    except Exception as e:
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
@@ -264,6 +300,7 @@ async def create(
     dto: CreateCommentPostEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     post_enterprise_service: PostUserServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -324,6 +361,7 @@ async def create(
         out = comment_created.to_out()
 
         out_dict = out.model_dump(by_alias=True)
+        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.comment_count, SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
@@ -340,37 +378,6 @@ async def create(
 
     except Exception as e:
         print('Error :', e)
-        return ORJSONResponse(
-            status_code=500,
-            content=dict(ResponseBody[Any](
-                code=500,
-                message="Error in server! Please try again later",
-                status=False,
-                body=str(e),
-                timestamp=str(datetime.now()),
-                version=1,
-                path=None
-            ))
-        )
-
-@router.get(
-    '',
-    status_code=status.HTTP_200_OK,
-    response_model=Page[CommentPostEnterpriseOUT],
-)
-async def get_all(
-    filter: CommentPostEnterpriseFilter = Depends(),
-    comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
-    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-):
-    try:
-        jwt_service.valid_credentials(credentials)
-
-        comments: list[CommentPostEnterpriseEntity] = await comment_service.get_all(filter)
-
-        return paginate(comments)
-    except Exception as e:
         return ORJSONResponse(
             status_code=500,
             content=dict(ResponseBody[Any](
