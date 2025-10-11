@@ -539,8 +539,6 @@ async def create_vacancy(user_data: UserTestData, area_data: AreaOUT) -> Vacancy
         status = data['body']['status'],
         openings = data['body']['openings'],
         application_deadline = data['body']['application_deadline'],
-        views_count = data['body']['views_count'],
-        applications_count = data['body']['applications_count'],
         last_application_at = data['body']['last_application_at'],
         created_at = data['body']['created_at'],
         updated_at = data['body']['updated_at'],
