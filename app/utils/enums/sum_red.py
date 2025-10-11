@@ -4,6 +4,13 @@ class SumRedEnum(str, Enum):
     SUM = "SUM"
     RED = "RED"
 
+class ColumnsVacancyMetricEnum(str, Enum):
+    shortlists_count = "shortlists_count"
+    shares_count = "shares_count"
+    views_count = "views_count"
+    applications_count = "applications_count"
+    interview_count = "interview_count"
+
 class ColumnUserMetricEnum(str, Enum):
     post_count = "post_count"
     favorite_post_count = "favorite_post_count"
