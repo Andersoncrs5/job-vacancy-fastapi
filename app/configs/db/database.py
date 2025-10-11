@@ -9,7 +9,7 @@ from sqlalchemy import (
     DateTime, String,
     func, Text, ForeignKey,
     Boolean, Integer, BigInteger,
-    Enum, Date, JSON, Numeric, UniqueConstraint
+    Enum, Date, JSON, Numeric, UniqueConstraint, NUMERIC
 )
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
@@ -504,6 +504,13 @@ class EnterpriseEntity(Base):
 
     address: Mapped["AddressEnterpriseEntity"] = relationship("AddressEnterpriseEntity", back_populates="enterprise")
 
+    metrics: Mapped["EnterpriseMetricEntity"] = relationship(
+        "EnterpriseMetricEntity",
+        back_populates="enterprise",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
     followers_relationships: Mapped[List["FollowerRelationshipEnterpriseEntity"]] = relationship(
         "FollowerRelationshipEnterpriseEntity",
         back_populates="followed_enterprise",cascade="all, delete-orphan",
@@ -523,6 +530,36 @@ class EnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+
+class EnterpriseMetricEntity(Base):
+    __tablename__ = "enterprises_metric"
+
+    enterprise_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("enterprises.id"), primary_key=True
+    )
+
+    follower_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    vacancies_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    post_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    comment_post: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    review_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    employments_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    last_activity_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
+                                                 onupdate=func.now(), nullable=False)
+
+    enterprise: Mapped["EnterpriseEntity"] = relationship(
+        "EnterpriseEntity",
+        back_populates="metrics"
+    )
 
 class FollowerRelationshipEnterpriseEntity(Base):
     __tablename__ = "follower_relationships_enterprise"
