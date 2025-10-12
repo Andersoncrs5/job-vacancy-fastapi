@@ -8,7 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.database import PostEnterpriseEntity, EnterpriseEntity, CategoryEntity
 from app.dependencies.service_dependency import *
 from app.schemas.post_enterprise_schemas import *
-from app.utils.enums.sum_red import SumRedEnum, ColumnEnterpriseMetricEnum
+from app.utils.enums.sum_red import SumRedEnum, ColumnEnterpriseMetricEnum, ColumnsPostEnterpriseMetricEnum
 from app.utils.filter.post_enterprise_filter import PostEnterpriseFilter
 from app.utils.res.responses_http import *
 
@@ -200,6 +200,7 @@ async def delete(
 )
 async def get(
     post_id: int,
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     post_enterprise_service: PostEnterpriseServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -237,7 +238,8 @@ async def get(
                     path = None
                 ))
             )  
-        
+
+        await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.views_count, SumRedEnum.SUM)
         post_out: Final[PostEnterpriseOUT] = post.to_out()
 
         return ORJSONResponse(
@@ -316,6 +318,7 @@ async def create(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -389,6 +392,7 @@ async def create(
         await enterprise_metric_service.update_metric(post_enterprise_created.enterprise_id, ColumnEnterpriseMetricEnum.post_count,
                                                       SumRedEnum.SUM)
 
+        await post_enterprise_metric_service.create(post_enterprise_created.id)
         post_enterprise_out = post_enterprise_created.to_out()
 
         return ORJSONResponse(

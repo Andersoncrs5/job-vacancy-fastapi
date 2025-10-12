@@ -9,7 +9,7 @@ from app.configs.db.database import CommentPostEnterpriseEntity
 from app.dependencies.service_dependency import *
 from app.schemas.comment_post_enterprise_schemas import CommentPostEnterpriseOUT, CreateCommentPostEnterpriseDTO, \
     UpdateCommentPostEnterpriseDTO
-from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnsPostEnterpriseMetricEnum
 from app.utils.filter.comment_post_enterprise_filter import CommentPostEnterpriseFilter
 from app.utils.res.responses_http import *
 
@@ -114,6 +114,7 @@ async def patch(
 async def delete(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -155,6 +156,9 @@ async def delete(
         await comment_service.delete(comment)
 
         await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.comment_count, SumRedEnum.RED)
+        await post_enterprise_metric_service.update_metric(comment.post_enterprise_id,
+                                                           ColumnsPostEnterpriseMetricEnum.comments_count,
+                                                           SumRedEnum.RED)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -299,6 +303,7 @@ async def get_all(
 async def create(
     dto: CreateCommentPostEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     post_enterprise_service: PostUserServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
@@ -362,6 +367,9 @@ async def create(
 
         out_dict = out.model_dump(by_alias=True)
         await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.comment_count, SumRedEnum.SUM)
+        await post_enterprise_metric_service.update_metric(post.id,
+                                                           ColumnsPostEnterpriseMetricEnum.comments_count,
+                                                           SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

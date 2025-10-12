@@ -9,7 +9,7 @@ from app.configs.db.database import FavoritePostEnterpriseEntity, UserEntity, Po
 # from app.schemas.favorite_post_user_schemas import *
 from app.dependencies.service_dependency import *
 from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
-from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnsPostEnterpriseMetricEnum
 from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
@@ -36,6 +36,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 )
 async def delete(
     id: int,
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     favorite_posts_enterprise_service: FavoritePostEnterpriseServiceProvider = Depends(get_favorite_posts_enterprise_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -79,6 +80,9 @@ async def delete(
 
         metric = await user_metric_service.get_by_id(user_id)
         await user_metric_service.update_metric(metric,  ColumnUserMetricEnum.favorite_post_count, SumRedEnum.RED)
+        await post_enterprise_metric_service.update_metric(post.id,
+                                                           ColumnsPostEnterpriseMetricEnum.favorites_count,
+                                                           SumRedEnum.RED)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -183,6 +187,7 @@ async def get_all(
 async def create(
     post_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     post_enterprise_service: PostEnterpriseServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     favorite_posts_enterprise_service: FavoritePostEnterpriseServiceProvider = Depends(get_favorite_posts_enterprise_service_provider_dependency),
@@ -257,6 +262,9 @@ async def create(
 
         metric = await user_metric_service.get_by_id(user_id)
         await user_metric_service.update_metric(metric, ColumnUserMetricEnum.favorite_post_count, SumRedEnum.SUM)
+        await post_enterprise_metric_service.update_metric(post.id,
+                                                           ColumnsPostEnterpriseMetricEnum.favorites_count,
+                                                           SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

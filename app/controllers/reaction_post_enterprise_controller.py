@@ -7,12 +7,14 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import ReactionPostEnterpriseEntity
+from app.configs.db.enums import ReactionTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.reaction_post_enterprise_schemas import ReactionPostEnterpriseWithRelationshipDTO, \
     CreateReactionPostEnterpriseDTO
 from app.services.base.jwt_service_base import JwtServiceBase
 from app.services.providers.reaction_post_enterprise_service_provider import ReactionPostEnterpriseServiceProvider
 from app.services.providers.user_service_provider import UserServiceProvider
+from app.utils.enums.sum_red import ColumnsPostEnterpriseMetricEnum, SumRedEnum
 from app.utils.res.responses_http import *
 
 URL = "/api/v1/area/reaction-post-enterprise"
@@ -78,12 +80,12 @@ async def get_all(
 
 @router.post(
     "",
-    response_model=ResponseBody,
-    status_code=status.HTTP_201_CREATED
+    response_model=ResponseBody
 )
 async def create(
     dto: CreateReactionPostEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     post_enterprise_service: PostUserServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
     reaction_service: ReactionPostEnterpriseServiceProvider = Depends(get_reaction_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -93,7 +95,7 @@ async def create(
         token: Final[str] = jwt_service.valid_credentials(creden=credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token=token)
 
-        post = await post_enterprise_service.exists_by_id(id=dto.post_enterprise_id)
+        post = await post_enterprise_service.get_by_id(id=dto.post_enterprise_id)
         if not post:
             return ORJSONResponse(
                 status_code=404,
@@ -127,7 +129,15 @@ async def create(
 
         if check and dto.reaction_type != check.reaction_type:
 
-            await reaction_service.toggle_reaction_type(check)
+            reaction_updated = await reaction_service.toggle_reaction_type(check)
+
+            if reaction_updated.reaction_type == ReactionTypeEnum.LIKE:
+                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_dislike_count, SumRedEnum.RED)
+                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_like_count, SumRedEnum.SUM)
+
+            if reaction_updated.reaction_type == ReactionTypeEnum.DISLIKE:
+                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_dislike_count, SumRedEnum.SUM)
+                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_like_count, SumRedEnum.RED)
 
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
@@ -145,6 +155,11 @@ async def create(
         if check and dto.reaction_type == check.reaction_type:
             await reaction_service.delete(check)
 
+            if dto.reaction_type == ReactionTypeEnum.LIKE:
+                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_like_count, SumRedEnum.RED)
+            else:
+                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_dislike_count, SumRedEnum.RED)
+
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
                 content=dict(ResponseBody(
@@ -159,6 +174,15 @@ async def create(
             )
 
         await reaction_service.create(user_id=user_id, dto=dto)
+
+        if dto.reaction_type == ReactionTypeEnum.LIKE:
+            await post_enterprise_metric_service.update_metric(post.id,
+                                                               ColumnsPostEnterpriseMetricEnum.reactions_like_count,
+                                                               SumRedEnum.SUM)
+        else:
+            await post_enterprise_metric_service.update_metric(post.id,
+                                                               ColumnsPostEnterpriseMetricEnum.reactions_dislike_count,
+                                                               SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
