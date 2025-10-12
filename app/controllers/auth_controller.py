@@ -125,7 +125,7 @@ async def refresh_token_method(
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
             content=dict(ResponseBody[dict](
-                message="New Tokens sended",
+                message="New Tokens sent",
                 code=status.HTTP_200_OK,
                 status=True,
                 body=dict(tokens),
