@@ -1,0 +1,34 @@
+from abc import ABC, abstractmethod
+
+from app.configs.db.database import EnterpriseFollowsUserEntity
+
+
+class EnterpriseFollowsUserRepositoryBase(ABC):
+
+    @abstractmethod
+    async def add(self, follow: EnterpriseFollowsUserEntity) -> EnterpriseFollowsUserEntity:
+        pass
+
+    @abstractmethod
+    async def save(self, follow: EnterpriseFollowsUserEntity) -> EnterpriseFollowsUserEntity:
+        pass
+
+    @abstractmethod
+    async def delete(self, follow: EnterpriseFollowsUserEntity):
+        pass
+
+    @abstractmethod
+    async def get_by_enterprise_id_and_user_id(
+            self,
+            enterprise_id: int,
+            user_id: int
+    ) -> EnterpriseFollowsUserEntity | None:
+        pass
+
+    @abstractmethod
+    async def exists_by_enterprise_id_and_user_id(
+            self,
+            enterprise_id: int,
+            user_id: int
+    ) -> bool:
+        pass
