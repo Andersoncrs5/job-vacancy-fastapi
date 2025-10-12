@@ -40,6 +40,24 @@ class UserTestData(BaseModel):
     tokens: Tokens
     out: UserOUT
 
+async def create_follow_enterprise_user(user_data: UserTestData ,user_data_two: UserTestData):
+    URL = "/api/v1/enterprise-follow-user"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.post(
+            f'{URL}/toggle/{user_data_two.out.id}',
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    assert response.status_code == 201
+    data = response.json()
+    body = response.json()['body']
+
+    assert data['message'] == f"You are following the user {user_data_two.out.name}"
+    assert data['status'] == True
+
+    assert body is None
+
 async def create_react_comment_post_enterprise(user_data: UserTestData, comment_data: CommentPostEnterpriseOUT, reaction_type: ReactionTypeEnum):
     URL = "/api/v1/area/reaction-comment-enterprise"
 
