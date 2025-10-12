@@ -7,7 +7,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 
 from app.dependencies.service_dependency import *
 from app.schemas.vacancy_schemas import *
-from app.utils.enums.sum_red import ColumnsVacancyMetricEnum, SumRedEnum
+from app.utils.enums.sum_red import ColumnsVacancyMetricEnum, SumRedEnum, ColumnEnterpriseMetricEnum
 from app.utils.filter.vacancy_filter import VacancyFilter
 from app.utils.res.responses_http import *
 
@@ -15,7 +15,7 @@ router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/vacancy", 
     tags=["Vacancy"],
     responses={
-        500: RESPONSE_500,
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     },
     deprecated=False,
@@ -163,6 +163,7 @@ async def delete(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -200,7 +201,7 @@ async def delete(
             )
 
         vacancy = await vacancy_service.get_by_id(id)
-        if vacancy == None:
+        if vacancy is None:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody(
@@ -215,6 +216,9 @@ async def delete(
             )
 
         await vacancy_service.delete(vacancy)
+
+        await enterprise_metric_service.update_metric(vacancy.enterprise_id, ColumnEnterpriseMetricEnum.vacancies_count,
+                                                      SumRedEnum.SUM)
         
         return ORJSONResponse(
             status_code=200,
@@ -352,6 +356,7 @@ async def create(
     area_service = Depends(get_area_service_provider_dependency),
     vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
     vacancy_metric_service: VacancyMetricServiceProvider = Depends(get_vacancy_metric_service_provider_dependency),
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -421,6 +426,8 @@ async def create(
 
         vacancy_created = await vacancy_service.create(enterprise.id, dto)
         await vacancy_metric_service.create(vacancy_created.id)
+
+        await enterprise_metric_service.update_metric(enterprise.id, ColumnEnterpriseMetricEnum.vacancies_count, SumRedEnum.SUM)
 
         out = vacancy_created.to_out()
 
