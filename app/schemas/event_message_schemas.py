@@ -10,6 +10,7 @@ class EntityEnum(str, Enum):
     USER_METRIC = "USER_METRIC"
     VACANCY_METRIC = "VACANCY_METRIC"
     ENTERPRISE_METRIC = "ENTERPRISE_METRIC"
+    POST_ENTERPRISE_METRIC = "POST_ENTERPRISE_METRIC"
 
 class EventMessageMetric(ORJSONModel):
     event_id: str
