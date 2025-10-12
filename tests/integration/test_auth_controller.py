@@ -72,7 +72,7 @@ async def test_refresh_token():
     data_get = response_get.json()
 
     assert data_get['code'] == 200
-    assert data_get['message'] == "New Tokens sended"
+    assert data_get['message'] == "New Tokens sent"
     assert data_get['status'] == True
     assert data_get['version'] == 1
     assert data_get['path'] is None
