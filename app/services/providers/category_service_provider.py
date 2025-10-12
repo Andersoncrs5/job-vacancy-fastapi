@@ -69,9 +69,9 @@ class CategoryServiceProvider(CategoryServiceBase):
         return await self.repository.get_all_filter(is_active, filter)
 
     async def create(self, user: UserEntity, dto: CreateCategoryDTO) -> CategoryEntity:
-        category_maped: Final = dto.to_category_entity()
-        category_maped.user_id = user.id
+        category_mapped: Final = dto.to_category_entity()
+        category_mapped.user_id = user.id
 
-        category_created = await self.repository.add(category_maped)
+        category_created = await self.repository.add(category_mapped)
 
         return category_created
