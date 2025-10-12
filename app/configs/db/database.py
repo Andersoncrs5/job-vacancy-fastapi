@@ -1313,6 +1313,13 @@ class PostUserEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    metrics: Mapped["PostUserMetricEntity"] = relationship(
+        "PostUserMetricEntity",
+        back_populates="post",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
 
@@ -1326,6 +1333,28 @@ class PostUserEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class PostUserMetricEntity(Base):
+    __tablename__ = "metric_posts_user"
+
+    post_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_user.id"), primary_key=True)
+
+    views_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    shares_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    reactions_like_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    reactions_dislike_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    favorites_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    comments_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    post: Mapped["PostUserEntity"] = relationship(
+        "PostUserEntity",
+        back_populates="metrics"
+    )
 
 class CommentPostUserEntity(Base):
     __tablename__ = "comments_posts_user"
