@@ -136,6 +136,7 @@ class UserEntity(Base):
         back_populates="owner",
         uselist=False,
         cascade="all, delete-orphan",
+        lazy="joined"
     )
 
     favorite_comment_user: Mapped[List["FavoriteCommentPostUserEntity"]] = relationship(
@@ -525,7 +526,7 @@ class EnterpriseEntity(Base):
     following_users_relationships: Mapped[List["EnterpriseFollowsUserEntity"]] = relationship(
         "EnterpriseFollowsUserEntity",
         back_populates="follower_enterprise",
-        cascade="all, delete-orphan",  # Se a empresa for deletada, a relação desaparece
+        cascade="all, delete-orphan",
     )
 
     def to_out(self):
@@ -556,6 +557,7 @@ class EnterpriseMetricEntity(Base):
     post_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     comment_post: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
+    followed_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     review_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
