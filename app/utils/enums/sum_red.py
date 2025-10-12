@@ -45,3 +45,20 @@ class ColumnsPostEnterpriseMetricEnum(str, Enum):
     reactions_dislike_count = "reactions_dislike_count"
     favorites_count = "favorites_count"
     comments_count = "comments_count"
+
+class ColumnsPostUserMetricEnum(str, Enum):
+    views_count = "views_count"
+    shares_count = "shares_count"
+    reactions_like_count = "reactions_like_count"
+    reactions_dislike_count = "reactions_dislike_count"
+    favorites_count = "favorites_count"
+    comments_count = "comments_count"
+
+class ColumnsCommentPostEnterpriseMetricEnum(str, Enum):
+    replies_count = "replies_count"
+    edited_count = "edited_count"
+    views_count = "views_count"
+    shares_count = "shares_count"
+    reactions_like_count = "reactions_like_count"
+    reactions_dislike_count = "reactions_dislike_count"
+    favorites_count = "favorites_count"
