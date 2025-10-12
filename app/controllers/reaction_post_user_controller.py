@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.db.enums import ReactionTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.reaction_post_user_schemas import CreateReactionPostUserDTO, ReactionPostUserOUT, \
     ReactionPostUserWithRelationshipOUT
@@ -12,6 +13,7 @@ from app.services.base.jwt_service_base import JwtServiceBase
 from app.services.providers.reaction_post_user_service_provider import ReactionPostUserServiceProvider
 from app.services.providers.post_user_service_provider import PostUserServiceProvider
 from app.services.providers.user_service_provider import UserServiceProvider
+from app.utils.enums.sum_red import ColumnsPostEnterpriseMetricEnum, ColumnsPostUserMetricEnum, SumRedEnum
 from app.utils.res.responses_http import *
 
 URL = "/api/v1/area/reaction-post-user"
@@ -84,6 +86,7 @@ async def create(
     dto: CreateReactionPostUserDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
+    post_user_metric_service: PostUserMetricServiceProvider = Depends(get_post_user_metric_service_provider_dependency),
     reaction_service: ReactionPostUserServiceProvider = Depends(get_reaction_post_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -125,7 +128,15 @@ async def create(
         check = await reaction_service.get_by_user_id_and_post_user_id(user_id=user_id, post_user_id=dto.post_user_id)
         if check and dto.reaction_type != check.reaction_type:
 
-            await reaction_service.toggle_reaction_type(check)
+            reaction_updated = await reaction_service.toggle_reaction_type(check)
+
+            if reaction_updated.reaction_type == ReactionTypeEnum.LIKE:
+                await post_user_metric_service.update_metric(dto.post_user_id, ColumnsPostUserMetricEnum.reactions_dislike_count, SumRedEnum.RED)
+                await post_user_metric_service.update_metric(dto.post_user_id, ColumnsPostUserMetricEnum.reactions_like_count, SumRedEnum.SUM)
+
+            if reaction_updated.reaction_type == ReactionTypeEnum.DISLIKE:
+                await post_user_metric_service.update_metric(dto.post_user_id, ColumnsPostUserMetricEnum.reactions_dislike_count, SumRedEnum.SUM)
+                await post_user_metric_service.update_metric(dto.post_user_id, ColumnsPostUserMetricEnum.reactions_like_count, SumRedEnum.RED)
 
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
@@ -143,6 +154,12 @@ async def create(
         if check and dto.reaction_type == check.reaction_type:
             await reaction_service.delete(check)
 
+            if dto.reaction_type == ReactionTypeEnum.LIKE:
+                await post_user_metric_service.update_metric(dto.post_user_id, ColumnsPostUserMetricEnum.reactions_like_count, SumRedEnum.RED)
+
+            if dto.reaction_type == ReactionTypeEnum.DISLIKE:
+                await post_user_metric_service.update_metric(dto.post_user_id, ColumnsPostUserMetricEnum.reactions_dislike_count, SumRedEnum.RED)
+
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
                 content=dict(ResponseBody(
@@ -157,6 +174,17 @@ async def create(
             )
 
         await reaction_service.create(user_id=user_id, dto=dto)
+
+        if dto.reaction_type == ReactionTypeEnum.LIKE:
+            await post_user_metric_service.update_metric(dto.post_user_id,
+                                                         ColumnsPostUserMetricEnum.reactions_like_count, SumRedEnum.SUM)
+
+        if dto.reaction_type == ReactionTypeEnum.DISLIKE:
+            await post_user_metric_service.update_metric(
+                dto.post_user_id,
+                ColumnsPostUserMetricEnum.reactions_dislike_count,
+                SumRedEnum.SUM
+            )
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
@@ -286,6 +314,7 @@ async def delete(
     post_user_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
+    post_user_metric_service: PostUserMetricServiceProvider = Depends(get_post_user_metric_service_provider_dependency),
     reaction_service: ReactionPostUserServiceProvider = Depends(get_reaction_post_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),

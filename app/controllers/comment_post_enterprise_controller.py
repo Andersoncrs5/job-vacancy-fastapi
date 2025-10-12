@@ -9,7 +9,8 @@ from app.configs.db.database import CommentPostEnterpriseEntity
 from app.dependencies.service_dependency import *
 from app.schemas.comment_post_enterprise_schemas import CommentPostEnterpriseOUT, CreateCommentPostEnterpriseDTO, \
     UpdateCommentPostEnterpriseDTO
-from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnsPostEnterpriseMetricEnum
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnsPostEnterpriseMetricEnum, \
+    ColumnsCommentPostEnterpriseMetricEnum
 from app.utils.filter.comment_post_enterprise_filter import CommentPostEnterpriseFilter
 from app.utils.res.responses_http import *
 
@@ -37,6 +38,7 @@ async def patch(
     dto: UpdateCommentPostEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    comment_enterprise_metric_service: CommentPostEnterpriseMetricServiceProvider = Depends(get_comment_post_enterprise_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -76,6 +78,9 @@ async def patch(
 
         out = comment_updated.to_out()
         out_dict = out.model_dump(by_alias=True)
+        await comment_enterprise_metric_service.update_metric(comment.id,
+                                                           ColumnsCommentPostEnterpriseMetricEnum.edited_count,
+                                                           SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -117,6 +122,7 @@ async def delete(
     post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    comment_enterprise_metric_service: CommentPostEnterpriseMetricServiceProvider = Depends(get_comment_post_enterprise_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -197,6 +203,7 @@ async def get_by_id(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    comment_enterprise_metric_service: CommentPostEnterpriseMetricServiceProvider = Depends(get_comment_post_enterprise_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -235,6 +242,10 @@ async def get_by_id(
         out = comment.to_out()
 
         out_dict = out.model_dump(by_alias=True)
+
+        await comment_enterprise_metric_service.update_metric(comment.id,
+                                                              ColumnsCommentPostEnterpriseMetricEnum.views_count,
+                                                              SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -307,6 +318,7 @@ async def create(
     post_enterprise_service: PostUserServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     comment_service: CommentPostEnterpriseServiceProvider = Depends(get_comment_post_enterprise_service_provider_dependency),
+    comment_enterprise_metric_service: CommentPostEnterpriseMetricServiceProvider = Depends(get_comment_post_enterprise_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -362,6 +374,10 @@ async def create(
                 )
 
         comment_created = await comment_service.create(user_id, dto)
+        await comment_enterprise_metric_service.create(comment_created.id)
+
+        if dto.parent_comment_id is not None:
+            await comment_enterprise_metric_service.update_metric(dto.parent_comment_id, ColumnsCommentPostEnterpriseMetricEnum.replies_count, SumRedEnum.SUM)
 
         out = comment_created.to_out()
 

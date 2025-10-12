@@ -8,7 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity
 from app.dependencies.service_dependency import *
 from app.schemas.post_user_schemas import *
-from app.utils.enums.sum_red import SumRedEnum, ColumnUserMetricEnum
+from app.utils.enums.sum_red import SumRedEnum, ColumnUserMetricEnum, ColumnsPostUserMetricEnum
 from app.utils.filter.post_user_filter import PostUserFilter
 from app.utils.res.responses_http import *
 
@@ -134,6 +134,7 @@ async def delete(
 async def get(
     post_user_id: int,
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
+    post_user_metric_service: PostUserMetricServiceProvider = Depends(get_post_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -172,6 +173,7 @@ async def get(
             )  
         
         post_user_out: Final[PostUserOUT] = post_user.to_out()
+        await post_user_metric_service.update_metric(post_user.id, ColumnsPostUserMetricEnum.views_count, SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -328,6 +330,7 @@ async def create(
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    post_user_metric_service: PostUserMetricServiceProvider = Depends(get_post_user_metric_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -403,6 +406,7 @@ async def create(
         await user_metric_service.update_metric(metric_user, ColumnUserMetricEnum.post_count, SumRedEnum.SUM)
 
         post_user_out = post_user_created.to_out()
+        await post_user_metric_service.create(post_user_created.id)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
