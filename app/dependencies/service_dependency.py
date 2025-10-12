@@ -9,6 +9,7 @@ from app.repositories.providers.comment_post_enterprise_repository_provider impo
 from app.repositories.providers.comment_post_user_repository_provider import CommentPostUserRepositoryProvider
 from app.repositories.providers.enterprise_follows_user_repository_provider import \
     EnterpriseFollowsUserRepositoryProvider
+from app.repositories.providers.enterprise_metric_repository_provider import EnterpriseMetricRepositoryProvider
 from app.repositories.providers.favorite_comment_post_enterprise_repository_provider import \
     FavoriteCommentPostEnterpriseRepositoryProvider
 from app.repositories.providers.favorite_comment_post_user_repository_provider import \
@@ -28,6 +29,7 @@ from app.services.kafka_service import get_producer_dependency
 from app.services.providers.comment_post_enterprise_service_provider import CommentPostEnterpriseServiceProvider
 from app.services.providers.comment_post_user_service_provider import CommentPostUserServiceProvider
 from app.services.providers.enterprise_follows_user_service_provider import EnterpriseFollowsUserServiceProvider
+from app.services.providers.enterprise_metric_service_provider import EnterpriseMetricServiceProvider
 from app.services.providers.favorite_comment_post_enterprise_service_provider import \
     FavoriteCommentPostEnterpriseServiceProvider
 from app.services.providers.favorite_comment_post_user_service_provider import FavoriteCommentPostUserServiceProvider
@@ -82,6 +84,13 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_enterprise_metric_service_provider_dependency(
+        db: AsyncSession = Depends(get_db),
+        producer: AIOKafkaProducer = Depends(get_producer_dependency),
+) -> EnterpriseMetricServiceProvider:
+    repository = EnterpriseMetricRepositoryProvider(db)
+    return EnterpriseMetricServiceProvider(repository=repository, producer=producer)
 
 def get_enterprise_follows_user_provider_dependency(db: AsyncSession = Depends(get_db)) -> EnterpriseFollowsUserServiceProvider:
     repository = EnterpriseFollowsUserRepositoryProvider(db)
