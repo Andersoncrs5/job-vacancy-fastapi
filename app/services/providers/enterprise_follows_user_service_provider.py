@@ -2,11 +2,15 @@ from app.configs.db.database import EnterpriseFollowsUserEntity
 from app.repositories.providers.enterprise_follows_user_repository_provider import \
     EnterpriseFollowsUserRepositoryProvider
 from app.services.base.enterprise_follows_user_service_base import EnterpriseFollowsUserServiceBase
+from app.utils.filter.enterprise_follows_user_filter import EnterpriseFollowsUserFilter
 
 
 class EnterpriseFollowsUserServiceProvider(EnterpriseFollowsUserServiceBase):
     def __init__(self, repository: EnterpriseFollowsUserRepositoryProvider):
         self.repository = repository
+
+    async def get_all(self, filter: EnterpriseFollowsUserFilter):
+        return await self.repository.get_all(filter)
 
     async def create(self, enterprise_id: int, user_id: int) -> EnterpriseFollowsUserEntity:
         follow = EnterpriseFollowsUserEntity(
