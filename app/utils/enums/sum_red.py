@@ -37,3 +37,11 @@ class ColumnEnterpriseMetricEnum(str, Enum):
     view_count = "view_count"
     review_count = "review_count"
     employments_count = "employments_count"
+
+class ColumnsPostEnterpriseMetricEnum(str, Enum):
+    views_count = "views_count"
+    shares_count = "shares_count"
+    reactions_like_count = "reactions_like_count"
+    reactions_dislike_count = "reactions_dislike_count"
+    favorites_count = "favorites_count"
+    comments_count = "comments_count"
