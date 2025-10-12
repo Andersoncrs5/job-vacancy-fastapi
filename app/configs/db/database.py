@@ -629,13 +629,15 @@ class EnterpriseFollowsUserEntity(Base):
     follower_enterprise: Mapped["EnterpriseEntity"] = relationship(
         "EnterpriseEntity",
         foreign_keys=[enterprise_id],
-        back_populates="following_users_relationships"
+        back_populates="following_users_relationships",
+        lazy="joined"
     )
 
     followed_user: Mapped["UserEntity"] = relationship(
         "UserEntity",
         foreign_keys=[user_id],
-        back_populates="enterprise_followers_relationships"
+        back_populates="enterprise_followers_relationships",
+        lazy="joined"
     )
 
 class AddressEnterpriseEntity(Base):
