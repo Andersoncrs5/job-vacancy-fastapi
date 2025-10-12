@@ -1,5 +1,5 @@
 from aiokafka import AIOKafkaProducer
-from app.configs.db.kafka import KAFKA_BROKER
+from app.configs.kafka.kafka import KAFKA_BROKER
 
 async def get_producer_dependency():
     producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BROKER)
