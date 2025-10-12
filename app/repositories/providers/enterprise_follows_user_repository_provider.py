@@ -3,11 +3,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.configs.db.database import EnterpriseFollowsUserEntity
 from app.repositories.base.enterprise_follows_user_repository_base import EnterpriseFollowsUserRepositoryBase
+from app.utils.filter.enterprise_follows_user_filter import EnterpriseFollowsUserFilter
 
 
 class EnterpriseFollowsUserRepositoryProvider(EnterpriseFollowsUserRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def get_all(self, filter: EnterpriseFollowsUserFilter):
+        stmt = filter.filter(select(EnterpriseFollowsUserEntity))
+
+        result = await self.db.execute(stmt)
+
+        return result.scalars().all()
 
     async def add(self, follow: EnterpriseFollowsUserEntity) -> EnterpriseFollowsUserEntity:
         self.db.add(follow)

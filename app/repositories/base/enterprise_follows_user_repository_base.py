@@ -1,9 +1,14 @@
 from abc import ABC, abstractmethod
 
 from app.configs.db.database import EnterpriseFollowsUserEntity
+from app.utils.filter.enterprise_follows_user_filter import EnterpriseFollowsUserFilter
 
 
 class EnterpriseFollowsUserRepositoryBase(ABC):
+
+    @abstractmethod
+    async def get_all(self, filter: EnterpriseFollowsUserFilter):
+        pass
 
     @abstractmethod
     async def add(self, follow: EnterpriseFollowsUserEntity) -> EnterpriseFollowsUserEntity:
