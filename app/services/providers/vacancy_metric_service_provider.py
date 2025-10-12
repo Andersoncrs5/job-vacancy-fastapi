@@ -40,6 +40,7 @@ class VacancyMetricServiceProvider(VacancyMetricServiceBase):
             source="vacancy-metric-service",
             created_at=datetime.now(UTC),
             event_id=str(uuid.uuid4()),
+            metadata=dict({})
         )
 
         await send_message_to_kafka(self.producer, event.model_dump_json(), SUM_RED_METRIC_TOPIC)
