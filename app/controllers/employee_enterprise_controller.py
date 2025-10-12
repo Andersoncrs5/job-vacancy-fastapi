@@ -1,3 +1,4 @@
+from app.utils.enums.sum_red import ColumnEnterpriseMetricEnum, SumRedEnum
 from app.utils.filter.employee_enterprise_filter import EmployeeEnterpriseFilter
 from datetime import datetime
 
@@ -115,6 +116,7 @@ async def patch(
 )
 async def delete(
     employee_id: int,
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     employee_enterprise_service: EmployeeEnterpriseServiceProvider = Depends(get_employee_enterprise_service_provider_dependency),
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -155,6 +157,10 @@ async def delete(
             )
 
         await employee_enterprise_service.delete(employee)
+
+        await enterprise_metric_service.update_metric(employee.enterprise_id,
+                                                      ColumnEnterpriseMetricEnum.employments_count,
+                                                      SumRedEnum.RED)
         
         return ORJSONResponse(
                 status_code=200,
@@ -299,6 +305,7 @@ async def get_all(
 )
 async def create(
     dto: CreateEmployeeEnterpriseDTO,
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     employee_enterprise_service: EmployeeEnterpriseServiceProvider = Depends(get_employee_enterprise_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
@@ -372,6 +379,10 @@ async def create(
         employee_created: Final[EmployeeEnterpriseEntity] = await employee_enterprise_service.create(user.id, enterprise.id, dto)
 
         out: Final[EmployeeEnterpriseOUT] = employee_created.to_out()
+
+        await enterprise_metric_service.update_metric(enterprise.id,
+                                                      ColumnEnterpriseMetricEnum.employments_count,
+                                                      SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

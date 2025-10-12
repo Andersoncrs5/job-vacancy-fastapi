@@ -376,6 +376,7 @@ async def create(
         )
 
     except Exception as e:
+        print("Error ", e)
         return ORJSONResponse(
             status_code=500,
             content=dict(ResponseBody[Any](

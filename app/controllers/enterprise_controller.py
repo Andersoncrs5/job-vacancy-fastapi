@@ -8,6 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.database import EnterpriseEntity, UserEntity, IndustryEntity
 from app.dependencies.service_dependency import *
 from app.schemas.enterprise_schemas import *
+from app.utils.enums.sum_red import ColumnEnterpriseMetricEnum, SumRedEnum
 from app.utils.filter.enterprise_filter import EnterpriseFilter
 from app.utils.res.responses_http import *
 
@@ -341,6 +342,7 @@ async def get_my_enterprise(
 async def get(
     id: int,
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -379,6 +381,10 @@ async def get(
             )
 
         enterprise_out = enterprise.to_out()
+
+        await enterprise_metric_service.update_metric(enterprise.id,
+                                                      ColumnEnterpriseMetricEnum.view_count,
+                                                      SumRedEnum.SUM)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -421,6 +427,7 @@ async def create(
     dto: CreateEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     industry_service: IndustryServiceProvider = Depends(get_industry_service_provider_dependency),
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -508,6 +515,8 @@ async def create(
 
         enterprise_out: Final[EnterpriseOUT] = enterprise_created.to_out()
 
+        await enterprise_metric_service.create(enterprise_created.id)
+
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
             content=dict(ResponseBody[dict](
@@ -522,6 +531,7 @@ async def create(
         )
 
     except Exception as e:
+        print('Error: ',  e)
         return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](

@@ -8,6 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.database import EnterpriseEntity
 from app.dependencies.service_dependency import *
 from app.schemas.review_enterprise_schemas import *
+from app.utils.enums.sum_red import ColumnEnterpriseMetricEnum, SumRedEnum
 from app.utils.filter.review_enterprise_filter import ReviewEnterpriseFilter
 from app.utils.res.responses_http import *
 
@@ -128,6 +129,7 @@ async def patch(
 )
 async def delete(
     view_id: int,
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     review_enterprise_service: ReviewEnterpriseServiceProvider = Depends(get_review_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -165,9 +167,13 @@ async def delete(
                     version = 1,
                     path = None
                 ))
-            )  
+            )
 
         await review_enterprise_service.delete(view)
+
+        await enterprise_metric_service.update_metric(view.enterprise_id,
+                                                      ColumnEnterpriseMetricEnum.review_count,
+                                                      SumRedEnum.RED)
 
         return ORJSONResponse(
             status_code=200,
@@ -243,7 +249,7 @@ async def get_by_id(
                     version = 1,
                     path = None
                 ))
-            )  
+            )
 
         out = view.to_out()
 
@@ -286,6 +292,7 @@ async def get_by_id(
 )
 async def create(
     dto: CreateReviewEnterpriseDTO,
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     review_enterprise_service: ReviewEnterpriseServiceProvider = Depends(get_review_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -314,7 +321,7 @@ async def create(
             )
         
         enterprise: Final[EnterpriseEntity | None] = await enterprise_service.get_by_id(dto.enterprise_id)
-        if enterprise == None :
+        if enterprise is None:
             return ORJSONResponse(
                 status_code=404,
                 content=dict(ResponseBody(
@@ -373,6 +380,10 @@ async def create(
             )
         
         review_created: Final[ReviewEnterprise] = await review_enterprise_service.create(user_id, dto)
+
+        await enterprise_metric_service.update_metric(review_created.enterprise_id,
+                                                      ColumnEnterpriseMetricEnum.review_count,
+                                                      SumRedEnum.SUM)
 
         out: Final[ReviewEnterpriseOUT] = review_created.to_out()
 

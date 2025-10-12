@@ -8,7 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.database import PostEnterpriseEntity, EnterpriseEntity, CategoryEntity
 from app.dependencies.service_dependency import *
 from app.schemas.post_enterprise_schemas import *
-from app.utils.enums.sum_red import SumRedEnum
+from app.utils.enums.sum_red import SumRedEnum, ColumnEnterpriseMetricEnum
 from app.utils.filter.post_enterprise_filter import PostEnterpriseFilter
 from app.utils.res.responses_http import *
 
@@ -118,6 +118,7 @@ async def update(
 )
 async def delete(
     post_id: int,
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     post_enterprise_service: PostEnterpriseServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -157,6 +158,9 @@ async def delete(
             )  
         
         await post_enterprise_service.delete(post)
+
+        await enterprise_metric_service.update_metric(post.enterprise_id, ColumnEnterpriseMetricEnum.post_count,
+                                                      SumRedEnum.RED)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -307,6 +311,7 @@ async def get_all(
 async def create(
     category_id: int,
     dto: CreatePostEnterpriseDTO,
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     post_enterprise_service: PostEnterpriseServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
@@ -380,6 +385,9 @@ async def create(
         post_enterprise_created: Final[PostEnterpriseEntity] = await post_enterprise_service.create(enter.id, category.id, dto)
 
         await category_service.sum_red_post_count(category, SumRedEnum.SUM)
+
+        await enterprise_metric_service.update_metric(post_enterprise_created.enterprise_id, ColumnEnterpriseMetricEnum.post_count,
+                                                      SumRedEnum.SUM)
 
         post_enterprise_out = post_enterprise_created.to_out()
 

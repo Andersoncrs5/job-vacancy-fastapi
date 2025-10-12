@@ -8,6 +8,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.database import EnterpriseEntity
 from app.dependencies.service_dependency import *
 from app.schemas.enterprise_follows_user_schemas import EnterpriseFollowsUserOUT
+from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnEnterpriseMetricEnum
 from app.utils.filter.enterprise_follows_user_filter import EnterpriseFollowsUserFilter
 from app.utils.res.responses_http import *
 
@@ -130,6 +131,8 @@ async def toggle(
     followed_user_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     enterprise_follow_service: EnterpriseFollowsUserServiceProvider = Depends(get_enterprise_follows_user_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -185,6 +188,18 @@ async def toggle(
         follow = await enterprise_follow_service.get_by_enterprise_id_and_user_id(enterprise.id, followed_user_id)
 
         if follow :
+            await enterprise_metric_service.update_metric(
+                enterprise.id,
+                ColumnEnterpriseMetricEnum.followed_count,
+                SumRedEnum.RED
+            )
+
+            await user_metric_service.update_metric_v2(
+                followed_user_id,
+                ColumnUserMetricEnum.follower_count,
+                SumRedEnum.RED
+            )
+
             await enterprise_follow_service.delete(follow)
 
             return ORJSONResponse(
@@ -201,6 +216,18 @@ async def toggle(
             )
 
         await enterprise_follow_service.create(enterprise.id, followed_user_id)
+
+        await enterprise_metric_service.update_metric(
+            enterprise.id,
+            ColumnEnterpriseMetricEnum.followed_count,
+            SumRedEnum.SUM
+        )
+
+        await user_metric_service.update_metric_v2(
+            followed_user_id,
+            ColumnUserMetricEnum.follower_count,
+            SumRedEnum.SUM
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
