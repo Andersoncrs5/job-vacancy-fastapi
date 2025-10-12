@@ -27,3 +27,13 @@ class ColumnUserMetricEnum(str, Enum):
     enterprise_follower_count = "enterprise_follower_count"
     profile_view_count = "profile_view_count"
     vacancy_application_count = "vacancy_application_count"
+
+class ColumnEnterpriseMetricEnum(str, Enum):
+    followed_count = "followed_count"
+    follower_count = "follower_count"
+    vacancies_count = "vacancies_count"
+    post_count = "post_count"
+    comment_post = "comment_post"
+    view_count = "view_count"
+    review_count = "review_count"
+    employments_count = "employments_count"
