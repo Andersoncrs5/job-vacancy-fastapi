@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from aiokafka import AIOKafkaProducer
 
 from app.configs.db.database import VacancyMetricEntity
-from app.configs.db.kafka import SUM_RED_METRIC_TOPIC
+from app.configs.kafka.kafka import SUM_RED_METRIC_TOPIC
 from app.repositories.providers.vacancy_metric_repository_provider import VacancyMetricRepositoryProvider
 from app.schemas.event_message_schemas import EntityEnum, EventMessageMetric
 from app.services.base.vacancy_metric_service_base import VacancyMetricServiceBase
@@ -39,7 +39,7 @@ class VacancyMetricServiceProvider(VacancyMetricServiceBase):
             entity=EntityEnum.VACANCY_METRIC,
             source="vacancy-metric-service",
             created_at=datetime.now(UTC),
-            event_id=str(uuid.uuid4())
+            event_id=str(uuid.uuid4()),
         )
 
         await send_message_to_kafka(self.producer, event.model_dump_json(), SUM_RED_METRIC_TOPIC)
