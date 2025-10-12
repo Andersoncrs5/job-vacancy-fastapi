@@ -998,6 +998,13 @@ class PostEnterpriseEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    metrics: Mapped["PostEnterpriseMetricEntity"] = relationship(
+        "PostEnterpriseMetricEntity",
+        back_populates="post",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
     def to_out(self):
         from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
 
@@ -1011,6 +1018,29 @@ class PostEnterpriseEntity(Base):
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
         )
+
+class PostEnterpriseMetricEntity(Base):
+    __tablename__ = "metric_posts_enterprise"
+
+    post_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("posts_enterprise.id"),
+        primary_key=True
+    )
+
+    views_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    shares_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    reactions_like_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    reactions_dislike_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    favorites_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    comments_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    post: Mapped["PostEnterpriseEntity"] = relationship("PostEnterpriseEntity", back_populates="metrics")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class CommentPostEnterpriseEntity(Base):
     __tablename__ = "comments_posts_enterprise"
