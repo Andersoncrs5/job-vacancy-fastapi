@@ -1,3 +1,5 @@
+kafka-python
+kafka
 fastapi
 uvicorn[standard]
 pydantic
