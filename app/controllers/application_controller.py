@@ -192,10 +192,13 @@ async def delete(
                 ))
             )
 
-        await application_service.delete(app)
         await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.vacancy_application_count, SumRedEnum.RED)
-        await vacancy_metric_service.update_metric(app.vacancy_id, ColumnsVacancyMetricEnum.applications_count,
-                                                   SumRedEnum.RED)
+        await vacancy_metric_service.update_metric(
+            app.vacancy_id,
+            ColumnsVacancyMetricEnum.applications_count,
+            SumRedEnum.RED
+        )
+        await application_service.delete(app)
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,

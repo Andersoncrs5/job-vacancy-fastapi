@@ -9,6 +9,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from app.configs.db.enums import ReactionTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.reaction_comment_post_user_schemas import CreateReactionCommentPostUserDTO, ReactionCommentPostUserOUT
+from app.utils.enums.sum_red import ColumnsCommentPostUserMetricEnum, SumRedEnum
 
 from app.utils.res.responses_http import *
 
@@ -69,6 +70,7 @@ async def toggle(
     dto: CreateReactionCommentPostUserDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     reaction_service: ReactionCommentPostUserServiceProvider = Depends(get_reaction_comment_post_user_service_provider_dependency),
+    comment_post_user_metric_service: CommentPostUserMetricServiceProvider = Depends(get_comment_post_user_metric_service_provider_dependency),
     comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -110,7 +112,25 @@ async def toggle(
         react = await reaction_service.get_by_user_id_and_comment_user_id(user_id, dto.comment_user_id)
 
         if react and react.reaction_type != dto.reaction_type:
-            await reaction_service.toggle_reaction_type(react)
+            reaction_updated = await reaction_service.toggle_reaction_type(react)
+
+            if reaction_updated.reaction_type == ReactionTypeEnum.LIKE:
+
+                await comment_post_user_metric_service.update_metric(
+                    comment.id, ColumnsCommentPostUserMetricEnum.reactions_dislike_count, SumRedEnum.RED
+                )
+                await comment_post_user_metric_service.update_metric(
+                    comment.id, ColumnsCommentPostUserMetricEnum.reactions_like_count, SumRedEnum.SUM
+                )
+
+            elif reaction_updated.reaction_type == ReactionTypeEnum.DISLIKE:
+
+                await comment_post_user_metric_service.update_metric(
+                    comment.id, ColumnsCommentPostUserMetricEnum.reactions_like_count, SumRedEnum.RED
+                )
+                await comment_post_user_metric_service.update_metric(
+                    comment.id, ColumnsCommentPostUserMetricEnum.reactions_dislike_count, SumRedEnum.SUM
+                )
 
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
@@ -128,6 +148,15 @@ async def toggle(
         if react and react.reaction_type == dto.reaction_type:
             await reaction_service.delete(react)
 
+            if dto.reaction_type == ReactionTypeEnum.LIKE:
+                await comment_post_user_metric_service.update_metric(
+                    comment.id, ColumnsCommentPostUserMetricEnum.reactions_like_count, SumRedEnum.RED
+                )
+            else:
+                await comment_post_user_metric_service.update_metric(
+                    comment.id, ColumnsCommentPostUserMetricEnum.reactions_dislike_count, SumRedEnum.RED
+                )
+
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
                 content=dict(ResponseBody(
@@ -142,6 +171,15 @@ async def toggle(
             )
 
         await reaction_service.create(user_id, dto)
+
+        if dto.reaction_type == ReactionTypeEnum.LIKE:
+            await comment_post_user_metric_service.update_metric(
+                comment.id, ColumnsCommentPostUserMetricEnum.reactions_like_count, SumRedEnum.SUM
+            )
+        else:
+            await comment_post_user_metric_service.update_metric(
+                comment.id, ColumnsCommentPostUserMetricEnum.reactions_dislike_count, SumRedEnum.SUM
+            )
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

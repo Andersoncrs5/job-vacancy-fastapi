@@ -162,9 +162,18 @@ async def delete(
         await comment_service.delete(comment)
 
         await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.comment_count, SumRedEnum.RED)
-        await post_enterprise_metric_service.update_metric(comment.post_enterprise_id,
-                                                           ColumnsPostEnterpriseMetricEnum.comments_count,
-                                                           SumRedEnum.RED)
+        await post_enterprise_metric_service.update_metric(
+            comment.post_enterprise_id,
+            ColumnsPostEnterpriseMetricEnum.comments_count,
+            SumRedEnum.RED
+        )
+
+        if comment.parent_comment_id is not None:
+            await comment_enterprise_metric_service.update_metric(
+                comment.parent_comment_id,
+                ColumnsCommentPostEnterpriseMetricEnum.replies_count,
+                SumRedEnum.RED
+            )
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,

@@ -80,9 +80,12 @@ async def delete(
 
         metric = await user_metric_service.get_by_id(user_id)
         await user_metric_service.update_metric(metric,  ColumnUserMetricEnum.favorite_post_count, SumRedEnum.RED)
-        await post_enterprise_metric_service.update_metric(post.id,
-                                                           ColumnsPostEnterpriseMetricEnum.favorites_count,
-                                                           SumRedEnum.RED)
+
+        await post_enterprise_metric_service.update_metric(
+            post.post_enterprise_id,
+            ColumnsPostEnterpriseMetricEnum.favorites_count,
+            SumRedEnum.RED
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
