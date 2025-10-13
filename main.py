@@ -1,6 +1,10 @@
+import asyncio
+
 from aiokafka import AIOKafkaProducer
 from fastapi import FastAPI
 
+from app.configs.kafka_configs.kafka_admin import KafkaAdmin, KAFKA_BROKER
+from app.configs.logs.log_config import setup_logging
 from app.controllers import (
     favorite_post_user_controller, auth_controller, user_controller,
     category_controller, post_user_controller, industry_controller,
@@ -22,19 +26,6 @@ from typing import Final
 import structlog
 import uuid
 
-def setup_logging() -> structlog.BoundLogger:
-    structlog.configure(
-        processors=[
-            structlog.contextvars.merge_contextvars,
-            structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.JSONRenderer()
-        ],
-        logger_factory=structlog.stdlib.LoggerFactory(),
-        wrapper_class=structlog.stdlib.BoundLogger,
-        cache_logger_on_first_use=True,
-    )
-    return structlog.get_logger()
-
 logger: Final[structlog.BoundLogger] = setup_logging()
 
 @asynccontextmanager
@@ -43,6 +34,9 @@ async def lifespan(app: FastAPI):
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # admin_service = KafkaAdmin(bootstrap_servers=[KAFKA_BROKER])
+    # await asyncio.to_thread(admin_service.create_topics_from_file)
 
     yield
     logger.info("Shutting down the application...")
