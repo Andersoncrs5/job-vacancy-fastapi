@@ -1157,7 +1157,6 @@ class CommentPostEnterpriseMetricEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
                                                  onupdate=func.now(), nullable=False)
 
-
 class ReactionCommentPostEnterpriseEntity(Base):
     __tablename__ = "reaction_comments_enterprise"
 
@@ -1445,6 +1444,13 @@ class CommentPostUserEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    metrics: Mapped["CommentPostUserMetricEntity"] = relationship(
+        "CommentPostUserMetricEntity",
+        back_populates="comment",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
     def to_out(self):
         from app.schemas.comment_post_user_schemas import CommentPostUserOUT
 
@@ -1463,6 +1469,41 @@ class CommentPostUserEntity(Base):
             user=user_out,
             post=post_out,
         )
+
+class CommentPostUserMetricEntity(Base):
+    __tablename__ = "metric_comments_posts_user"
+
+    comment_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("comments_posts_user.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+
+    replies_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    edited_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+
+    views_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    shares_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    reactions_like_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    reactions_dislike_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    favorites_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    comment: Mapped["CommentPostUserEntity"] = relationship(
+        "CommentPostUserEntity", back_populates="metrics"
+    )
 
 class ReactionCommentPostUserEntity(Base):
     __tablename__ = "reaction_comments_user"
