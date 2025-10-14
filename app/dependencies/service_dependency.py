@@ -37,6 +37,7 @@ from app.services.providers.comment_post_enterprise_metric_service_provider impo
 from app.services.providers.comment_post_enterprise_service_provider import CommentPostEnterpriseServiceProvider
 from app.services.providers.comment_post_user_metric_service_provider import CommentPostUserMetricServiceProvider
 from app.services.providers.comment_post_user_service_provider import CommentPostUserServiceProvider
+from app.services.providers.email_service_provider import EmailServiceProvider
 from app.services.providers.enterprise_follows_user_service_provider import EnterpriseFollowsUserServiceProvider
 from app.services.providers.enterprise_metric_service_provider import EnterpriseMetricServiceProvider
 from app.services.providers.favorite_comment_post_enterprise_service_provider import \
@@ -95,6 +96,11 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_email_service_provider_dependency(
+    producer: AIOKafkaProducer = Depends(get_producer_dependency),
+) -> EmailServiceProvider:
+    return EmailServiceProvider(producer=producer)
 
 def get_comment_post_user_metric_service_provider_dependency(
         db: AsyncSession = Depends(get_db),
