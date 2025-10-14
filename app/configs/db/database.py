@@ -842,8 +842,8 @@ class ApplicationEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
                                                  onupdate=func.now(), nullable=False)
 
-    user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="applications")
-    vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="applications")
+    user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="applications", lazy="joined")
+    vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="applications", lazy="joined")
 
     def to_out(self):
         from app.schemas.application_schemas import ApplicationOUT
