@@ -7,6 +7,6 @@ start date: 9/17/25
 - docker
 - python 3.17.4
 - postgres 18
-- kafka with zookeeper
+- kafka with zookeeper both 7.44 version
 
 ## 
