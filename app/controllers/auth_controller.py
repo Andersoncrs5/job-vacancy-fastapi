@@ -164,7 +164,7 @@ async def login(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
     try:
-        user: Final[UserEntity | None] = await user_service.get_by_email(dto.email)
+        user: Final[UserEntity | None] = await user_service.get_by_email(str(dto.email))
         if user is None:
             return ORJSONResponse(
                 status_code=401,
@@ -257,6 +257,7 @@ async def login(
 async def resister(
     dto: CreateUserDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    email_service: EmailServiceProvider = Depends((get_email_service_provider_dependency)),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
@@ -283,6 +284,8 @@ async def resister(
         refresh_token: Final = jwt_service.create_refresh_token(user_created)
 
         await user_service.set_refresh_token(refresh_token, user_created)
+
+        await email_service.send_email_welcome_user(user_created.email, "Welcome", {})
 
         tokens: Final[Tokens] = Tokens(
             token=token, 
