@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.configs.db.database import AddressEnterpriseEntity
 from app.repositories.base.address_enterprise_repository_base import AddressEnterpriseRepositoryBase

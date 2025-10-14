@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from aiokafka import AIOKafkaProducer
 
 from app.configs.db.database import CommentPostUserMetricEntity
-from app.configs.kafka.kafka import SUM_RED_METRIC_TOPIC
+from app.configs.kafka_configs.kafka_admin import SUM_RED_METRIC_TOPIC
 from app.repositories.providers.comment_post_user_metric_repository_provider import \
     CommentPostUserMetricRepositoryProvider
 from app.schemas.event_message_schemas import EventMessageMetric, EntityEnum
