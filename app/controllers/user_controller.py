@@ -92,6 +92,7 @@ async def get_user(
 )
 async def delete(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -117,6 +118,7 @@ async def delete(
             )
 
         await user_service.delete(user)
+        await email_service.send_email_bye(user.email, "", {})
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
