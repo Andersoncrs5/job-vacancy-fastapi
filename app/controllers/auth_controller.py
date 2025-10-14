@@ -257,7 +257,7 @@ async def login(
 async def resister(
     dto: CreateUserDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
-    email_service: EmailServiceProvider = Depends((get_email_service_provider_dependency)),
+    email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
