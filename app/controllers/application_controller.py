@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.db.database import ApplicationEntity
 from app.dependencies.service_dependency import *
 from app.schemas.application_schemas import ApplicationOUT, UpdateApplicationDTO
 from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnsVacancyMetricEnum
@@ -33,6 +34,7 @@ async def patch(
     id: int,
     dto: UpdateApplicationDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
     application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -70,7 +72,7 @@ async def patch(
                 ))
             )
 
-        app = await application_service.get_by_id(id)
+        app: ApplicationEntity | None  = await application_service.get_by_id(id)
         if not app:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -86,6 +88,8 @@ async def patch(
             )
 
         app_updated = await application_service.update(app, dto)
+
+        await email_service.send_email_depend_application_status(user.email, app_updated.status, {'vacancy': app.vacancy})
 
         out = app_updated.to_out()
 
@@ -271,14 +275,15 @@ async def get_all(
     }
 )
 async def create(
-        id: int,
-        user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
-        vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
-        user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
-        vacancy_metric_service: VacancyMetricServiceProvider = Depends(get_vacancy_metric_service_provider_dependency),
-        application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
-        jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
-        credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    id: int,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
+    vacancy_metric_service: VacancyMetricServiceProvider = Depends(get_vacancy_metric_service_provider_dependency),
+    application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
+    email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if id <= 0:
         return ORJSONResponse(
@@ -362,6 +367,8 @@ async def create(
                                                    SumRedEnum.SUM)
 
         await vacancy_metric_service.update_metric(vacancy.id, ColumnsVacancyMetricEnum.applications_count, SumRedEnum.SUM)
+
+        await email_service.send_email_informing_application(user.email, "", {'vacancy': vacancy})
 
         out = applied.to_out()
 
