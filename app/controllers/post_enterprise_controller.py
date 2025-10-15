@@ -16,7 +16,7 @@ router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/post-enterprise", 
     tags=["PostEnterprise"],
     responses={
-        500: RESPONSE_500,
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     },
     deprecated=False,
@@ -24,12 +24,93 @@ router: Final[APIRouter] = APIRouter(
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
+@router.get(
+    "/{post_id}/metric",
+    status_code=status.HTTP_200_OK,
+    response_model=ResponseBody[PostEnterpriseOUT],
+    responses={
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
+    }
+)
+async def get_metric(
+    post_id: int,
+    post_enterprise_metric_service: PostEnterpriseMetricServiceProvider = Depends(get_post_enterprise_metric_service_provider_dependency),
+    post_enterprise_service: PostEnterpriseServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if post_id <= 0:
+        return ORJSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=dict(ResponseBody(
+                code=status.HTTP_400_BAD_REQUEST,
+                message="id is required",
+                status=False,
+                body=None,
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+
+        post: Final[PostEnterpriseEntity | None] = await post_enterprise_service.get_by_id(post_id)
+        if post is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Post not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        metric = await post_enterprise_metric_service.get_by_id(post_id)
+
+        out = metric.to_out()
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Post metric found with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
 @router.put(
     '/{post_id}',
     status_code=status.HTTP_200_OK,
     response_model=ResponseBody[PostEnterpriseOUT],
     responses={
-        404: RESPONSE_404,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def update(
@@ -104,16 +185,13 @@ async def update(
                 ))
             )
 
-
-
-
 @router.delete(
     "/{post_id}",
     status_code=status.HTTP_200_OK,
     response_model=ResponseBody[PostEnterpriseOUT],
     responses={
-        404: RESPONSE_404,
-        400: RESPONSE_400,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
     }
 )
 async def delete(
@@ -194,8 +272,8 @@ async def delete(
     status_code=status.HTTP_200_OK,
     response_model=ResponseBody[PostEnterpriseOUT],
     responses={
-        404: RESPONSE_404,
-        400: RESPONSE_400,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
     }
 )
 async def get(
@@ -307,7 +385,7 @@ async def get_all(
     response_model=ResponseBody[PostEnterpriseOUT],
     status_code=status.HTTP_201_CREATED,
     responses={
-        404: RESPONSE_404,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def create(
