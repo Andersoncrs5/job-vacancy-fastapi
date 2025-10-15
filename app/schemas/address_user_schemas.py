@@ -15,6 +15,7 @@ class AddressUserOUT(ORJSONModel):
     zipcode: str
     address_type: AddressTypeEnum
     is_default: bool
+    is_visible: bool
     created_at: datetime
     updated_at: datetime
 
@@ -29,6 +30,7 @@ class CreateAddressUserDTO(ORJSONModel):
     zipcode: str
     address_type: AddressTypeEnum
     is_default: bool
+    is_visible: bool
 
     def to_entity(self):
         from app.configs.db.database import AddressUserEntity
@@ -43,6 +45,7 @@ class CreateAddressUserDTO(ORJSONModel):
             country = self.country,
             zipcode = self.zipcode,
             address_type = self.address_type,
+            is_visible = self.is_visible,
             is_default = self.is_default,
         )
     
@@ -57,4 +60,4 @@ class UpdateAddressUserDTO(ORJSONModel):
     zipcode: str | None
     address_type: AddressTypeEnum | None
     is_default: bool | None
-    
+    is_visible: bool | None
