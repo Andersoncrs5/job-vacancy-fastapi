@@ -5,7 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
-from app.configs.db.database import EnterpriseEntity, UserEntity, IndustryEntity
+from app.configs.db.database import EnterpriseEntity, UserEntity, IndustryEntity, EnterpriseMetricEntity
 from app.dependencies.service_dependency import *
 from app.schemas.enterprise_schemas import *
 from app.utils.enums.sum_red import ColumnEnterpriseMetricEnum, SumRedEnum
@@ -413,12 +413,82 @@ async def get(
                 ))
             )
 
+@router.get(
+    "/{id}/metric",
+    response_model=ResponseBody[EnterpriseOUT],
+    status_code=200,
+    responses = {
+        404: RESPONSE_404,
+        400: RESPONSE_400
+    }
+)
+async def get_metric(
+    id: int,
+    enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
+    enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if id <= 0:
+        return ORJSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=dict(ResponseBody(
+                    code=status.HTTP_400_BAD_REQUEST,
+                    message="Id is required",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+    try:
+        jwt_service.valid_credentials(credentials)
+
+        metric: Final[EnterpriseMetricEntity] = await enterprise_metric_service.get_by_id(id)
+
+        enterprise_out = metric.to_out()
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Enterprise metric found with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(enterprise_out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        print("\n")
+        print("\n")
+        print(e)
+        print("\n")
+        print("\n")
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
 @router.post(
     '/{industry_id}',
     response_model=ResponseBody[EnterpriseOUT],
     status_code=201,
     responses = {
         404: RESPONSE_404,
+        403: RESPONSE_403,
         400: RESPONSE_400
     }
 )
@@ -508,6 +578,20 @@ async def create(
                     timestamp=str(datetime.now()),
                     version = 1,
                     path = None
+                ))
+            )
+
+        if not industry.is_active:
+            return ORJSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content=dict(ResponseBody(
+                    code=status.HTTP_403_FORBIDDEN,
+                    message="Industry are unactive",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
                 ))
             )
 
