@@ -264,6 +264,27 @@ async def test_return_not_found_get_vacancy():
     assert body is None
 
 @pytest.mark.asyncio
+async def test_get_metric_vacancy():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+    area_data = await create_area(user_data)
+    vacancy_data = await create_vacancy(user_data, area_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.get(f"{URL}/{vacancy_data.id}/metric", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 200
+
+    assert data['message'] == "Vacancy metric found with successfully"
+    assert data['code'] == 200
+
+    assert body is not None
+    assert body['vacancy_id'] == vacancy_data.id
+
+@pytest.mark.asyncio
 async def test_get_vacancy():
     user_data: Final = await create_and_login_user()
     industry_data: Final = await create_industry(user_data)

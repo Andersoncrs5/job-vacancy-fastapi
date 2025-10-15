@@ -229,6 +229,25 @@ async def test_not_found_get_enterprise():
     assert data['body'] is None
 
 @pytest.mark.asyncio
+async def test_get_metric_enterprise():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.get(f'{URL}/{enterprise_data.id}/metric', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data['message'] == "Enterprise metric found with successfully"
+    assert data['code'] == 200
+    assert data['status'] == True
+    assert data['version'] == 1
+    assert data['path'] is None
+    assert data['body']['enterprise_id'] == enterprise_data.id
+
+@pytest.mark.asyncio
 async def test_get_enterprise():
     user_data: Final = await create_and_login_user()
     industry_data: Final = await create_industry(user_data)

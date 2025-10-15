@@ -18,6 +18,7 @@ async def test_update_curriculum():
     dto = UpdateCurriculumDTO(
         title = "updated",
         is_updated = True,
+        is_visible = True,
         description = "desc update",
     )
 
@@ -98,6 +99,38 @@ async def test_return_bad_request_get_curriculum():
 
     assert data['message'] == "Id is required"
     assert data['code'] == 400
+    assert data['status'] == False
+    assert data['body'] is None
+
+@pytest.mark.asyncio
+async def test_return_forb_get_curriculum():
+    user_data = await create_and_login_user()
+    user_data_two = await create_and_login_user()
+    curriculum_data = await create_curriculum(user_data)
+
+    dto = UpdateCurriculumDTO(
+        title=None,
+        is_updated=None,
+        is_visible=False,
+        description=None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        await acdc.get(f"{URL}/{curriculum_data.user_id}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+
+        await acdc.patch(f"{URL}", json=dict(dto),
+                                           headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+        response: Final = await acdc.get(f"{URL}/{user_data.out.id}",
+                                         headers={"Authorization": f"Bearer {user_data_two.tokens.token}"})
+
+
+    data = response.json()
+    assert response.status_code == 403
+
+    assert data['message'] == "Curriculum cannot be accessed"
+    assert data['code'] == 403
     assert data['status'] == False
     assert data['body'] is None
 

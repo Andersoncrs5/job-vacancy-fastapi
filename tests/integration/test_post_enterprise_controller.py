@@ -12,6 +12,26 @@ client: Final[TestClient] = TestClient(app)
 
 URL: Final[str] = "/api/v1/post-enterprise"
 
+@pytest.mark.asyncio
+async def test_get_metric_post_user():
+    user_data = await create_and_login_user()
+    industry_data = await create_industry(user_data)
+    enterprise_data = await create_enterprise(user_data, industry_data)
+    category_data: Final = await create_category(user_data)
+    post_data = await create_post_enterprise(user_data, enterprise_data, category_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.get(f"{URL}/{post_data.id}/metric", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
+
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data['message'] == "Post metric found with successfully"
+    assert data['code'] == 200
+    assert data['status'] == True
+    assert data['version'] == 1
+    assert data['path'] is None
+    assert data['body']['post_id'] == post_data.id
 
 @pytest.mark.asyncio 
 async def test_update_post_success(): 
