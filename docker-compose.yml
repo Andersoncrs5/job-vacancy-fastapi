@@ -37,14 +37,5 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  redis:
-    image: redis:8.2
-    container_name: redis_container_job_vacancy
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-  volumes:
-    postgres_data:
-    redis_data:
+volumes:
+  postgres_data:
