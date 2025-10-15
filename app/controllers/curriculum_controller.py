@@ -270,6 +270,9 @@ async def create(
         )
 
     except Exception as e:
+        print('Error:\n\n')
+        print(e)
+        print('\n\n')
         return ORJSONResponse(
                 status_code=500,
                 content=dict(ResponseBody[Any](
@@ -289,6 +292,7 @@ async def create(
     status_code=200,
     responses = {
         404: RESPONSE_404,
+        403: RESPONSE_403,
         400: RESPONSE_400
     }
 )
@@ -313,10 +317,11 @@ async def get_by_user_id(
             )
 
     try:
-        jwt_service.valid_credentials(credentials)
+        token = jwt_service.valid_credentials(credentials)
+        user_id_logged = jwt_service.extract_user_id_v2(token)
 
         curriculum = await curriculum_service.get_by_user_id(user_id)
-        if curriculum == None :
+        if curriculum is None:
             return ORJSONResponse(
                 status_code=404,
                 content=dict(ResponseBody(
@@ -327,6 +332,20 @@ async def get_by_user_id(
                     timestamp=str(datetime.now()),
                     version = 1,
                     path = None
+                ))
+            )
+
+        if curriculum.is_visible == False and curriculum.user_id != user_id_logged:
+            return ORJSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content=dict(ResponseBody(
+                    code=status.HTTP_403_FORBIDDEN,
+                    message=f"Curriculum cannot be accessed",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
                 ))
             )
 

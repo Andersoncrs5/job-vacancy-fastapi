@@ -14,21 +14,21 @@ class CurriculumServiceProvider(CurriculumServiceBase):
         if dto.is_updated is not None:
             curri.is_updated = dto.is_updated
 
+        if dto.is_visible is not None:
+            curri.is_visible = dto.is_visible
+
         if dto.description is not None:
             curri.description = dto.description
 
         return await self.repository.save(curri)
 
     async def create(self, user_id: int, dto: CreateCurriculumDTO) -> CurriculumEntity:
-        curri = dto.to_entity()
-        curri.user_id = user_id
+        curry = dto.to_entity()
+        curry.user_id = user_id
 
-        return await self.repository.add(curri)
+        return await self.repository.add(curry)
 
     async def get_by_user_id(self, user_id: int) -> CurriculumEntity | None:
-        if user_id <= 0:
-            return None
-        
         return await self.repository.get_by_user_id(user_id)
 
     async def exists_by_user_id(self, user_id: int) -> bool:

@@ -89,7 +89,9 @@ async def patch(
 
         app_updated = await application_service.update(app, dto)
 
-        await email_service.send_email_depend_application_status(user.email, app_updated.status, {'vacancy': app.vacancy})
+        out_vacancy = app.vacancy.to_out()
+
+        await email_service.send_email_depend_application_status(user.email, app_updated.status, {'vacancy': dict(out_vacancy)})
 
         out = app_updated.to_out()
 
@@ -107,6 +109,7 @@ async def patch(
         )
 
     except Exception as e:
+        print("Error ", e)
         return ORJSONResponse(
             status_code=500,
             content=dict(ResponseBody[Any](

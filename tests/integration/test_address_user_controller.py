@@ -56,6 +56,7 @@ async def test_patch_address():
         zipcode = None,
         address_type = None,
         is_default = None,
+        is_visible=True,
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -91,6 +92,7 @@ async def test_return_not_found_patch_address():
         zipcode = None,
         address_type = None,
         is_default = None,
+        is_visible=True,
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -203,6 +205,7 @@ async def test_conflict_exists_address_create_address():
         zipcode = "12345",
         address_type = AddressTypeEnum.RESIDENTIAL,
         is_default = True,
+        is_visible = True,
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -234,6 +237,7 @@ async def test_create_address():
         zipcode = "12345",
         address_type = AddressTypeEnum.RESIDENTIAL,
         is_default = True,
+        is_visible=True,
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:

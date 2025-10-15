@@ -438,6 +438,7 @@ async def create_address_user(user_data: UserTestData) -> AddressUserOUT:
         zipcode = "12345",
         address_type = AddressTypeEnum.RESIDENTIAL,
         is_default = True,
+        is_visible = True,
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -469,6 +470,7 @@ async def create_address_user(user_data: UserTestData) -> AddressUserOUT:
         is_default = data['body']['is_default'],
         created_at = data['body']['created_at'],
         updated_at = data['body']['updated_at'],
+        is_visible = data['body']['is_visible'],
     )
 
 async def add_skill_into_vacancy(user_data, vacancy_data, skill_data) -> int:
@@ -865,6 +867,7 @@ async def create_curriculum(user_data) -> CurriculumOUT:
         description = data['body']['description'],
         created_at = str(data['body']['created_at']),
         updated_at = str(data['body']['updated_at']),
+        is_visible = data['body']['is_visible'],
     )
 
 async def create_media_post_user(user_data: UserTestData, post_user_data: PostUserOUT) -> MediaPostUserOUT:

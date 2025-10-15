@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -15,7 +13,7 @@ router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/my-skill", 
     tags=["MySkill"],
     responses={
-        500: RESPONSE_500,
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     },
     deprecated=False,
@@ -28,7 +26,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
     status_code = status.HTTP_200_OK,
     response_model = ResponseBody,
     responses = {
-        404: RESPONSE_404
+        status.HTTP_404_NOT_FOUND: RESPONSE_404
     }
 )
 async def exists(
@@ -90,7 +88,7 @@ async def exists(
     status_code = status.HTTP_200_OK,
     response_model = ResponseBody,
     responses = {
-        404: RESPONSE_404
+        status.HTTP_404_NOT_FOUND: RESPONSE_404
     }
 )
 async def get(
@@ -204,9 +202,9 @@ async def get_all(
     status_code = status.HTTP_200_OK,
     response_model = ResponseBody[MySkillOUT],
     responses = {
-        409: RESPONSE_409,
-        400: RESPONSE_400,
-        404: RESPONSE_404,
+        status.HTTP_409_CONFLICT: RESPONSE_409,
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def update(
@@ -303,8 +301,8 @@ async def update(
     status_code = status.HTTP_200_OK,
     response_model = ResponseBody,
     responses = {
-        404: RESPONSE_404,
-        400: RESPONSE_400
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400
     }
 )
 async def delete(
@@ -383,8 +381,9 @@ async def delete(
     status_code = status.HTTP_201_CREATED,
     response_model = ResponseBody[MySkillOUT],
     responses = {
-        409: RESPONSE_409,
-        404: RESPONSE_404
+        status.HTTP_409_CONFLICT: RESPONSE_409,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403
     }
 )
 async def create(
@@ -430,7 +429,7 @@ async def create(
                 ))
             )
 
-        check_skill = await skill_service.exists_by_id(dto.skill_id)
+        check_skill = await skill_service.get_by_id(dto.skill_id)
         if not check_skill:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -442,6 +441,20 @@ async def create(
                     timestamp=str(datetime.now()),
                     version = 1,
                     path = None
+                ))
+            )
+
+        if not check_skill.is_active:
+            return ORJSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content=dict(ResponseBody(
+                    code=status.HTTP_403_FORBIDDEN,
+                    message="Skill are not active",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
                 ))
             )
 
