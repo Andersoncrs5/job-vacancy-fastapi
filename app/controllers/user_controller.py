@@ -5,8 +5,9 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
-from app.configs.db.database import UserEntity
+from app.configs.db.database import UserEntity, UserMetricEntity
 from app.dependencies.service_dependency import *
+from app.schemas.user_metric_schemas import UserMetricOUT
 from app.schemas.user_schemas import UserOUT, UpdateUserDTO
 from app.utils.filter.user_filter import UserFilter
 from app.utils.res.responses_http import *
@@ -64,6 +65,82 @@ async def get_user(
                 code=status.HTTP_200_OK,
                 status=True,
                 body=dict(user_out),
+                timestamp=str(datetime.now()),
+                version = 1,
+                path = None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+@router.get(
+    '/{email}/metric',
+    response_model=ResponseBody[UserMetricOUT],
+    status_code=200
+)
+async def get_user_metric(
+    email: str,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
+    user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+        user = await user_service.get_by_email(email)
+        if user is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        metric: Final[UserMetricEntity | None] = await user_metric_service.get_by_id(user.id)
+        if metric is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User Metric not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        out = metric.to_out()
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="User metric found with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(out),
                 timestamp=str(datetime.now()),
                 version = 1,
                 path = None
