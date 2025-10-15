@@ -7,6 +7,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity
 from app.dependencies.service_dependency import *
+from app.schemas.post_user_metric_schemas import PostUserMetricOUT
 from app.schemas.post_user_schemas import *
 from app.utils.enums.sum_red import SumRedEnum, ColumnUserMetricEnum, ColumnsPostUserMetricEnum
 from app.utils.filter.post_user_filter import PostUserFilter
@@ -16,7 +17,7 @@ router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/post-user", 
     tags=["PostUser"],
     responses={
-        500: RESPONSE_500,
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     },
     deprecated=False,
@@ -24,12 +25,92 @@ router: Final[APIRouter] = APIRouter(
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
+
+@router.get(
+    "/{post_user_id}/metric",
+    status_code=status.HTTP_200_OK,
+    response_model=ResponseBody[PostUserOUT],
+    responses={
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def get_metric(
+    post_user_id: int,
+    post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
+    post_user_metric_service: PostUserMetricServiceProvider = Depends(get_post_user_metric_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if post_user_id <= 0:
+        return ORJSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=dict(ResponseBody(
+                code=status.HTTP_400_BAD_REQUEST,
+                message="Post user id is required",
+                status=False,
+                body=None,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+
+        post_user: Final[PostUserEntity | None] = await post_user_service.get_by_id(post_user_id)
+        if post_user is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Post user not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        metric = await post_user_metric_service.get_by_id(post_user_id)
+
+        out: Final = metric.to_out()
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Post metric found with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(out),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
 @router.delete(
     "/{post_user_id}",
     status_code=status.HTTP_200_OK,
     response_model=ResponseBody,
     responses={
-        404: RESPONSE_404_POST_USER,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def delete(
@@ -207,7 +288,7 @@ async def get(
     status_code=status.HTTP_200_OK,
     response_model=ResponseBody[PostUserOUT],
     responses={
-        404: RESPONSE_404,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def update(
@@ -321,7 +402,7 @@ async def get_all(
     response_model=ResponseBody[PostUserOUT],
     status_code=status.HTTP_201_CREATED,
     responses={
-        404: RESPONSE_404,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def create(
