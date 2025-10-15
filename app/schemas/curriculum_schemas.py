@@ -6,6 +6,7 @@ class CurriculumOUT(BaseModel):
     user_id: int
     title: str
     is_updated: bool
+    is_visible: bool
     description: str | None
     created_at: datetime | str
     updated_at: datetime | str
@@ -25,4 +26,5 @@ class CreateCurriculumDTO(BaseModel):
 class UpdateCurriculumDTO(BaseModel):
     title: str | None
     is_updated: bool | None
+    is_visible: bool | None
     description: str | None
