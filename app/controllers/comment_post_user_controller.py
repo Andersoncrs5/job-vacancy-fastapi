@@ -27,6 +27,83 @@ router: Final[APIRouter] = APIRouter(
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
+@router.get(
+    "/{id}/metric",
+    response_model=ResponseBody[CommentPostUserOUT],
+    status_code=status.HTTP_200_OK
+)
+async def get_by_id_metric(
+    id: int,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
+    comment_post_user_metric_service: CommentPostUserMetricServiceProvider = Depends(get_comment_post_user_metric_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    if id <= 0:
+        return ORJSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=dict(ResponseBody(
+                code=status.HTTP_400_BAD_REQUEST,
+                message="Id is required",
+                status=False,
+                body=None,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+
+        comment = await comment_service.get_by_id(id)
+        if comment is None :
+            return ORJSONResponse(
+                status_code=404,
+                content=dict(ResponseBody(
+                    code=404,
+                    message=f"Comment not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        metric = await comment_post_user_metric_service.get_by_id(id)
+
+        out_dict = metric.to_out()
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[dict](
+                message="Comment metric found with successfully",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=dict(out_dict),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    except Exception as e:
+        print('Error :', e)
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
 @router.patch(
     "/{id}",
     response_model=ResponseBody[CommentPostUserOUT],
