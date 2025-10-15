@@ -4,12 +4,12 @@ import uuid
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from typing import Final, Optional, List
+from typing import Final, List
 from sqlalchemy import (
     DateTime, String,
     func, Text, ForeignKey,
     Boolean, Integer, BigInteger,
-    Enum, Date, JSON, Numeric, UniqueConstraint, NUMERIC
+    Enum, Date, JSON, Numeric, UniqueConstraint
 )
 from datetime import datetime, date
 from sqlalchemy.pool import NullPool
@@ -20,6 +20,7 @@ from app.configs.db.enums import (
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum,
     AddressTypeEnum, ApplicationStatusEnum, ApplicationSourceEnum, ReactionTypeEnum
 )
+from app.schemas.comment_post_enterprise_metric_schemas import CommentPostEnterpriseMetricOUT
 
 load_dotenv()
 
@@ -210,10 +211,41 @@ class UserMetricEntity(Base):
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="metric", uselist=False)
 
+    def to_out(self):
+        from app.schemas.user_metric_schemas import UserMetricOUT
+
+        return UserMetricOUT(
+            user_id = self.user_id,
+            post_count = self.post_count,
+            favorite_post_count = self.favorite_post_count,
+            comment_count = self.comment_count,
+            favorite_comment_count = self.favorite_comment_count,
+            follower_count = self.follower_count,
+            followed_count = self.followed_count,
+            share_count = self.share_count,
+            connection_count = self.connection_count,
+            blocked_count = self.blocked_count,
+            reaction_comment_given_count = self.reaction_comment_given_count,
+            reaction_comment_received_count = self.reaction_comment_received_count,
+            enterprise_follow_count = self.enterprise_follow_count,
+            enterprise_follower_count = self.enterprise_follower_count,
+            profile_view_count = self.profile_view_count,
+            vacancy_application_count = self.vacancy_application_count,
+            last_login_at = self.last_login_at,
+            last_post_at = self.last_post_at,
+            last_comment_at = self.last_comment_at,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class FollowerRelationshipEntity(Base):
     __tablename__ = "follower_relationships"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    __table_args__ = (
+        UniqueConstraint('follower_id', 'followed_id', name='_follower_id_followed_id_uc_follower_relationships'),
+    )
 
     follower_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     followed_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
@@ -221,9 +253,9 @@ class FollowerRelationshipEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     follower: Mapped["UserEntity"] = relationship("UserEntity", foreign_keys=[follower_id],
-                                                  back_populates="following_relationships")
+                                                  back_populates="following_relationships", lazy="joined")
     followed: Mapped["UserEntity"] = relationship("UserEntity", foreign_keys=[followed_id],
-                                                  back_populates="followers_relationships")
+                                                  back_populates="followers_relationships", lazy="joined")
 
 class AddressUserEntity(Base):
     __tablename__ = "addresses_user"
@@ -250,6 +282,7 @@ class AddressUserEntity(Base):
     )
 
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_visible: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -271,6 +304,7 @@ class AddressUserEntity(Base):
             country = self.country,
             zipcode = self.zipcode,
             address_type = self.address_type,
+            is_visible = self.is_visible,
             is_default = self.is_default,
             created_at = self.created_at,
             updated_at = self.updated_at,
@@ -284,7 +318,7 @@ class SavedSearchEntity(Base):
     name: Mapped[str] = mapped_column(String(100), index=True , nullable=False)
     query: Mapped[dict] = mapped_column(JSON, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     last_executed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     execution_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     notifications_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -313,6 +347,10 @@ class SavedSearchEntity(Base):
 
 class MySkillEntity(Base):
     __tablename__ = "my_skills"
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'skill_id', name='_user_id_skill_id_uc_my_skills'),
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), 
@@ -410,6 +448,7 @@ class CurriculumEntity(Base):
             user_id = self.user_id,
             title = self.title,
             is_updated = self.is_updated,
+            is_visible = self.is_visible,
             description = self.description,
             created_at = str(self.created_at),
             updated_at = str(self.updated_at),
@@ -574,6 +613,24 @@ class EnterpriseMetricEntity(Base):
         back_populates="metrics"
     )
 
+    def to_out(self):
+        from app.schemas.enterprise_metric_schemas import EnterpriseMetricOUT
+
+        return EnterpriseMetricOUT(
+            enterprise_id = self.enterprise_id,
+            follower_count = self.follower_count,
+            vacancies_count = self.vacancies_count,
+            post_count = self.post_count,
+            comment_post = self.comment_post,
+            followed_count = self.followed_count,
+            view_count = self.view_count,
+            review_count = self.review_count,
+            employments_count = self.employments_count,
+            last_activity_at = self.last_activity_at,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class FollowerRelationshipEnterpriseEntity(Base):
     __tablename__ = "follower_relationships_enterprise"
 
@@ -668,7 +725,7 @@ class AddressEnterpriseEntity(Base):
     )
 
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    is_public: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -792,6 +849,19 @@ class VacancyMetricEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
                                                  onupdate=func.now(), nullable=False)
+
+    def to_out(self):
+        from app.schemas.vacancy_metric_schemas import VacancyMetricOUT
+        return VacancyMetricOUT(
+            vacancy_id = self.vacancy_id,
+            shortlists_count = self.shortlists_count,
+            shares_count = self.shares_count,
+            views_count = self.views_count,
+            applications_count = self.applications_count,
+            interview_count = self.interview_count,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
 
 class VacancySkillEntity(Base):
     __tablename__ = "vacancy_skills"
@@ -1042,6 +1112,21 @@ class PostEnterpriseMetricEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+    def to_out(self):
+        from app.schemas.post_enterprise_metric_schemas import PostEnterpriseMetricOUT
+
+        return PostEnterpriseMetricOUT(
+            post_id = self.post_id,
+            views_count = self.views_count,
+            shares_count = self.shares_count,
+            reactions_like_count = self.reactions_like_count,
+            reactions_dislike_count = self.reactions_dislike_count,
+            favorites_count = self.favorites_count,
+            comments_count = self.comments_count,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class CommentPostEnterpriseEntity(Base):
     __tablename__ = "comments_posts_enterprise"
 
@@ -1157,6 +1242,20 @@ class CommentPostEnterpriseMetricEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
                                                  onupdate=func.now(), nullable=False)
 
+    def to_out(self):
+        return CommentPostEnterpriseMetricOUT(
+            comment_id = self.comment_id,
+            replies_count = self.replies_count,
+            edited_count = self.edited_count,
+            views_count = self.views_count,
+            shares_count = self.shares_count,
+            reactions_like_count = self.reactions_like_count,
+            reactions_dislike_count = self.reactions_dislike_count,
+            favorites_count = self.favorites_count,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class ReactionCommentPostEnterpriseEntity(Base):
     __tablename__ = "reaction_comments_enterprise"
 
@@ -1216,11 +1315,14 @@ class FavoriteCommentPostEnterpriseEntity(Base):
 
     user: Mapped["UserEntity"] = relationship(
         "UserEntity",
-        back_populates="favorite_comment_enterprise"
+        back_populates="favorite_comment_enterprise",
+        lazy="joined"
     )
 
     comment: Mapped["CommentPostEnterpriseEntity"] = relationship(
-        "CommentPostEnterpriseEntity", back_populates="favorites"
+        "CommentPostEnterpriseEntity",
+        back_populates="favorites",
+        lazy="joined"
     )
 
 class ReactionPostEnterpriseEntity(Base):
@@ -1251,13 +1353,15 @@ class ReactionPostEnterpriseEntity(Base):
     user: Mapped["UserEntity"] = relationship(
         "UserEntity",
         foreign_keys=[user_id],
-        back_populates="enterprise_post_reactions"
+        back_populates="enterprise_post_reactions",
+        lazy="joined"
     )
 
     post_enterprise: Mapped["PostEnterpriseEntity"] = relationship(
         "PostEnterpriseEntity",
         foreign_keys=[post_enterprise_id],
-        back_populates="reactions"  # NOVO back_populates
+        back_populates="reactions",
+        lazy="joined"
     )
 
 class FavoritePostEnterpriseEntity(Base):
@@ -1270,8 +1374,16 @@ class FavoritePostEnterpriseEntity(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
-    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="favorite_post_enterprise")
-    posts: Mapped["PostEnterpriseEntity"] = relationship("PostEnterpriseEntity", back_populates="favorite_post_enterprise")
+    owner: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        back_populates="favorite_post_enterprise",
+        lazy="joined"
+    )
+    posts: Mapped["PostEnterpriseEntity"] = relationship(
+        "PostEnterpriseEntity",
+        back_populates="favorite_post_enterprise",
+        lazy="joined"
+    )
     
 class CategoryEntity(Base):
     __tablename__ = "categories"
@@ -1393,6 +1505,21 @@ class PostUserMetricEntity(Base):
         back_populates="metrics"
     )
 
+    def to_out(self):
+        from app.schemas.post_user_metric_schemas import PostUserMetricOUT
+
+        return PostUserMetricOUT(
+            post_id = self.post_id,
+            views_count = self.views_count,
+            shares_count = self.shares_count,
+            reactions_like_count = self.reactions_like_count,
+            reactions_dislike_count = self.reactions_dislike_count,
+            favorites_count = self.favorites_count,
+            comments_count = self.comments_count,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class CommentPostUserEntity(Base):
     __tablename__ = "comments_posts_user"
 
@@ -1505,6 +1632,22 @@ class CommentPostUserMetricEntity(Base):
         "CommentPostUserEntity", back_populates="metrics"
     )
 
+    def to_out(self):
+        from app.schemas.comment_post_user_metric_schemas import CommentPostUserMetricOUT
+
+        return CommentPostUserMetricOUT(
+            comment_id = self.comment_id,
+            replies_count = self.replies_count,
+            edited_count = self.edited_count,
+            views_count = self.views_count,
+            shares_count = self.shares_count,
+            reactions_like_count = self.reactions_like_count,
+            reactions_dislike_count = self.reactions_dislike_count,
+            favorites_count = self.favorites_count,
+            created_at = self.created_at,
+            updated_at = self.updated_at,
+        )
+
 class ReactionCommentPostUserEntity(Base):
     __tablename__ = "reaction_comments_user"
 
@@ -1561,11 +1704,13 @@ class FavoriteCommentPostUserEntity(Base):
 
     user: Mapped["UserEntity"] = relationship(
         "UserEntity",
-        back_populates="favorite_comment_user"
+        back_populates="favorite_comment_user",
+        lazy="joined"
     )
 
     comment: Mapped["CommentPostUserEntity"] = relationship(
-        "CommentPostUserEntity", back_populates="favorites"
+        "CommentPostUserEntity", back_populates="favorites",
+        lazy="joined"
     )
 
 class ReactionPostUserEntity(Base):
@@ -1574,7 +1719,7 @@ class ReactionPostUserEntity(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     __table_args__ = (
-        UniqueConstraint('user_id', 'post_user_id', name='_user_post_uc'),
+        UniqueConstraint('user_id', 'post_user_id', name='_user_post_uc_reaction_posts_user'),
     )
 
     user_id: Mapped[int] = mapped_column(
@@ -1595,13 +1740,15 @@ class ReactionPostUserEntity(Base):
     user: Mapped["UserEntity"] = relationship(
         "UserEntity",
         foreign_keys=[user_id],
-        back_populates="post_reactions"
+        back_populates="post_reactions",
+        lazy="joined"
     )
 
     post: Mapped["PostUserEntity"] = relationship(
         "PostUserEntity",
         foreign_keys=[post_user_id],
-        back_populates="reactions"
+        back_populates="reactions",
+        lazy="joined"
     )
 
     def to_out_simple(self):
@@ -1652,13 +1799,25 @@ class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'post_user_id', name='_user_post_uc_favorite_posts_user'),
+    )
+
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
 
     post_user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_user.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     
-    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="favorite_post_user")
-    post_user: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="favorite_post_user")
+    owner: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        back_populates="favorite_post_user",
+        lazy="joined"
+    )
+    post_user: Mapped["PostUserEntity"] = relationship(
+        "PostUserEntity",
+        back_populates="favorite_post_user",
+        lazy="joined"
+    )
     
