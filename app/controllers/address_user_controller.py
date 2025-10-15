@@ -1,16 +1,13 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import ORJSONResponse
-from app.configs.db.database import AddressUserEntity, UserEntity
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Final
-from app.utils.res.response_body import ResponseBody
-from app.utils.res.responses_http import *
-from app.schemas.address_user_schemas import *
-from app.services.providers.user_service_provider import UserServiceProvider
-from app.services.providers.address_user_service_provider import AddressUserServiceProvider
-from app.dependencies.service_dependency import *
-from fastapi_pagination import Page, add_pagination, paginate
 from datetime import datetime
+
+from fastapi import APIRouter, status
+from fastapi.responses import ORJSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+from app.configs.db.database import AddressUserEntity, UserEntity
+from app.dependencies.service_dependency import *
+from app.schemas.address_user_schemas import *
+from app.utils.res.responses_http import *
 
 router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/address-user", 
@@ -229,6 +226,7 @@ async def delete(
 async def get_by_id(
     user_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
     address_service: AddressUserServiceProvider = Depends(get_address_user_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -249,6 +247,7 @@ async def get_by_id(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        user_id_logged = jwt_service.extract_user_id_v2(token=token)
 
         address: Final = await address_service.get_by_user_id(user_id)
         if address is None:
@@ -262,6 +261,20 @@ async def get_by_id(
                     timestamp=str(datetime.now()),
                     version = 1,
                     path = None
+                ))
+            )
+
+        if not address.is_visible and user_id_logged != address.user_id :
+            return ORJSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content=dict(ResponseBody(
+                    code=status.HTTP_403_FORBIDDEN,
+                    message="The address has been blocked by the owner",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
                 ))
             )
 
