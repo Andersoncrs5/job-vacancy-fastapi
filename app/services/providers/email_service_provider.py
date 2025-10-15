@@ -50,7 +50,7 @@ class EmailServiceProvider(EmailServiceBase):
             metadata={},
         )
 
-        await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
+        # await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
 
     async def send_email_informing_application(self, user_email: str, subject: str, data: dict):
         event = EventMessageEmail(
@@ -66,7 +66,7 @@ class EmailServiceProvider(EmailServiceBase):
             metadata={},
         )
 
-        await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
+        # await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
 
     async def send_email_bye(self, user_email: str, subject: str, data: dict):
         event = EventMessageEmail(
@@ -82,7 +82,7 @@ class EmailServiceProvider(EmailServiceBase):
             metadata={},
         )
 
-        await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
+        # await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
 
     async def send_email_welcome_user(self, user_email: str, subject: str, data: dict):
         event = EventMessageEmail(
@@ -98,4 +98,4 @@ class EmailServiceProvider(EmailServiceBase):
             metadata = {},
         )
 
-        await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
+        # await send_message_to_kafka(self.producer, event.model_dump_json(), SEND_EMAIL_TOPIC)
