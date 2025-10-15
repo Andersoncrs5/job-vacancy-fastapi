@@ -22,3 +22,5 @@ sqlalchemy-utils
 structlog
 pytest-cov
 aiokafka
+fastapi-limiter
+redis
