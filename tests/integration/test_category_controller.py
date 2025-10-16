@@ -84,7 +84,9 @@ async def test_update_category():
         slug = category_data.slug,
         description = "description update",
         order = 8,
-        icon_url = None
+        icon_url = None,
+        is_active=None,
+        parent_id=None
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
@@ -120,7 +122,9 @@ async def test_return_bad_request_update_category():
         slug = None,
         description = None,
         order = None,
-        icon_url = None
+        icon_url = None,
+        is_active=None,
+        parent_id=None
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
@@ -146,7 +150,9 @@ async def test_return_null_update_category():
         slug = None,
         description = None,
         order = None,
-        icon_url = None
+        icon_url = None,
+        is_active=None,
+        parent_id=None
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
@@ -293,7 +299,8 @@ async def test_create_category():
         slug = f"slug {num}",
         description = None,
         order = 5,
-        icon_url = None
+        icon_url = None,
+        parent_id=None
     )
 
     token = user_data.tokens.token
@@ -332,7 +339,8 @@ async def test_conflict_name_category():
         slug = f"slug {num}",
         description = None,
         order = 5,
-        icon_url = None
+        icon_url = None,
+        parent_id=None
     )
 
     token = user_data.tokens.token
@@ -369,7 +377,8 @@ async def test_conflict_slug_category():
         slug = f"slug {num}",
         description = None,
         order = 5,
-        icon_url = None
+        icon_url = None,
+        parent_id=None
     )
 
     token = user_data.tokens.token

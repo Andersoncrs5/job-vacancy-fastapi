@@ -21,7 +21,7 @@ async def test_return_bad_request_update_review():
 
     dto = UpdateReviewEnterpriseDTO(
         title="new title",
-        description="new description",
+        description=("new description" * 20 ),
         rating = None,
         pros = None,
         cons = None,
@@ -47,7 +47,7 @@ async def test_return_not_found_update_review():
 
     dto = UpdateReviewEnterpriseDTO(
         title="new title",
-        description="new description",
+        description=("new description" * 20 ),
         rating = None,
         pros = None,
         cons = None,
@@ -78,7 +78,7 @@ async def test_update_review_within_7_days():
 
     dto = UpdateReviewEnterpriseDTO(
         title="new title",
-        description="new description",
+        description=("new description" * 20 ),
         rating = None,
         pros = None,
         cons = None,
@@ -243,7 +243,7 @@ async def test_not_exists_enterprise_create_review_in_enterprise():
     dto = CreateReviewEnterpriseDTO(
         rating = 5,
         title = "title any",
-        description = "description any",
+        description = ("description any" * 20),
         pros = None,
         cons = None,
         would_recommend = True,
@@ -274,7 +274,7 @@ async def test_employee_not_exists_create_review_in_enterprise():
     dto = CreateReviewEnterpriseDTO(
         rating = 5,
         title = "title any",
-        description = "description any",
+        description = ("description any" * 20),
         pros = None,
         cons = None,
         would_recommend = True,
@@ -310,7 +310,7 @@ async def test_exists_review_create_review_in_enterprise():
     dto = CreateReviewEnterpriseDTO(
         rating = 5,
         title = "title any",
-        description = "description any",
+        description = ("description any" * 20),
         pros = None,
         cons = None,
         would_recommend = True,
@@ -342,7 +342,7 @@ async def test_create_review_in_enterprise():
     dto = CreateReviewEnterpriseDTO(
         rating = 5,
         title = "title any",
-        description = "description any",
+        description = ("description any" * 20),
         pros = None,
         cons = None,
         would_recommend = True,

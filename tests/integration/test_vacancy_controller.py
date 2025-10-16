@@ -315,7 +315,7 @@ async def test_return_not_found_enterprise_create_vacancy_success():
     dto = CreateVacancyDTO(
         area_id = area_data.id,
         title = "New vacancy",
-        description = "Des of vacancy",
+        description = ("Des of vacancy" * 40),
         employment_type = EmploymentTypeEnum.full_time,
         experience_level = ExperienceLevelEnum.INTERN,
         education_level = EducationLevelEnum.MASTER,
@@ -354,7 +354,7 @@ async def test_return_not_found_area_create_vacancy_success():
     dto = CreateVacancyDTO(
         area_id = 99999999,
         title = "New vacancy",
-        description = "Des of vacancy",
+        description = ("Des of vacancy" * 40),
         employment_type = EmploymentTypeEnum.full_time,
         experience_level = ExperienceLevelEnum.INTERN,
         education_level = EducationLevelEnum.MASTER,
@@ -394,7 +394,7 @@ async def test_create_vacancy_success():
     dto = CreateVacancyDTO(
         area_id = area_data.id,
         title = "New vacancy",
-        description = "Des of vacancy",
+        description = ("Des of vacancy" * 40),
         employment_type = EmploymentTypeEnum.full_time,
         experience_level = ExperienceLevelEnum.INTERN,
         education_level = EducationLevelEnum.MASTER,

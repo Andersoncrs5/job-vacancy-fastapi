@@ -319,6 +319,7 @@ async def test_create_enterprise():
         description = f" description {num}",
         website_url = None,
         logo_url = None,
+        industry_id= industry_data.id
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -347,6 +348,7 @@ async def test_return_not_found_industry_create_enterprise():
         description = f" description {num}",
         website_url = None,
         logo_url = None,
+        industry_id=8888888888888
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -374,6 +376,7 @@ async def test_return_bad_request_industry_create_enterprise():
         description = f" description {num}",
         website_url = None,
         logo_url = None,
+        industry_id=99999999999
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -416,6 +419,7 @@ async def test_confict_name_create_enterprise():
         description = f" description {num}",
         website_url = None,
         logo_url = None,
+        industry_id=industry_data.id
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -449,6 +453,7 @@ async def test_confict_user_create_enterprise():
         description = f" description {num}",
         website_url = None,
         logo_url = None,
+        industry_id=industry_data.id
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:

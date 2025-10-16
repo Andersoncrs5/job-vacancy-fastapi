@@ -507,7 +507,7 @@ async def create_vacancy(user_data: UserTestData, area_data: AreaOUT) -> Vacancy
     dto = CreateVacancyDTO(
         area_id = area_data.id,
         title = "New vacancy",
-        description = "Des of vacancy",
+        description = ("Des of vacancy" * 40),
         employment_type = EmploymentTypeEnum.full_time,
         experience_level = ExperienceLevelEnum.INTERN,
         education_level = EducationLevelEnum.MASTER,
@@ -637,7 +637,7 @@ async def create_review(user_data, enterprise_data, user_data_two) -> ReviewEnte
     dto = CreateReviewEnterpriseDTO(
         rating=5,
         title="Great place to work",
-        description="Very good company culture",
+        description=("Very good company culture" * 20),
         pros="Supportive environment",
         cons="Sometimes long hours",
         would_recommend=True,
@@ -935,6 +935,7 @@ async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT)
         description = f" description {num}",
         website_url = None,
         logo_url = None,
+        industry_id = industry_data.id
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -1049,7 +1050,8 @@ async def create_category(user_data: UserTestData) -> CategoryOUT:
         slug = f"slug {num}",
         description = None,
         order = 5,
-        icon_url = None
+        icon_url = None,
+        parent_id=None,
     )
 
     token = user_data.tokens.token

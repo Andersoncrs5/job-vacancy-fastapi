@@ -17,6 +17,80 @@ from app.configs.db.enums import (
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = '/api/v1/vacancy-skill'
 
+
+@pytest.mark.asyncio
+async def test_get_return_bad_request_skill_in_vacancy():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+    area_data = await create_area(user_data)
+    vacancy_data = await create_vacancy(user_data, area_data)
+    skill_data = await create_skill(user_data)
+    vs_data = await add_skill_into_vacancy(user_data, vacancy_data, skill_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.get(
+            f"{URL}/{0}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 400
+
+    assert data['message'] == 'Id is required'
+
+    assert body is None
+
+@pytest.mark.asyncio
+async def test_get_return_not_found_skill_in_vacancy():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+    area_data = await create_area(user_data)
+    vacancy_data = await create_vacancy(user_data, area_data)
+    skill_data = await create_skill(user_data)
+    vs_data = await add_skill_into_vacancy(user_data, vacancy_data, skill_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.get(
+            f"{URL}/{9999999}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 404
+
+    assert data['message'] == 'Skill not found'
+
+    assert body is None
+
+@pytest.mark.asyncio
+async def test_delete_skill_in_vacancy():
+    user_data: Final = await create_and_login_user()
+    industry_data: Final = await create_industry(user_data)
+    enterprise_data: Final = await create_enterprise(user_data, industry_data)
+    area_data = await create_area(user_data)
+    vacancy_data = await create_vacancy(user_data, area_data)
+    skill_data = await create_skill(user_data)
+    vs_data = await add_skill_into_vacancy(user_data, vacancy_data, skill_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.delete(
+            f"{URL}/{vs_data}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    body = response.json()['body']
+    assert response.status_code == 200
+
+    assert data['message'] == 'Skill found with successfully'
+
+    assert body is not None
+    assert body['id'] == vs_data
+
 @pytest.mark.asyncio
 async def test_patch_return_bad_request_skill_in_vacancy():
     user_data: Final = await create_and_login_user()
