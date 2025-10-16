@@ -10,6 +10,10 @@ def orjson_default(obj):
         return str(obj)
     if isinstance(obj, (date, datetime)):
         return str(obj)
+
+    if isinstance(obj, BaseModel):
+         return obj.model_dump()
+
     return json.JSONEncoder().default(obj)
 
 
@@ -21,4 +25,6 @@ class ORJSONModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     def model_dump_json(self, **kwargs):
-        return orjson_dumps(self.model_dump(**kwargs))
+        data = self.model_dump(mode='json', **kwargs)
+
+        return orjson_dumps(data)
