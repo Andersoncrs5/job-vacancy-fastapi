@@ -268,7 +268,7 @@ class AddressUserEntity(Base):
 
     street: Mapped[str] = mapped_column(String(255), nullable=False)
     number: Mapped[str] = mapped_column(String(50), nullable=True)
-    complement: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    complement: Mapped[str | None] = mapped_column(Text, nullable=True)
     district: Mapped[str | None] = mapped_column(String(100), nullable=True)
     city: Mapped[str] = mapped_column(String(100), nullable=False)
     state: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -291,24 +291,7 @@ class AddressUserEntity(Base):
 
     def to_out(self):
         from app.schemas.address_user_schemas import AddressUserOUT
-
-        return AddressUserOUT(
-            id = self.id,
-            user_id = self.user_id,
-            street = self.street,
-            number = self.number,
-            complement = self.complement,
-            district = self.district,
-            city = self.city,
-            state = self.state,
-            country = self.country,
-            zipcode = self.zipcode,
-            address_type = self.address_type,
-            is_visible = self.is_visible,
-            is_default = self.is_default,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return AddressUserOUT.model_validate(self.__dict__)
 
 class SavedSearchEntity(Base):
     __tablename__ = "saved_searches"
@@ -331,19 +314,7 @@ class SavedSearchEntity(Base):
     def to_out(self):
         from app.schemas.saved_search_schemas import SavedSearchOUT
 
-        return SavedSearchOUT(
-            id = self.id,
-            user_id = self.user_id,
-            name = self.name,
-            query = self.query,
-            description = self.description,
-            is_public = self.is_public,
-            last_executed_at = str(self.last_executed_at),
-            execution_count = self.execution_count,
-            notifications_enabled = self.notifications_enabled,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return SavedSearchOUT.model_validate(self)
 
 class MySkillEntity(Base):
     __tablename__ = "my_skills"
@@ -387,18 +358,7 @@ class MySkillEntity(Base):
 
     def to_out(self):
         from app.schemas.my_skill_schemas import MySkillOUT
-
-        return MySkillOUT(
-            skill_id = self.skill_id,
-            user_id = self.user_id,
-            proficiency = self.proficiency,
-            certificate_url = self.certificate_url,
-            datails = self.datails,
-            years_of_experience = self.years_of_experience,
-            last_used_date = str(self.last_used_date),
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return MySkillOUT.model_validate(self.__dict__)
 
 class SkillEntity(Base):
     __tablename__ = "skills"
@@ -416,13 +376,7 @@ class SkillEntity(Base):
     def to_out(self):
         from app.schemas.skill_schemas import SkillOUT
 
-        return SkillOUT(
-            id = self.id,
-            name = self.name,
-            is_active = self.is_active,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return SkillOUT.model_validate(self)
 
 class CurriculumEntity(Base):
     __tablename__ = "curriculums"
@@ -431,7 +385,7 @@ class CurriculumEntity(Base):
     
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), unique=True, nullable=False)
 
-    title: Mapped[str] = mapped_column(String(150), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
     is_updated: Mapped[bool] = mapped_column(Boolean, default=True)
     is_visible: Mapped[bool] = mapped_column(Boolean, default=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -442,23 +396,13 @@ class CurriculumEntity(Base):
 
     def to_out(self):
         from app.schemas.curriculum_schemas import CurriculumOUT
-
-        return CurriculumOUT(
-            id = self.id,
-            user_id = self.user_id,
-            title = self.title,
-            is_updated = self.is_updated,
-            is_visible = self.is_visible,
-            description = self.description,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return CurriculumOUT.model_validate(self.__dict__)
 
 class IndustryEntity(Base):
     __tablename__ = "industries"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     icon_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -478,18 +422,7 @@ class IndustryEntity(Base):
 
     def to_out(self):
         from app.schemas.industry_schemas import IndustryOUT
-
-        return IndustryOUT(
-            id = self.id,
-            name = self.name,
-            description = self.description,
-            icon_url = self.icon_url,
-            is_active = self.is_active,
-            usage_count = self.usage_count,
-            user_id = self.user_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return IndustryOUT.model_validate(self.__dict__)
 
 class AreaEntity(Base):
     __tablename__ = "areas"
@@ -512,22 +445,13 @@ class AreaEntity(Base):
 
     def to_out(self):
         from app.schemas.area_schemas import AreaOUT
-
-        return AreaOUT(
-            id = self.id,
-            name = self.name,
-            description = self.description,
-            is_active = self.is_active,
-            user_id = self.user_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return AreaOUT.model_validate(self.__dict__)
 
 class EnterpriseEntity(Base):
     __tablename__ = "enterprises"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
 
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     website_url: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -570,18 +494,7 @@ class EnterpriseEntity(Base):
 
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
-
-        return EnterpriseOUT(
-            id = self.id,
-            name = self.name,
-            description = self.description,
-            website_url = self.website_url,
-            logo_url = self.logo_url,
-            user_id = self.user_id,
-            industry_id = self.industry_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return EnterpriseOUT.model_validate(self.__dict__)
 
 class EnterpriseMetricEntity(Base):
     __tablename__ = "enterprises_metric"
@@ -616,20 +529,7 @@ class EnterpriseMetricEntity(Base):
     def to_out(self):
         from app.schemas.enterprise_metric_schemas import EnterpriseMetricOUT
 
-        return EnterpriseMetricOUT(
-            enterprise_id = self.enterprise_id,
-            follower_count = self.follower_count,
-            vacancies_count = self.vacancies_count,
-            post_count = self.post_count,
-            comment_post = self.comment_post,
-            followed_count = self.followed_count,
-            view_count = self.view_count,
-            review_count = self.review_count,
-            employments_count = self.employments_count,
-            last_activity_at = self.last_activity_at,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return EnterpriseMetricOUT.model_validate(self)
 
 class FollowerRelationshipEnterpriseEntity(Base):
     __tablename__ = "follower_relationships_enterprise"
@@ -711,7 +611,7 @@ class AddressEnterpriseEntity(Base):
 
     street: Mapped[str] = mapped_column(String(255), nullable=False)
     number: Mapped[str] = mapped_column(String(50), nullable=True)
-    complement: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    complement: Mapped[str | None] = mapped_column(Text, nullable=True)
     district: Mapped[str | None] = mapped_column(String(100), nullable=True)
     city: Mapped[str] = mapped_column(String(100), nullable=False)
     state: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -735,22 +635,7 @@ class AddressEnterpriseEntity(Base):
     def to_out(self):
         from app.schemas.address_enterprise_schemas import AddressEnterpriseOUT
 
-        return AddressEnterpriseOUT(
-            enterprise_id = self.enterprise_id,
-            street = self.street,
-            number = self.number,
-            complement = self.complement,
-            district = self.district,
-            city = self.city,
-            state = self.state,
-            country = self.country,
-            zipcode = self.zipcode,
-            address_type = self.address_type,
-            is_default = self.is_default,
-            is_public = self.is_public,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return AddressEnterpriseOUT.model_validate(self)
 
 class VacancyEntity(Base):
     __tablename__ = "vacancies"
@@ -759,7 +644,7 @@ class VacancyEntity(Base):
     enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprises.id"), nullable=False)
     area_id: Mapped[int] = mapped_column(ForeignKey("areas.id"), nullable=False) 
 
-    title: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(250), nullable=False, index=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
 
     employment_type: Mapped[EmploymentTypeEnum] = mapped_column(Enum(EmploymentTypeEnum), nullable=False)
@@ -804,30 +689,7 @@ class VacancyEntity(Base):
     def to_out(self):
         from app.schemas.vacancy_schemas import VacancyOUT
 
-        return VacancyOUT(
-            id = self.id,
-            enterprise_id = self.enterprise_id,
-            area_id = self.area_id,
-            title = self.title,
-            description = self.description,
-            employment_type = self.employment_type,
-            experience_level = self.experience_level,
-            education_level = self.education_level,
-            workplace_type = self.workplace_type,
-            seniority = self.seniority,
-            salary_min = self.salary_min,
-            salary_max = self.salary_max,
-            currency = self.currency,
-            requirements = self.requirements,
-            responsibilities = self.responsibilities,
-            benefits = self.benefits,
-            status = self.status,
-            openings = self.openings,
-            application_deadline = str(self.application_deadline),
-            last_application_at = str(self.last_application_at),
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return VacancyOUT.model_validate(self)
 
 class VacancyMetricEntity(Base):
     __tablename__ = "vacancies_metric"
@@ -852,16 +714,7 @@ class VacancyMetricEntity(Base):
 
     def to_out(self):
         from app.schemas.vacancy_metric_schemas import VacancyMetricOUT
-        return VacancyMetricOUT(
-            vacancy_id = self.vacancy_id,
-            shortlists_count = self.shortlists_count,
-            shares_count = self.shares_count,
-            views_count = self.views_count,
-            applications_count = self.applications_count,
-            interview_count = self.interview_count,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return VacancyMetricOUT.model_validate(self)
 
 class VacancySkillEntity(Base):
     __tablename__ = "vacancy_skills"
@@ -879,8 +732,13 @@ class VacancySkillEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-    vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="skills")
-    skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="vacancies")
+    vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="skills", lazy="joined")
+    skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="vacancies", lazy="joined")
+
+    def to_out(self):
+        from app.schemas.vacancy_skill_schemas import VacancySkillOUT
+
+        return VacancySkillOUT.model_validate(self)
 
 class ApplicationEntity(Base):
     __tablename__ = "applications"
@@ -898,8 +756,7 @@ class ApplicationEntity(Base):
 
     is_viewed: Mapped[bool] = mapped_column(Boolean, default=False)
     priority_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    rating: Mapped[int | None] = mapped_column(Integer,
-                                               nullable=True)
+    rating: Mapped[int | None] = mapped_column(Integer,nullable=True)
     feedback: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     source: Mapped[ApplicationSourceEnum | None] = mapped_column(
@@ -917,21 +774,7 @@ class ApplicationEntity(Base):
 
     def to_out(self):
         from app.schemas.application_schemas import ApplicationOUT
-
-        return ApplicationOUT(
-            id = self.id,
-            user_id = self.user_id,
-            vacancy_id = self.vacancy_id,
-            status = self.status,
-            is_viewed = self.is_viewed,
-            priority_level = self.priority_level,
-            rating = self.rating,
-            feedback = self.feedback,
-            source = self.source,
-            notes = self.notes,
-            applied_at = self.applied_at,
-            updated_at = self.updated_at,
-        )
+        return ApplicationOUT.model_validate(self)
 
 class EmployeeEnterpriseEntity(Base):
     __tablename__ = "employees_enterprise"
@@ -941,7 +784,7 @@ class EmployeeEnterpriseEntity(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
 
-    position: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    position: Mapped[str | None] = mapped_column(String(150), nullable=True)
     salary_range: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     employment_type: Mapped[EmploymentTypeEnum] = mapped_column(
@@ -963,20 +806,7 @@ class EmployeeEnterpriseEntity(Base):
 
     def to_out(self):
         from app.schemas.employee_enterprise_schemas import EmployeeEnterpriseOUT
-
-        return EmployeeEnterpriseOUT(
-            id = self.id,
-            user_id = self.user_id,
-            enterprise_id = self.enterprise_id,
-            position = self.position,
-            salary_range = self.salary_range,
-            employment_type = self.employment_type,
-            employment_status = self.employment_status,
-            start_date = str(self.start_date),
-            end_date = str(self.end_date),
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return EmployeeEnterpriseOUT.model_validate(self.__dict__)
 
 class ReviewEnterprise(Base):
     __tablename__ = "reviews_enterprise"
@@ -1018,25 +848,7 @@ class ReviewEnterprise(Base):
     def to_out(self):
         from app.schemas.review_enterprise_schemas import ReviewEnterpriseOUT
 
-        return ReviewEnterpriseOUT(
-            id = self.id,
-            rating = self.rating,
-            title = self.title,
-            description = self.description,
-            pros = self.pros,
-            cons = self.cons,
-            would_recommend = self.would_recommend,
-            position = self.position,
-            salary_range = self.salary_range,
-            employment_type = self.employment_type,
-            employment_status = self.employment_status,
-            helpful_votes = self.helpful_votes,
-            unhelpful_votes = self.unhelpful_votes,
-            user_id = self.user_id,
-            enterprise_id = self.enterprise_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return ReviewEnterpriseOUT.model_validate(self)
 
 class PostEnterpriseEntity(Base):
     __tablename__ = "posts_enterprise"
@@ -1077,17 +889,7 @@ class PostEnterpriseEntity(Base):
 
     def to_out(self):
         from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
-
-        return PostEnterpriseOUT(
-            id = self.id,
-            title = self.title,
-            content = self.content,
-            url_image = self.url_image,
-            enterprise_id = self.enterprise_id,
-            category_id = self.category_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return PostEnterpriseOUT.model_validate(self)
 
 class PostEnterpriseMetricEntity(Base):
     __tablename__ = "metric_posts_enterprise"
@@ -1115,17 +917,7 @@ class PostEnterpriseMetricEntity(Base):
     def to_out(self):
         from app.schemas.post_enterprise_metric_schemas import PostEnterpriseMetricOUT
 
-        return PostEnterpriseMetricOUT(
-            post_id = self.post_id,
-            views_count = self.views_count,
-            shares_count = self.shares_count,
-            reactions_like_count = self.reactions_like_count,
-            reactions_dislike_count = self.reactions_dislike_count,
-            favorites_count = self.favorites_count,
-            comments_count = self.comments_count,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return PostEnterpriseMetricOUT.model_validate(self)
 
 class CommentPostEnterpriseEntity(Base):
     __tablename__ = "comments_posts_enterprise"
@@ -1193,7 +985,6 @@ class CommentPostEnterpriseEntity(Base):
         cascade="all, delete-orphan"
     )
 
-
     def to_out(self):
         from app.schemas.comment_post_enterprise_schemas import CommentPostEnterpriseOUT
 
@@ -1243,18 +1034,7 @@ class CommentPostEnterpriseMetricEntity(Base):
                                                  onupdate=func.now(), nullable=False)
 
     def to_out(self):
-        return CommentPostEnterpriseMetricOUT(
-            comment_id = self.comment_id,
-            replies_count = self.replies_count,
-            edited_count = self.edited_count,
-            views_count = self.views_count,
-            shares_count = self.shares_count,
-            reactions_like_count = self.reactions_like_count,
-            reactions_dislike_count = self.reactions_dislike_count,
-            favorites_count = self.favorites_count,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return CommentPostEnterpriseMetricOUT.model_validate(self.__dict__)
 
 class ReactionCommentPostEnterpriseEntity(Base):
     __tablename__ = "reaction_comments_enterprise"
@@ -1390,7 +1170,7 @@ class CategoryEntity(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
-    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    slug: Mapped[str] = mapped_column(String(220), unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     order: Mapped[int] = mapped_column(Integer, default=0)
@@ -1398,7 +1178,7 @@ class CategoryEntity(Base):
     post_count: Mapped[int] = mapped_column(Integer, default=0)
     job_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    icon_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    icon_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     parent_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("categories.id"), nullable=True)
@@ -1413,22 +1193,7 @@ class CategoryEntity(Base):
 
     def to_category_out(self):
         from app.schemas.category_schemas import CategoryOUT
-
-        return CategoryOUT(
-            id = self.id,
-            name = self.name,
-            slug = self.slug,
-            description = self.description,
-            is_active = self.is_active,
-            order = self.order,
-            post_count = self.post_count,
-            job_count = self.job_count,
-            icon_url = self.icon_url,
-            user_id = self.user_id,
-            parent_id = self.parent_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return CategoryOUT.model_validate(self.__dict__)
 
 class PostUserEntity(Base):
     __tablename__ = "posts_user"
@@ -1472,16 +1237,7 @@ class PostUserEntity(Base):
     def to_out(self):
         from app.schemas.post_user_schemas import PostUserOUT
 
-        return PostUserOUT(
-            id = self.id,
-            title = self.title,
-            content = self.content,
-            url_image = self.url_image,
-            user_id = self.user_id,
-            category_id = self.category_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return PostUserOUT.model_validate(self.__dict__)
 
 class PostUserMetricEntity(Base):
     __tablename__ = "metric_posts_user"
@@ -1507,18 +1263,7 @@ class PostUserMetricEntity(Base):
 
     def to_out(self):
         from app.schemas.post_user_metric_schemas import PostUserMetricOUT
-
-        return PostUserMetricOUT(
-            post_id = self.post_id,
-            views_count = self.views_count,
-            shares_count = self.shares_count,
-            reactions_like_count = self.reactions_like_count,
-            reactions_dislike_count = self.reactions_dislike_count,
-            favorites_count = self.favorites_count,
-            comments_count = self.comments_count,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return PostUserMetricOUT.model_validate(self.__dict__)
 
 class CommentPostUserEntity(Base):
     __tablename__ = "comments_posts_user"
@@ -1584,18 +1329,7 @@ class CommentPostUserEntity(Base):
         user_out = self.user.to_user_out() if self.user is not None else None
         post_out = self.post.to_out() if self.post is not None else None
 
-        return CommentPostUserOUT(
-            id=self.id,
-            content=self.content,
-            user_id=self.user_id,
-            post_user_id=self.post_user_id,
-            parent_comment_id=self.parent_comment_id,
-            is_edited=self.is_edited,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
-            user=user_out,
-            post=post_out,
-        )
+        return CommentPostUserOUT.model_validate(self.__dict__)
 
 class CommentPostUserMetricEntity(Base):
     __tablename__ = "metric_comments_posts_user"
@@ -1635,18 +1369,7 @@ class CommentPostUserMetricEntity(Base):
     def to_out(self):
         from app.schemas.comment_post_user_metric_schemas import CommentPostUserMetricOUT
 
-        return CommentPostUserMetricOUT(
-            comment_id = self.comment_id,
-            replies_count = self.replies_count,
-            edited_count = self.edited_count,
-            views_count = self.views_count,
-            shares_count = self.shares_count,
-            reactions_like_count = self.reactions_like_count,
-            reactions_dislike_count = self.reactions_dislike_count,
-            favorites_count = self.favorites_count,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return CommentPostUserMetricOUT.model_validate(self.__dict__)
 
 class ReactionCommentPostUserEntity(Base):
     __tablename__ = "reaction_comments_user"
@@ -1753,14 +1476,7 @@ class ReactionPostUserEntity(Base):
 
     def to_out_simple(self):
         from app.schemas.reaction_post_user_schemas import ReactionPostUserOUT
-
-        return ReactionPostUserOUT(
-            id = self.id,
-            user_id = self.user_id,
-            post_user_id = self.post_user_id,
-            reaction_type = self.reaction_type,
-            created_at = self.created_at,
-        )
+        return ReactionPostUserOUT.model_validate(self.__dict__)
 
 class MediaPostUserEntity(Base):
     __tablename__ = "medias_post_user"
@@ -1782,18 +1498,7 @@ class MediaPostUserEntity(Base):
 
     def to_out(self):
         from app.schemas.media_post_user_schemas import MediaPostUserOUT
-        return MediaPostUserOUT(
-            id = self.id,
-            url = self.url,
-            type = self.type,
-            order = self.order,
-            caption = self.caption,
-            size = self.size,
-            mime_type = self.mime_type,
-            post_id = self.post_id,
-            created_at = str(self.created_at),
-            updated_at = str(self.updated_at),
-        )
+        return MediaPostUserOUT.model_validate(self.__dict__)
 
 class FavoritePostUserEntity(Base):
     __tablename__ = "favorite_posts_user"
