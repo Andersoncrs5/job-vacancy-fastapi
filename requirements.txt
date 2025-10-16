@@ -1,3 +1,4 @@
+booktype
 kafka-python
 kafka
 fastapi
