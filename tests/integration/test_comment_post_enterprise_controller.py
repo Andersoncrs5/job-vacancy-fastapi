@@ -421,7 +421,7 @@ async def test_create_comment():
     post_enterprise_data: Final = await create_post_enterprise(user_data, enterprise_data, category_data)
 
     dto = CreateCommentPostEnterpriseDTO(
-        content = ("abc" * 50),
+        content = ("abc" * 10),
         post_enterprise_id = post_enterprise_data.id,
         parent_comment_id = None
     )

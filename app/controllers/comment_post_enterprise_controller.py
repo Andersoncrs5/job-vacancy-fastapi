@@ -464,15 +464,26 @@ async def create(
         await comment_enterprise_metric_service.create(comment_created.id)
 
         if dto.parent_comment_id is not None:
-            await comment_enterprise_metric_service.update_metric(dto.parent_comment_id, ColumnsCommentPostEnterpriseMetricEnum.replies_count, SumRedEnum.SUM)
+            await comment_enterprise_metric_service.update_metric(
+                dto.parent_comment_id,
+                ColumnsCommentPostEnterpriseMetricEnum.replies_count,
+                SumRedEnum.SUM
+            )
 
         out = comment_created.to_out()
 
         out_dict = out.model_dump(by_alias=True)
-        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.comment_count, SumRedEnum.SUM)
-        await post_enterprise_metric_service.update_metric(post.id,
-                                                           ColumnsPostEnterpriseMetricEnum.comments_count,
-                                                           SumRedEnum.SUM)
+        await user_metric_service.update_metric_v2(
+            user_id,
+            ColumnUserMetricEnum.comment_count,
+            SumRedEnum.SUM
+        )
+
+        await post_enterprise_metric_service.update_metric(
+            post.id,
+            ColumnsPostEnterpriseMetricEnum.comments_count,
+            SumRedEnum.SUM
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
@@ -488,7 +499,9 @@ async def create(
         )
 
     except Exception as e:
+        print("\n\n\n\n\n\n\n\n\n\n\n\n")
         print('Error :', e)
+        print("\n\n\n\n\n\n\n\n\n\n\n\n")
         return ORJSONResponse(
             status_code=500,
             content=dict(ResponseBody[Any](
