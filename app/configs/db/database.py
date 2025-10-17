@@ -18,7 +18,7 @@ from app.configs.db.enums import (
     MediaType, ProficiencyEnum, EmploymentTypeEnum,
     EmploymentStatusEnum, ExperienceLevelEnum,
     EducationLevelEnum, VacancyStatusEnum, WorkplaceTypeEnum,
-    AddressTypeEnum, ApplicationStatusEnum, ApplicationSourceEnum, ReactionTypeEnum
+    AddressTypeEnum, ApplicationStatusEnum, ApplicationSourceEnum, ReactionTypeEnum, NotificationTypeEnum
 )
 from app.schemas.comment_post_enterprise_metric_schemas import CommentPostEnterpriseMetricOUT
 
@@ -75,6 +75,7 @@ class UserEntity(Base):
     address: Mapped["AddressUserEntity"] = relationship("AddressUserEntity", back_populates="owner",uselist=False)
 
     applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="user")
+    notifications: Mapped[List["NotificationEntity"]] = relationship("NotificationEntity", back_populates="user")
 
     comment_user_reactions: Mapped[List["ReactionCommentPostUserEntity"]] = relationship(
         "ReactionCommentPostUserEntity",
@@ -170,6 +171,40 @@ class UserEntity(Base):
             bio = self.bio,
         )
 
+class NotificationEntity(Base):
+    __tablename__ = "notification_user"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    link: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_view: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+
+    type: Mapped[NotificationTypeEnum] = mapped_column(
+        Enum(NotificationTypeEnum, name="type_enum"),
+        nullable=False
+    )
+    entity_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="notifications")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
+                                                 onupdate=func.now(), nullable=False)
+
+    def to_out(self):
+        from app.schemas.notification_schemas import NotificationOUT
+
+        return NotificationOUT.model_validate(self.__dict__)
+
 class UserMetricEntity(Base):
     __tablename__ = "metric_users"
 
@@ -214,29 +249,7 @@ class UserMetricEntity(Base):
     def to_out(self):
         from app.schemas.user_metric_schemas import UserMetricOUT
 
-        return UserMetricOUT(
-            user_id = self.user_id,
-            post_count = self.post_count,
-            favorite_post_count = self.favorite_post_count,
-            comment_count = self.comment_count,
-            favorite_comment_count = self.favorite_comment_count,
-            follower_count = self.follower_count,
-            followed_count = self.followed_count,
-            share_count = self.share_count,
-            connection_count = self.connection_count,
-            blocked_count = self.blocked_count,
-            reaction_comment_given_count = self.reaction_comment_given_count,
-            reaction_comment_received_count = self.reaction_comment_received_count,
-            enterprise_follow_count = self.enterprise_follow_count,
-            enterprise_follower_count = self.enterprise_follower_count,
-            profile_view_count = self.profile_view_count,
-            vacancy_application_count = self.vacancy_application_count,
-            last_login_at = self.last_login_at,
-            last_post_at = self.last_post_at,
-            last_comment_at = self.last_comment_at,
-            created_at = self.created_at,
-            updated_at = self.updated_at,
-        )
+        return UserMetricOUT.model_validate(self.__dict__)
 
 class FollowerRelationshipEntity(Base):
     __tablename__ = "follower_relationships"
@@ -324,7 +337,7 @@ class MySkillEntity(Base):
     )
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), 
+        ForeignKey("users.id", ondelete="CASCADE"),
         primary_key=True,
         nullable=False
     )
@@ -472,7 +485,7 @@ class EnterpriseEntity(Base):
     employments: Mapped[list["EmployeeEnterpriseEntity"]] = relationship("EmployeeEnterpriseEntity", back_populates="enterprise")
     vacancies: Mapped[list["VacancyEntity"]] = relationship("VacancyEntity", back_populates="enterprise")
 
-    address: Mapped["AddressEnterpriseEntity"] = relationship("AddressEnterpriseEntity", back_populates="enterprise")
+    address_enterprise: Mapped["AddressEnterpriseEntity"] = relationship("AddressEnterpriseEntity", back_populates="enterprise")
 
     metrics: Mapped["EnterpriseMetricEntity"] = relationship(
         "EnterpriseMetricEntity",
@@ -630,7 +643,7 @@ class AddressEnterpriseEntity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-    enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="address")
+    enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="address_enterprise")
 
     def to_out(self):
         from app.schemas.address_enterprise_schemas import AddressEnterpriseOUT
