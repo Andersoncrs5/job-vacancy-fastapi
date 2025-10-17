@@ -162,14 +162,7 @@ class UserEntity(Base):
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
-        return UserOUT(
-            id = self.id,
-            name = self.name,
-            email = self.email,
-            avatar_url = self.avatar_url,
-            created_at = str(self.created_at),
-            bio = self.bio,
-        )
+        return UserOUT.model_validate(self.__dict__)
 
 class NotificationEntity(Base):
     __tablename__ = "notification_user"
@@ -262,6 +255,9 @@ class FollowerRelationshipEntity(Base):
 
     follower_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     followed_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+
+    receive_post: Mapped[bool] = mapped_column(Boolean, default=False)
+    receive_comment: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
