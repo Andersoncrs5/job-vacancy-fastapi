@@ -7,7 +7,10 @@ class ReactionTypeEnum(str, enum.Enum):
 
 class NotificationTypeEnum(str, enum.Enum):
     NEW_FOLLOWER = "new_follower"
+    NEW_POST_FROM_FOLLOWED_USER = "new_post_from_followed_user"
+    NEW_POST = "new_post"
     POST_LIKED = "post_liked"
+    COMMENT_LIKED = "comment_liked"
     COMMENT_RECEIVED = "comment_received"
     APPLICATION_RECEIVED = "application_received"
     SYSTEM = "system"
@@ -15,6 +18,7 @@ class NotificationTypeEnum(str, enum.Enum):
     NEW_MESSAGE = "new_message"
     MENTION = "mention"
     CONTENT_ALERT = "content_alert"
+    NEW_VACANCY = "new_vacancy"
 
 class AddressTypeEnum(str, enum.Enum):
     RESIDENTIAL = "residential"
