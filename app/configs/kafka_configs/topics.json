@@ -9,6 +9,11 @@
       "name": "send_email_topic",
       "partitions": 5,
       "replication_factor": 1
+    },
+    {
+      "name": "notification_topic",
+      "partitions": 5,
+      "replication_factor": 1
     }
   ]
 }
