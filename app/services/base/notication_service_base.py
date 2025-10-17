@@ -15,5 +15,9 @@ class NotificationServiceBase(ABC):
         pass
 
     @abstractmethod
+    async def toggle_is_view(self, noti: NotificationEntity):
+        pass
+
+    @abstractmethod
     async def get_all(self, _filter: NotificationFilter) -> list[NotificationEntity]:
         pass

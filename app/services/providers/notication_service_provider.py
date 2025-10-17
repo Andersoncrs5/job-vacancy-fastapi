@@ -17,5 +17,9 @@ class NotificationServiceProvider(NotificationServiceBase):
     async def delete(self, noti: NotificationEntity):
         await self.repository.delete(noti)
 
+    async def toggle_is_view(self, noti: NotificationEntity):
+        noti.is_view = not noti.is_view
+        return await self.repository.save(noti)
+
     async def exists_by_id(self, _id: int) -> bool:
         return await self.repository.exists_by_id(_id)
