@@ -13,6 +13,7 @@ KAFKA_BROKER: Final[str] = "localhost:29092"
 
 SUM_RED_METRIC_TOPIC: Final[str] = "sum_red_metric_topic"
 SEND_EMAIL_TOPIC: Final[str] = "send_email_topic"
+NOTIFICATION_TOPIC: Final[str] = "notification_topic"
 
 producer: AIOKafkaProducer | None = None
 
@@ -20,7 +21,6 @@ CURRENT_DIR = Path(__file__).parent
 TOPICS_CONFIG_FILE = CURRENT_DIR / "topics.json"
 
 logger = structlog.get_logger()
-
 
 class KafkaAdmin:
 
