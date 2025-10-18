@@ -17,7 +17,7 @@ from app.controllers import (
     follow_enterprise_controller, reaction_post_user_controller, reaction_post_enterprise_controller,
     comment_post_user_controller, comment_post_enterprise_controller, favorite_comment_post_enterprise_controller,
     favorite_comment_post_user_controller, reaction_comment_post_user_controller,
-    reaction_comment_post_enterprise_controller, enterprise_follows_user_controller
+    reaction_comment_post_enterprise_controller, enterprise_follows_user_controller, notification_controller
 )
 from app.configs.db.database import get_db, engine, Base
 from contextlib import asynccontextmanager
@@ -60,6 +60,7 @@ async def add_request_id(request, call_next):
     response = await call_next(request)
     return response
 
+app.include_router(notification_controller.router)
 app.include_router(enterprise_follows_user_controller.router)
 app.include_router(reaction_comment_post_enterprise_controller.router)
 app.include_router(favorite_comment_post_user_controller.router)
