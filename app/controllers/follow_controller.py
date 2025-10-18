@@ -7,13 +7,15 @@ from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import FollowerRelationshipEntity
 from app.dependencies.service_dependency import *
-from app.schemas.follow_schemas import FollowOUT
+from app.schemas.follow_schemas import FollowOUT, UpdateFollowDTO
 from app.services.providers.follow_service_provider import FollowServiceProvider
 from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum
 from app.utils.res.responses_http import *
 
+URL = "/api/v1/follow"
+
 router: Final[APIRouter] = APIRouter(
-    prefix="/api/v1/follow",
+    prefix=URL,
     tags=["Follow"],
     responses={
         status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
@@ -23,6 +25,71 @@ router: Final[APIRouter] = APIRouter(
 )
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
+
+@router.patch(
+    "/{followed_id}/toggle/status",
+    response_model=ResponseBody,
+    status_code=status.HTTP_200_OK
+)
+async def toggle_status(
+    followed_id: int,
+    dto: UpdateFollowDTO,
+    user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    follow_service: FollowServiceProvider = Depends(get_follow_service_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        user_id = jwt_service.extract_user_id_v2(token)
+
+        follow = await follow_service.get_by_follower_id_and_followed_id(user_id, followed_id)
+        if not follow:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="You not follow this user",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
+        await follow_service.toggle_status(
+            follow=follow,
+            receive_post = dto.receive_post,
+            receive_comment = dto.receive_comment
+        )
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody(
+                code=status.HTTP_200_OK,
+                message="Follow updated with successfully",
+                status=True,
+                body=None,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
 
 @router.get(
     '/{followed_id}/exists',
