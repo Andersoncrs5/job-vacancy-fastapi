@@ -187,7 +187,7 @@ class NotificationEntity(Base):
     )
     entity_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="notifications")
+    user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="notifications")
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
@@ -256,8 +256,8 @@ class FollowerRelationshipEntity(Base):
     follower_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     followed_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
 
-    receive_post: Mapped[bool] = mapped_column(Boolean, default=False)
-    receive_comment: Mapped[bool] = mapped_column(Boolean, default=False)
+    receive_post: Mapped[bool] = mapped_column(Boolean, default=True)
+    receive_comment: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -474,7 +474,6 @@ class EnterpriseEntity(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="enterprise")
-    address: Mapped["UserEntity"] = relationship("UserEntity", back_populates="enterprise")
     industry: Mapped["IndustryEntity"] = relationship("IndustryEntity", back_populates="enterprises")
     posts: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="enterprise")
     reviews: Mapped[list["ReviewEnterprise"]] = relationship("ReviewEnterprise", back_populates="enterprise")
