@@ -9,6 +9,10 @@ class FollowRepositoryBase(ABC):
         pass
 
     @abstractmethod
+    async def save(self, follow: FollowerRelationshipEntity) -> FollowerRelationshipEntity:
+        pass
+
+    @abstractmethod
     async def add(self, follow: FollowerRelationshipEntity) -> FollowerRelationshipEntity:
         pass
 

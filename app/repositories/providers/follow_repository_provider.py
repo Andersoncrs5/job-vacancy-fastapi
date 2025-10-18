@@ -29,6 +29,12 @@ class FollowRepositoryProvider(FollowRepositoryBase):
 
         return list(result.scalars().all())
 
+    async def save(self, follow: FollowerRelationshipEntity) -> FollowerRelationshipEntity:
+        await self.db.commit()
+        await self.db.refresh(follow)
+
+        return follow
+
     async def add(self, follow: FollowerRelationshipEntity) -> FollowerRelationshipEntity:
         self.db.add(follow)
         await self.db.commit()
