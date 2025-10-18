@@ -6,6 +6,13 @@ from app.configs.db.database import FollowerRelationshipEntity
 class FollowServiceBase(ABC):
 
     @abstractmethod
+    async def toggle_status(self,
+                            follow: FollowerRelationshipEntity,
+                            receive_post: bool | None,
+                            receive_comment: bool | None,
+                            ) -> FollowerRelationshipEntity:
+        pass
+    @abstractmethod
     async def delete(self, follow: FollowerRelationshipEntity):
         pass
 

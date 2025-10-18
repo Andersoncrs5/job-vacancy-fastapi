@@ -7,6 +7,19 @@ class FollowServiceProvider(FollowServiceBase):
     def __init__(self, repository: FollowRepositoryProvider):
         self.repository = repository
 
+    async def toggle_status(self,
+                            follow: FollowerRelationshipEntity,
+                            receive_post: bool | None,
+                            receive_comment: bool | None,
+                            ) -> FollowerRelationshipEntity:
+        if receive_post is not None:
+            follow.receive_post = receive_post
+
+        if receive_comment is not None:
+            follow.receive_comment = receive_comment
+
+        return await self.repository.save(follow)
+
     async def delete(self, follow: FollowerRelationshipEntity):
         await self.repository.delete(follow)
 
