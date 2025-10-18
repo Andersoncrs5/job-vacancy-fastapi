@@ -45,6 +45,7 @@ from app.services.providers.favorite_comment_post_enterprise_service_provider im
     FavoriteCommentPostEnterpriseServiceProvider
 from app.services.providers.favorite_comment_post_user_service_provider import FavoriteCommentPostUserServiceProvider
 from app.services.providers.notication_service_provider import NotificationServiceProvider
+from app.services.providers.notification_event_service_provider import NotificationEventServiceProvider
 from app.services.providers.post_enterprise_metric_service_provider import PostEnterpriseMetricServiceProvider
 from app.services.providers.post_user_metric_service_provider import PostUserMetricServiceProvider
 from app.services.providers.reaction_comment_post_enterprise_service_provider import \
@@ -98,6 +99,11 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_notification_service_provider_dependency(
+    producer: AIOKafkaProducer = Depends(get_producer_dependency),
+) -> NotificationEventServiceProvider:
+    return NotificationEventServiceProvider(producer=producer)
 
 def get_notification_provider_dependency(db: AsyncSession = Depends(get_db)) -> NotificationServiceProvider:
     repository = NotificationRepositoryProvider(db)
