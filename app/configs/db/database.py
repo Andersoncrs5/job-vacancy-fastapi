@@ -3,7 +3,7 @@ import uuid
 
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs, AsyncEngine, AsyncSession
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, declared_attr
 from typing import Final, List
 from sqlalchemy import (
     DateTime, String,
@@ -40,7 +40,17 @@ async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
 
-class UserEntity(Base):
+
+class TimestampMixin(object):
+    @declared_attr
+    def created_at(cls) -> Mapped[datetime]:
+        return mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    @declared_attr
+    def updated_at(cls) -> Mapped[datetime]:
+        return mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+class UserEntity(TimestampMixin, Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -52,8 +62,6 @@ class UserEntity(Base):
     is_block: Mapped[bool] = mapped_column(Boolean, default=False)
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     refresh_token: Mapped[str | None] = mapped_column(String(), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     posts: Mapped[list["PostUserEntity"]] = relationship("PostUserEntity", back_populates="owner")
     categories: Mapped[list["CategoryEntity"]] = relationship("CategoryEntity", back_populates="owner")
@@ -164,7 +172,7 @@ class UserEntity(Base):
 
         return UserOUT.model_validate(self.__dict__)
 
-class NotificationEntity(Base):
+class NotificationEntity(TimestampMixin, Base):
     __tablename__ = "notification_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -189,16 +197,12 @@ class NotificationEntity(Base):
 
     user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="notifications")
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
-                                                 onupdate=func.now(), nullable=False)
-
     def to_out(self):
         from app.schemas.notification_schemas import NotificationOUT
 
         return NotificationOUT.model_validate(self.__dict__)
 
-class UserMetricEntity(Base):
+class UserMetricEntity(TimestampMixin, Base):
     __tablename__ = "metric_users"
 
     user_id: Mapped[int] = mapped_column(
@@ -233,10 +237,6 @@ class UserMetricEntity(Base):
 
     last_comment_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
-                                                 onupdate=func.now(), nullable=False)
-
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="metric", uselist=False)
 
     def to_out(self):
@@ -266,7 +266,7 @@ class FollowerRelationshipEntity(Base):
     followed: Mapped["UserEntity"] = relationship("UserEntity", foreign_keys=[followed_id],
                                                   back_populates="followers_relationships", lazy="joined")
 
-class AddressUserEntity(Base):
+class AddressUserEntity(TimestampMixin, Base):
     __tablename__ = "addresses_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -293,16 +293,13 @@ class AddressUserEntity(Base):
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_visible: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="address")
 
     def to_out(self):
         from app.schemas.address_user_schemas import AddressUserOUT
         return AddressUserOUT.model_validate(self.__dict__)
 
-class SavedSearchEntity(Base):
+class SavedSearchEntity(TimestampMixin, Base):
     __tablename__ = "saved_searches"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
@@ -315,9 +312,6 @@ class SavedSearchEntity(Base):
     execution_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     notifications_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
-
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="searchs")
 
     def to_out(self):
@@ -325,7 +319,7 @@ class SavedSearchEntity(Base):
 
         return SavedSearchOUT.model_validate(self)
 
-class MySkillEntity(Base):
+class MySkillEntity(TimestampMixin, Base):
     __tablename__ = "my_skills"
 
     __table_args__ = (
@@ -362,22 +356,16 @@ class MySkillEntity(Base):
     
     skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="my_skills")
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
     def to_out(self):
         from app.schemas.my_skill_schemas import MySkillOUT
         return MySkillOUT.model_validate(self.__dict__)
 
-class SkillEntity(Base):
+class SkillEntity(TimestampMixin, Base):
     __tablename__ = "skills"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     my_skills: Mapped[list["MySkillEntity"]] = relationship("MySkillEntity", back_populates="skill")
     vacancies: Mapped[List["VacancySkillEntity"]] = relationship("VacancySkillEntity", back_populates="skill")
@@ -387,7 +375,7 @@ class SkillEntity(Base):
 
         return SkillOUT.model_validate(self)
 
-class CurriculumEntity(Base):
+class CurriculumEntity(TimestampMixin, Base):
     __tablename__ = "curriculums"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -398,8 +386,6 @@ class CurriculumEntity(Base):
     is_updated: Mapped[bool] = mapped_column(Boolean, default=True)
     is_visible: Mapped[bool] = mapped_column(Boolean, default=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="curriculum")
 
@@ -407,7 +393,7 @@ class CurriculumEntity(Base):
         from app.schemas.curriculum_schemas import CurriculumOUT
         return CurriculumOUT.model_validate(self.__dict__)
 
-class IndustryEntity(Base):
+class IndustryEntity(TimestampMixin, Base):
     __tablename__ = "industries"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -420,9 +406,6 @@ class IndustryEntity(Base):
     usage_count: Mapped[int] = mapped_column(Integer, default=0)
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-    
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="industries")
     
     enterprises: Mapped[list["EnterpriseEntity"]] = relationship(
@@ -433,7 +416,7 @@ class IndustryEntity(Base):
         from app.schemas.industry_schemas import IndustryOUT
         return IndustryOUT.model_validate(self.__dict__)
 
-class AreaEntity(Base):
+class AreaEntity(TimestampMixin, Base):
     __tablename__ = "areas"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -442,9 +425,7 @@ class AreaEntity(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-    
+
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="areas")
 
     vacancies: Mapped[list["VacancyEntity"]] = relationship(
@@ -456,7 +437,7 @@ class AreaEntity(Base):
         from app.schemas.area_schemas import AreaOUT
         return AreaOUT.model_validate(self.__dict__)
 
-class EnterpriseEntity(Base):
+class EnterpriseEntity(TimestampMixin, Base):
     __tablename__ = "enterprises"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -469,9 +450,6 @@ class EnterpriseEntity(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), unique=True)
 
     industry_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("industries.id"))
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="enterprise")
     industry: Mapped["IndustryEntity"] = relationship("IndustryEntity", back_populates="enterprises")
@@ -500,11 +478,41 @@ class EnterpriseEntity(Base):
         cascade="all, delete-orphan",
     )
 
+    notifications: Mapped[List["NotificationEntity"]] = relationship(
+        "NotificationEnterpriseEntity",
+        back_populates="enterprise"
+    )
+
     def to_out(self):
         from app.schemas.enterprise_schemas import EnterpriseOUT
         return EnterpriseOUT.model_validate(self.__dict__)
 
-class EnterpriseMetricEntity(Base):
+class NotificationEnterpriseEntity(TimestampMixin, Base):
+    __tablename__ = "notification_enterprise_user"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    enterprise_id: Mapped[int] = mapped_column(
+        ForeignKey("enterprises.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    link: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_view: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+
+    type: Mapped[NotificationTypeEnum] = mapped_column(
+        Enum(NotificationTypeEnum, name="type_enum"),
+        nullable=False
+    )
+    entity_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="notifications")
+
+class EnterpriseMetricEntity(TimestampMixin, Base):
     __tablename__ = "enterprises_metric"
 
     enterprise_id: Mapped[int] = mapped_column(
@@ -524,10 +532,6 @@ class EnterpriseMetricEntity(Base):
     employments_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     last_activity_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
-                                                 onupdate=func.now(), nullable=False)
 
     enterprise: Mapped["EnterpriseEntity"] = relationship(
         "EnterpriseEntity",
@@ -614,7 +618,7 @@ class EnterpriseFollowsUserEntity(Base):
         lazy="joined"
     )
 
-class AddressEnterpriseEntity(Base):
+class AddressEnterpriseEntity(TimestampMixin, Base):
     __tablename__ = "addresses_enterprise"
 
     enterprise_id: Mapped[int] = mapped_column(
@@ -642,9 +646,6 @@ class AddressEnterpriseEntity(Base):
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_public: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="address_enterprise")
 
     def to_out(self):
@@ -652,7 +653,7 @@ class AddressEnterpriseEntity(Base):
 
         return AddressEnterpriseOUT.model_validate(self)
 
-class VacancyEntity(Base):
+class VacancyEntity(TimestampMixin, Base):
     __tablename__ = "vacancies"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -685,9 +686,6 @@ class VacancyEntity(Base):
 
     last_application_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="vacancies")
     area: Mapped["AreaEntity"] = relationship("AreaEntity", back_populates="vacancies")
 
@@ -706,7 +704,7 @@ class VacancyEntity(Base):
 
         return VacancyOUT.model_validate(self)
 
-class VacancyMetricEntity(Base):
+class VacancyMetricEntity(TimestampMixin, Base):
     __tablename__ = "vacancies_metric"
 
     vacancy_id: Mapped[int] = mapped_column(
@@ -723,15 +721,11 @@ class VacancyMetricEntity(Base):
 
     interview_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
-                                                 onupdate=func.now(), nullable=False)
-
     def to_out(self):
         from app.schemas.vacancy_metric_schemas import VacancyMetricOUT
         return VacancyMetricOUT.model_validate(self)
 
-class VacancySkillEntity(Base):
+class VacancySkillEntity(TimestampMixin, Base):
     __tablename__ = "vacancy_skills"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -743,9 +737,6 @@ class VacancySkillEntity(Base):
     years_experience: Mapped[int | None] = mapped_column(Integer, nullable=True)
     priority_level: Mapped[int | None] = mapped_column(Integer, nullable=True)  
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     vacancy: Mapped["VacancyEntity"] = relationship("VacancyEntity", back_populates="skills", lazy="joined")
     skill: Mapped["SkillEntity"] = relationship("SkillEntity", back_populates="vacancies", lazy="joined")
@@ -791,7 +782,7 @@ class ApplicationEntity(Base):
         from app.schemas.application_schemas import ApplicationOUT
         return ApplicationOUT.model_validate(self)
 
-class EmployeeEnterpriseEntity(Base):
+class EmployeeEnterpriseEntity(TimestampMixin, Base):
     __tablename__ = "employees_enterprise"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -813,9 +804,6 @@ class EmployeeEnterpriseEntity(Base):
     start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="employments")
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="employments")
 
@@ -823,7 +811,7 @@ class EmployeeEnterpriseEntity(Base):
         from app.schemas.employee_enterprise_schemas import EmployeeEnterpriseOUT
         return EmployeeEnterpriseOUT.model_validate(self.__dict__)
 
-class ReviewEnterprise(Base):
+class ReviewEnterprise(TimestampMixin, Base):
     __tablename__ = "reviews_enterprise"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -854,9 +842,6 @@ class ReviewEnterprise(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="reviews")
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="reviews")
 
@@ -865,7 +850,7 @@ class ReviewEnterprise(Base):
 
         return ReviewEnterpriseOUT.model_validate(self)
 
-class PostEnterpriseEntity(Base):
+class PostEnterpriseEntity(TimestampMixin, Base):
     __tablename__ = "posts_enterprise"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -875,9 +860,6 @@ class PostEnterpriseEntity(Base):
 
     enterprise_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("enterprises.id"))
     category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("categories.id"))
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="posts")
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts_enterprise")
@@ -906,7 +888,7 @@ class PostEnterpriseEntity(Base):
         from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
         return PostEnterpriseOUT.model_validate(self)
 
-class PostEnterpriseMetricEntity(Base):
+class PostEnterpriseMetricEntity(TimestampMixin, Base):
     __tablename__ = "metric_posts_enterprise"
 
     post_id: Mapped[int] = mapped_column(
@@ -926,15 +908,12 @@ class PostEnterpriseMetricEntity(Base):
 
     post: Mapped["PostEnterpriseEntity"] = relationship("PostEnterpriseEntity", back_populates="metrics")
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
     def to_out(self):
         from app.schemas.post_enterprise_metric_schemas import PostEnterpriseMetricOUT
 
         return PostEnterpriseMetricOUT.model_validate(self)
 
-class CommentPostEnterpriseEntity(Base):
+class CommentPostEnterpriseEntity(TimestampMixin, Base):
     __tablename__ = "comments_posts_enterprise"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -954,9 +933,6 @@ class CommentPostEnterpriseEntity(Base):
     )
 
     is_edited: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user: Mapped["UserEntity"] = relationship(
         "UserEntity",
@@ -1019,7 +995,7 @@ class CommentPostEnterpriseEntity(Base):
             post=post_out,
         )
 
-class CommentPostEnterpriseMetricEntity(Base):
+class CommentPostEnterpriseMetricEntity(TimestampMixin, Base):
     __tablename__ = "metric_comments_posts_enterprise"
 
     comment_id: Mapped[int] = mapped_column(
@@ -1043,10 +1019,6 @@ class CommentPostEnterpriseMetricEntity(Base):
         "CommentPostEnterpriseEntity",
         back_populates="metrics"
     )
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
-                                                 onupdate=func.now(), nullable=False)
 
     def to_out(self):
         return CommentPostEnterpriseMetricOUT.model_validate(self.__dict__)
@@ -1180,7 +1152,7 @@ class FavoritePostEnterpriseEntity(Base):
         lazy="joined"
     )
     
-class CategoryEntity(Base):
+class CategoryEntity(TimestampMixin, Base):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -1199,9 +1171,6 @@ class CategoryEntity(Base):
     parent_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("categories.id"), nullable=True)
     children: Mapped[list["CategoryEntity"]] = relationship("CategoryEntity", backref="parent", remote_side="CategoryEntity.id")
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
-
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="categories")
     posts: Mapped[list["PostUserEntity"]] = relationship("PostUserEntity", back_populates="category")
     posts_enterprise: Mapped[list["PostEnterpriseEntity"]] = relationship("PostEnterpriseEntity", back_populates="category")
@@ -1210,7 +1179,7 @@ class CategoryEntity(Base):
         from app.schemas.category_schemas import CategoryOUT
         return CategoryOUT.model_validate(self.__dict__)
 
-class PostUserEntity(Base):
+class PostUserEntity(TimestampMixin, Base):
     __tablename__ = "posts_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -1220,9 +1189,6 @@ class PostUserEntity(Base):
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("categories.id"))
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     owner: Mapped["UserEntity"] = relationship("UserEntity", back_populates="posts")
     category: Mapped["CategoryEntity"] = relationship("CategoryEntity", back_populates="posts")
@@ -1254,7 +1220,7 @@ class PostUserEntity(Base):
 
         return PostUserOUT.model_validate(self.__dict__)
 
-class PostUserMetricEntity(Base):
+class PostUserMetricEntity(TimestampMixin, Base):
     __tablename__ = "metric_posts_user"
 
     post_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_user.id"), primary_key=True)
@@ -1268,9 +1234,6 @@ class PostUserMetricEntity(Base):
     favorites_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     comments_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
-
     post: Mapped["PostUserEntity"] = relationship(
         "PostUserEntity",
         back_populates="metrics"
@@ -1280,7 +1243,7 @@ class PostUserMetricEntity(Base):
         from app.schemas.post_user_metric_schemas import PostUserMetricOUT
         return PostUserMetricOUT.model_validate(self.__dict__)
 
-class CommentPostUserEntity(Base):
+class CommentPostUserEntity(TimestampMixin, Base):
     __tablename__ = "comments_posts_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -1300,9 +1263,6 @@ class CommentPostUserEntity(Base):
     )
 
     is_edited: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user: Mapped["UserEntity"] = relationship("UserEntity", back_populates="comments", lazy="joined")
 
@@ -1346,7 +1306,7 @@ class CommentPostUserEntity(Base):
 
         return CommentPostUserOUT.model_validate(self.__dict__)
 
-class CommentPostUserMetricEntity(Base):
+class CommentPostUserMetricEntity(TimestampMixin, Base):
     __tablename__ = "metric_comments_posts_user"
 
     comment_id: Mapped[int] = mapped_column(
@@ -1366,17 +1326,6 @@ class CommentPostUserMetricEntity(Base):
 
     favorites_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        nullable=False,
-    )
-
     comment: Mapped["CommentPostUserEntity"] = relationship(
         "CommentPostUserEntity", back_populates="metrics"
     )
@@ -1386,7 +1335,7 @@ class CommentPostUserMetricEntity(Base):
 
         return CommentPostUserMetricOUT.model_validate(self.__dict__)
 
-class ReactionCommentPostUserEntity(Base):
+class ReactionCommentPostUserEntity(TimestampMixin, Base):
     __tablename__ = "reaction_comments_user"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -1404,17 +1353,6 @@ class ReactionCommentPostUserEntity(Base):
 
     reaction_type: Mapped[ReactionTypeEnum] = mapped_column(
         Enum(ReactionTypeEnum, name="reaction_type_enum"), nullable=False
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-
-    user: Mapped["UserEntity"] = relationship(
-        "UserEntity",
-        foreign_keys=[user_id],
-        back_populates="comment_user_reactions",
-        lazy="joined"
     )
 
     comment: Mapped["CommentPostUserEntity"] = relationship(
@@ -1493,7 +1431,7 @@ class ReactionPostUserEntity(Base):
         from app.schemas.reaction_post_user_schemas import ReactionPostUserOUT
         return ReactionPostUserOUT.model_validate(self.__dict__)
 
-class MediaPostUserEntity(Base):
+class MediaPostUserEntity(TimestampMixin, Base):
     __tablename__ = "medias_post_user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -1505,9 +1443,6 @@ class MediaPostUserEntity(Base):
     mime_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     post_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("posts_user.id"))
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     post: Mapped["PostUserEntity"] = relationship("PostUserEntity", back_populates="medias")
 
