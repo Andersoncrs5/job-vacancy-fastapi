@@ -556,6 +556,9 @@ class FollowerRelationshipEnterpriseEntity(Base):
         BigInteger, ForeignKey("enterprises.id")
     )
 
+    receive_post: Mapped[bool] = mapped_column(Boolean, default=True)
+    receive_comment: Mapped[bool] = mapped_column(Boolean, default=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -588,6 +591,9 @@ class EnterpriseFollowsUserEntity(Base):
     user_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.id")
     )
+
+    receive_post: Mapped[bool] = mapped_column(Boolean, default=True)
+    receive_comment: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
