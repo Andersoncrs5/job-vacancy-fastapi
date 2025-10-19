@@ -594,6 +594,7 @@ class EnterpriseFollowsUserEntity(Base):
 
     receive_post: Mapped[bool] = mapped_column(Boolean, default=True)
     receive_comment: Mapped[bool] = mapped_column(Boolean, default=True)
+    receive_vacancy: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
