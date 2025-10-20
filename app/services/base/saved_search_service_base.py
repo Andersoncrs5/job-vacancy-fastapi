@@ -20,21 +20,9 @@ class SavedSearchServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self, filter: SavedSearchFilter) -> List[SavedSearchEntity]:
-        pass
-
-    @abstractmethod
     async def update(self, save: SavedSearchEntity, dto: UpdateSavedSearchDTO) -> SavedSearchEntity:
         pass
 
     @abstractmethod
     async def create(self, user_id: int, dto: CreateSavedSearchDTO) -> SavedSearchEntity:
-        pass
-
-    @abstractmethod
-    async def get_by_id(self, id: int) -> (SavedSearchEntity | None):
-        pass
-
-    @abstractmethod
-    async def delete(self, save: SavedSearchEntity):
         pass

@@ -8,17 +8,22 @@ from app.repositories.providers.area_repository_provider import AreaRepositoryPr
 from app.repositories.providers.vacancy_repository_provider import VacancyRepositoryProvider
 from app.schemas.vacancy_schemas import CreateVacancyDTO, UpdateVacancyDTO
 from app.services.base.vacancy_service_base import VacancyServiceBase
+from app.services.generics.generic_service import GenericService
 from app.utils.filter.vacancy_filter import VacancyFilter
 from app.utils.res.response_body import ResponseBody
 
 
-class VacancyServiceProvider(VacancyServiceBase):
+class VacancyServiceProvider(
+    VacancyServiceBase,
+    GenericService[
+        VacancyEntity,
+        VacancyRepositoryProvider,
+        VacancyFilter
+    ]
+):
     def __init__(self, repository: VacancyRepositoryProvider, area_repo: AreaRepositoryProvider):
-        self.repository = repository
+        super().__init__(repository)
         self.area_repository = area_repo
-    
-    async def delete(self, vacancy: VacancyEntity):
-        await self.repository.delete(vacancy)
 
     async def update(self, vacancy: VacancyEntity, dto: UpdateVacancyDTO) -> VacancyEntity:
         updates = dto.model_dump(exclude_none=True)
@@ -46,15 +51,6 @@ class VacancyServiceProvider(VacancyServiceBase):
             vacancy.area_id = dto.area_id
 
         return await self.repository.save(vacancy)
-
-    async def get_all(self, filter: VacancyFilter) -> List[VacancyEntity]:
-        return await self.repository.get_all(filter)
-    
-    async def exists_by_id(self, id: int) -> bool:
-        return await self.repository.exists_by_id(id)
-
-    async def get_by_id(self, id: int) -> VacancyEntity | None:
-        return await self.repository.get_by_id(id)
 
     async def create(self, enterprise_id: int, dto: CreateVacancyDTO) -> VacancyEntity:
         vacancy = dto.to_entity()

@@ -11,23 +11,7 @@ class ReviewEnterpriseServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self, filter: ReviewEnterpriseFilter) -> List[ReviewEnterprise]:
-        pass
-
-    @abstractmethod
     async def create(self, user_id: int, dto: CreateReviewEnterpriseDTO) -> ReviewEnterprise:
-        pass
-
-    @abstractmethod
-    async def delete(self, view: ReviewEnterprise):
-        pass
-
-    @abstractmethod
-    async def get_by_id(self, id: int) -> ReviewEnterprise | None:
-        pass
-
-    @abstractmethod
-    async def exists_by_id(self, id: int) -> bool :
         pass
 
     @abstractmethod

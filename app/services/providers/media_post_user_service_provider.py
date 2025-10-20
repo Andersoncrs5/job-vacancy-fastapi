@@ -3,31 +3,26 @@ from app.configs.db.database import MediaPostUserEntity
 from app.repositories.providers.media_post_user_repository_provider import MediaPostUserRepositoryProvider
 from app.schemas.media_post_user_schemas import CreateMediaPostUserDTO, UpdateMediaPostUserDTO
 from app.services.base.media_post_user_service_base import MediaPostUserServiceBase
+from app.services.generics.generic_service import GenericService
 from app.utils.filter.medias_post_user_filter import MediaPostUserFilter
 
 
-class MediaPostUserServiceProvider(MediaPostUserServiceBase):
+class MediaPostUserServiceProvider(
+    MediaPostUserServiceBase,
+    GenericService[
+        MediaPostUserEntity,
+        MediaPostUserRepositoryProvider,
+        MediaPostUserFilter
+    ]
+):
     def __init__(self, repository: MediaPostUserRepositoryProvider):
-        self.repository = repository
+        super().__init__(repository)
 
     async def update(self, media: MediaPostUserEntity, dto: UpdateMediaPostUserDTO) -> MediaPostUserEntity:
-        if dto.url != None:
-            media.url = dto.url
+        updates = dto.model_dump(exclude_none=True)
 
-        if dto.type != None:
-            media.type = dto.type
-
-        if dto.order != None:
-            media.order = dto.order
-
-        if dto.caption != None:
-            media.caption = dto.caption
-
-        if dto.size != None:
-            media.size = dto.size
-
-        if dto.mime_type != None:
-            media.mime_type = dto.mime_type
+        for field, value in updates.items():
+            setattr(media, field, value)
         
         return await self.repository.save(media)
 
@@ -39,15 +34,3 @@ class MediaPostUserServiceProvider(MediaPostUserServiceBase):
         media_entity.post_id = post_id
 
         return await self.repository.add(media_entity)
-
-    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
-        return await self.repository.get_all_filter(filter)
-
-    async def delete(self, media: MediaPostUserEntity):
-        await self.repository.delete(media)
-
-    async def get_by_id(self, id: int) -> MediaPostUserEntity | None:
-        if id <= 0:
-            return None
-
-        return await self.repository.get_by_id(id)

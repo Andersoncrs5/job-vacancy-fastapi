@@ -10,14 +10,6 @@ class VacancySkillServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_by_id(self, id: int) -> VacancySkillEntity | None:
-        pass
-
-    @abstractmethod
-    async def delete(self, vs: VacancySkillEntity):
-        pass
-
-    @abstractmethod
     async def create(self, dto: CreateVacancySkillDTO) -> VacancySkillEntity:
         pass
 
@@ -30,5 +22,5 @@ class VacancySkillServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self, vacancy_id: int) -> list[VacancySkillEntity]:
+    async def get_all_by_vacancy_id(self, vacancy_id: int) -> list[VacancySkillEntity]:
         pass

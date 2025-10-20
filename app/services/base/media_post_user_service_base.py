@@ -19,15 +19,3 @@ class MediaPostUserServiceBase(ABC):
     @abstractmethod
     async def create(self, post_id: int, dto: CreateMediaPostUserDTO) -> MediaPostUserEntity:
         pass
-    
-    @abstractmethod
-    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
-        pass
-    
-    @abstractmethod
-    async def get_by_id(self, id: int) -> MediaPostUserEntity | None:
-        pass
-
-    @abstractmethod
-    async def delete(self, media: MediaPostUserEntity):
-        pass

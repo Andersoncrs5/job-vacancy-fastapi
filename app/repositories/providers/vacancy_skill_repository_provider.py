@@ -5,9 +5,22 @@ from app.repositories.base.vacancy_skill_repository_base import VacancySkillRepo
 from sqlalchemy import and_, select, func, Result, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.utils.filter.vacancy_skill_filter import VacancySkillFilter
+
+
 class VacancySkillRepositoryProvider(VacancySkillRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def exists_by_id(self, _id: int) -> bool:
+        stmt = select(func.count(VacancySkillEntity.id)).where(VacancySkillEntity.id == id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
 
     async def add(self, vs: VacancySkillEntity) -> VacancySkillEntity:
         self.db.add(vs)
@@ -45,7 +58,7 @@ class VacancySkillRepositoryProvider(VacancySkillRepositoryBase):
 
         return bool(result and result > 0)
 
-    async def get_all(self, vacancy_id: int) -> list[VacancySkillEntity]:
+    async def get_all_by_vacancy_id(self, vacancy_id: int) -> list[VacancySkillEntity]:
         stmt = (
             select(VacancySkillEntity)
             .where(VacancySkillEntity.vacancy_id == vacancy_id)
@@ -53,4 +66,11 @@ class VacancySkillRepositoryProvider(VacancySkillRepositoryBase):
         )
         
         result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_all(self, filter: VacancySkillFilter) -> list[VacancySkillEntity]:
+        result = await self.db.execute(
+            filter.filter(select(VacancySkillEntity))
+        )
+
         return list(result.scalars().all())

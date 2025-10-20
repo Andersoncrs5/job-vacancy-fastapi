@@ -7,16 +7,21 @@ from app.configs.db.database import SkillEntity
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
 from app.schemas.skill_schemas import CreateSkillDTO, UpdateSkillDTO
 from app.services.base.skill_service_base import SkillServiceBase
+from app.services.generics.generic_service import GenericService
 from app.utils.filter.skill_filter import SkillFilter
 from app.utils.res.response_body import ResponseBody
 
 
-class SkillServiceProvider(SkillServiceBase):
+class SkillServiceProvider(
+    SkillServiceBase,
+    GenericService[
+        SkillEntity,
+        SkillRepositoryProvider,
+        SkillFilter,
+    ]
+):
     def __init__(self, repository: SkillRepositoryProvider):
-        self.repository = repository
-
-    async def get_all(self, filter: SkillFilter) -> List[SkillEntity]:
-        return await self.repository.get_all(filter)
+        super().__init__(repository)
 
     async def toggle_is_active(self, skill: SkillEntity) -> SkillEntity: 
         skill.is_active = not skill.is_active
@@ -43,7 +48,7 @@ class SkillServiceProvider(SkillServiceBase):
 
             skill.name = dto.name
 
-        if dto.is_active != None:
+        if dto.is_active is not None:
             skill.is_active = dto.is_active
 
         return await self.repository.save(skill)
@@ -53,16 +58,5 @@ class SkillServiceProvider(SkillServiceBase):
 
         return await self.repository.add(skill)
 
-    async def delete(self, skill: SkillEntity):
-        await self.repository.delete(skill)
-
-    async def exists_by_id(self, id: int) -> bool:
-        return await self.repository.exists_by_id(id)
-
     async def exists_by_name(self, name: str) -> bool:
         return await self.repository.exists_by_name(name)
-
-    async def get_by_id(self, id: int) -> SkillEntity | None:
-        return await self.repository.get_by_id(id)
-
-    

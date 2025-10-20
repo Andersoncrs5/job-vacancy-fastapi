@@ -2,19 +2,21 @@ from app.configs.db.database import SavedSearchEntity
 from app.repositories.providers.saved_search_repository_provider import SavedSearchReposioryProvider
 from app.services.base.saved_search_service_base import SavedSearchServiceBase
 from app.schemas.saved_search_schemas import CreateSavedSearchDTO, UpdateSavedSearchDTO
+from app.services.generics.generic_service import GenericService
 from app.utils.filter.saved_search_filter import SavedSearchFilter
 from typing import List
 from app.utils.enums.sum_red import SumRedEnum
 
-class SavedSearchServiceProvider(SavedSearchServiceBase):
+class SavedSearchServiceProvider(
+    SavedSearchServiceBase,
+    GenericService[
+        SavedSearchEntity,
+        SavedSearchReposioryProvider,
+        SavedSearchFilter,
+    ]
+):
     def __init__(self, repository: SavedSearchReposioryProvider):
-        self.repository = repository
-
-    async def delete(self, save: SavedSearchEntity):
-        await self.repository.delete(save)
-
-    async def get_by_id(self, id: int) -> (SavedSearchEntity | None):
-        return await self.repository.get_by_id(id)
+        super().__init__(repository)
 
     async def create(self, user_id: int, dto: CreateSavedSearchDTO) -> SavedSearchEntity:
         save = dto.to_entity()
@@ -30,32 +32,13 @@ class SavedSearchServiceProvider(SavedSearchServiceBase):
         return await self.repository.save(save)
 
     async def update(self, save: SavedSearchEntity, dto: UpdateSavedSearchDTO) -> SavedSearchEntity:
-        if dto.name != None:
-            save.name = dto.name
+        updates = dto.model_dump(exclude_none=True)
 
-        if dto.query != None:
-            save.query = dto.query
-
-        if dto.description != None:
-            save.description = dto.description
-
-        if dto.is_public != None:
-            save.is_public = dto.is_public
-
-        if dto.is_public != None:
-            save.is_public = dto.is_public
-
-        if dto.last_executed_at != None:
-            save.last_executed_at = dto.last_executed_at
-
-        if dto.notifications_enabled != None:
-            save.notifications_enabled = dto.notifications_enabled
+        for field, value in updates.items():
+            setattr(save, field, value)
 
         return await self.repository.save(save)
 
-    async def get_all(self, filter: SavedSearchFilter) -> List[SavedSearchEntity]:
-        return await self.repository.get_all(filter)
-        
     async def sum_or_red_execution_count(self, save: SavedSearchEntity, action: SumRedEnum ) -> SavedSearchEntity:
         if action == SumRedEnum.SUM:
             save.execution_count += 1
