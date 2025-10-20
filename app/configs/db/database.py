@@ -729,8 +729,8 @@ class VacancySkillEntity(TimestampMixin, Base):
     __tablename__ = "vacancy_skills"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    vacancy_id: Mapped[int] = mapped_column(ForeignKey("vacancies.id"), primary_key=True)
-    skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id"), primary_key=True)
+    vacancy_id: Mapped[int] = mapped_column(ForeignKey("vacancies.id"))
+    skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id"))
 
     is_required: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     proficiency: Mapped[ProficiencyEnum | None] = mapped_column(Enum(ProficiencyEnum, name="proficiency_enum"), nullable=True)
@@ -1347,12 +1347,20 @@ class ReactionCommentPostUserEntity(TimestampMixin, Base):
     user_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.id")
     )
+
     comment_user_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("comments_posts_user.id")
     )
 
     reaction_type: Mapped[ReactionTypeEnum] = mapped_column(
         Enum(ReactionTypeEnum, name="reaction_type_enum"), nullable=False
+    )
+
+    user: Mapped["UserEntity"] = relationship(
+        "UserEntity",
+        foreign_keys=[user_id],
+        back_populates="comment_user_reactions",
+        lazy="joined"
     )
 
     comment: Mapped["CommentPostUserEntity"] = relationship(
