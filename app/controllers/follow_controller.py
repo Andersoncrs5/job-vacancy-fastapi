@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import FollowerRelationshipEntity
+from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.follow_schemas import FollowOUT, UpdateFollowDTO
 from app.services.providers.follow_service_provider import FollowServiceProvider
@@ -313,6 +314,7 @@ async def create(
     followed_id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     follow_service: FollowServiceProvider = Depends(get_follow_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -334,6 +336,21 @@ async def create(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
         user_id = jwt_service.extract_user_id_v2(token)
+
+        user: Final = await user_service.get_by_id(user_id)
+        if not user:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="User not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
 
         followed: Final = await user_service.get_by_id(followed_id)
         if not followed :
@@ -369,6 +386,15 @@ async def create(
 
         await user_metric_service.update_metric_v2(user_id,ColumnUserMetricEnum.followed_count,SumRedEnum.SUM)
         await user_metric_service.update_metric_v2(followed_id,ColumnUserMetricEnum.follower_count,SumRedEnum.SUM)
+
+        await notification_service.notify_user_about(
+            entity_id=followed_id,
+            actor_id=user_id,
+            data={
+                "user_name": user.name,
+            },
+            _type=NotificationTypeEnum.NEW_FOLLOWER
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
