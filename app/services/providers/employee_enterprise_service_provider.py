@@ -12,23 +12,10 @@ class EmployeeEnterpriseServiceProvider(EmployeeEnterpriseServiceBase):
         return await self.repository.get_all(filter)
 
     async def update(self, emp: EmployeeEnterpriseEntity, dto: UpdateEmployeeEnterpriseDTO) -> EmployeeEnterpriseEntity:
-        if dto.position != None:
-            emp.position = dto.position
+        updates = dto.model_dump(exclude_none=True)
 
-        if dto.salary_range != None:
-            emp.salary_range = dto.salary_range
-
-        if dto.employment_type != None:
-            emp.employment_type = dto.employment_type
-
-        if dto.employment_status != None:
-            emp.employment_status = dto.employment_status
-
-        if dto.start_date != None:
-            emp.start_date = dto.start_date
-
-        if dto.end_date != None:
-            emp.end_date = dto.end_date
+        for field, value in updates.items():
+            setattr(emp, field, value)
 
         return await self.repository.save(emp)
 
