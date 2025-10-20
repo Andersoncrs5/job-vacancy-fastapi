@@ -25,7 +25,7 @@ class EnterpriseRepositoryBase(ABC):
         pass
     
     @abstractmethod
-    async def get_all_filter(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
+    async def get_all(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
         pass
 
     @abstractmethod

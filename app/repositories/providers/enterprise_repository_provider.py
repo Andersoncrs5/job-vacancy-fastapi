@@ -39,7 +39,7 @@ class EnterpriseRepositoryProvider(EnterpriseRepositoryBase):
 
         return result > 0
 
-    async def get_all_filter(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
+    async def get_all(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
         stmt = filter.filter(select(EnterpriseEntity))
 
         result: Final = await self.db.execute(stmt)

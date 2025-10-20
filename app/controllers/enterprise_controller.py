@@ -84,7 +84,7 @@ async def get_all(
     try:
         jwt_service.valid_credentials(credentials)
 
-        all: Final = await enterprise_service.get_all_filter(filter)
+        all: Final = await enterprise_service.get_all(filter)
 
         return paginate(all)
 
