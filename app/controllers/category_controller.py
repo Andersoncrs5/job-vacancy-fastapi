@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
