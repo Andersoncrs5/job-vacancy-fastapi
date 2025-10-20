@@ -7,6 +7,10 @@ from app.utils.filter.applications_filter import ApplicationFilter
 class ApplicationRepositoryBase(ABC):
 
     @abstractmethod
+    async def exists_by_id(self, id: int) -> bool:
+        pass
+
+    @abstractmethod
     async def get_all(self, filter: ApplicationFilter) -> list[ApplicationEntity]:
         pass
 

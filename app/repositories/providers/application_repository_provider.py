@@ -27,6 +27,15 @@ class ApplicationRepositoryProvider(ApplicationRepositoryBase):
 
         return result.scalars().first()
 
+    async def exists_by_id(self, id: int) -> bool:
+        stmt = select(func.count(ApplicationEntity.id)).where(
+            ApplicationEntity.id == id
+        )
+
+        result = await self.db.scalar(stmt)
+
+        return bool(result and result > 0)
+
     async def exists_by_user_id(self, user_id: int) -> bool:
         stmt = select(func.count(ApplicationEntity.id)).where(
             ApplicationEntity.user_id == user_id
