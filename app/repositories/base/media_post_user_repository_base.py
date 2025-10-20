@@ -6,11 +6,15 @@ from typing import List
 class MediaPostUserRepositoryBase(ABC):
 
     @abstractmethod
+    async def exists_by_id(self, _id: int) -> bool:
+        pass
+
+    @abstractmethod
     async def get_amount_by_post_id(self, post_id: int) -> int:
         pass
     
     @abstractmethod
-    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
+    async def get_all(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
         pass
 
     @abstractmethod

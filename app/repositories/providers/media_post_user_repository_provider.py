@@ -10,12 +10,22 @@ class MediaPostUserRepositoryProvider(MediaPostUserRepositoryBase):
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def exists_by_id(self, _id: int) -> bool:
+        stmt = select(func.count(MediaPostUserEntity.id)).where(MediaPostUserEntity.id == id)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def get_amount_by_post_id(self, post_id: int) -> int:
         stmt = select(func.count(MediaPostUserEntity.id)).where(MediaPostUserEntity.post_id == post_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none() or 0
 
-    async def get_all_filter(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
+    async def get_all(self, filter: MediaPostUserFilter) -> List[MediaPostUserEntity]:
         stmt = select(MediaPostUserEntity)
 
         stmt = filter.filter(stmt)
