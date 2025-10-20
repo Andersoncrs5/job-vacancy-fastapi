@@ -19,7 +19,7 @@ class PostUserRepositoryProvider(PostUserRepositoryBase):
 
         return result > 0
 
-    async def get_all_filter(self, filter: PostUserFilter) -> list[PostUserEntity]:
+    async def get_all(self, filter: PostUserFilter) -> list[PostUserEntity]:
         stmt = select(PostUserEntity)
 
         stmt = filter.filter(stmt)

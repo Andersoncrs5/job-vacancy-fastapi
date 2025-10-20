@@ -25,7 +25,7 @@ class PostUserRepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def get_all_filter(self, filter: PostUserFilter) -> list[PostUserEntity]:
+    async def get_all(self, filter: PostUserFilter) -> list[PostUserEntity]:
         pass
     
 
