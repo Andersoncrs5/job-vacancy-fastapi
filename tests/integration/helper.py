@@ -1,11 +1,10 @@
 import random
-from datetime import date
 from typing import Final
 
 from httpx import ASGITransport, AsyncClient
 
 from app.configs.db.enums import (
-    MediaType, ProficiencyEnum, ReactionTypeEnum
+    MediaType, ReactionTypeEnum
 )
 from app.schemas.address_enterprise_schemas import CreateAddressEnterpriseDTO, AddressEnterpriseOUT
 from app.schemas.address_user_schemas import *
@@ -158,41 +157,7 @@ async def create_comment_enterprise_user(user_data: UserTestData, post_data: Pos
     assert body['user']['id'] == user_data.out.id
     assert body['post']['id'] == post_data.id
 
-    user = UserOUT(
-        id=body['user']['id'],
-        name=body['user']['name'],
-        email=body['user']['email'],
-        bio=body['user'].get('bio', None),
-        avatar_url=body['user'].get('avatar_url', None),
-        created_at=body['user']['created_at'],
-    )
-
-    post_dict = body['post']
-    post = PostEnterpriseOUT(
-        id=post_dict['id'],
-        title=post_dict['title'],
-        content=post_dict['content'],
-
-        url_image=post_dict.get('url_image', None),
-
-        enterprise_id=post_dict['enterprise_id'],
-        category_id=post_dict['category_id'],
-        created_at=post_dict['created_at'],
-        updated_at=post_dict['updated_at'],
-    )
-
-    return CommentPostEnterpriseOUT(
-        id = body['id'],
-        content = body['content'],
-        user_id = body['user_id'],
-        post_enterprise_id = body.get('post_enterprise_id'),
-        parent_comment_id= body.get('parent_comment_id', None),
-        is_edited = body['is_edited'],
-        created_at = body['created_at'],
-        updated_at = body['updated_at'],
-        user = user,
-        post = post,
-    )
+    return CommentPostEnterpriseOUT.model_validate(body)
 
 async def create_comment_post_user(user_data: UserTestData, post_user_data: PostUserOUT):
     URL: Final[str] = "/api/v1/comment-post-user"
@@ -227,41 +192,7 @@ async def create_comment_post_user(user_data: UserTestData, post_user_data: Post
     assert body['user']['id'] == user_data.out.id
     assert body['post']['id'] == post_user_data.id
 
-    user = UserOUT(
-        id=body['user']['id'],
-        name=body['user']['name'],
-        email=body['user']['email'],
-        bio=body['user'].get('bio', None),
-        avatar_url=body['user'].get('avatar_url', None),
-        created_at=body['user']['created_at'],
-    )
-
-    post_dict = body['post']
-    post = PostUserOUT(
-        id=post_dict['id'],
-        title=post_dict['title'],
-        content=post_dict['content'],
-
-        url_image=post_dict.get('url_image', None),
-
-        user_id=post_dict['user_id'],
-        category_id=post_dict['category_id'],
-        created_at=post_dict['created_at'],
-        updated_at=post_dict['updated_at'],
-    )
-
-    return CommentPostUserOUT(
-        id = body['id'],
-        content = body['content'],
-        user_id = body['user_id'],
-        post_user_id = body.get('post_user_id'),
-        parent_comment_id= body.get('parent_comment_id', None),
-        is_edited = body['is_edited'],
-        created_at = body['created_at'],
-        updated_at = body['updated_at'],
-        user = user,
-        post = post,
-    )
+    return CommentPostUserOUT.model_validate(body)
 
 async def create_reaction_post_enterprise(user_data: UserTestData, post_data: PostEnterpriseOUT, reaction: ReactionTypeEnum):
     URL = "/api/v1/area/reaction-post-enterprise"
@@ -359,20 +290,7 @@ async def create_application(user_data: UserTestData, vacancy_data: VacancyOUT):
     assert body['vacancy_id'] == vacancy_data.id
     assert body['user_id'] == user_data.out.id
 
-    return ApplicationOUT(
-        id = body['id'],
-        user_id = body['user_id'],
-        vacancy_id = body['vacancy_id'],
-        status = body['status'],
-        is_viewed = body['is_viewed'],
-        priority_level = body['priority_level'],
-        rating = body['rating'],
-        feedback = body['feedback'],
-        source = body['source'],
-        notes = body['notes'],
-        applied_at = body['applied_at'],
-        updated_at = body['updated_at'],
-    )
+    return ApplicationOUT.model_validate(body)
 
 async def create_address_to_enterprise(user_data: UserTestData, enterprise_data: EnterpriseOUT) -> AddressEnterpriseOUT:
     URL = "/api/v1/address-enterprise"
@@ -398,8 +316,9 @@ async def create_address_to_enterprise(user_data: UserTestData, enterprise_data:
             headers={"Authorization": f"Bearer {user_data.tokens.token}"}
         )
 
-    data = response.json()
     assert response.status_code == 201
+    data = response.json()
+    body = response.json()['body']
 
     assert data['body']['enterprise_id'] == enterprise_data.id
     assert data['body']['street'] == dto.street
@@ -407,22 +326,7 @@ async def create_address_to_enterprise(user_data: UserTestData, enterprise_data:
     assert data['body']['address_type'] == dto.address_type
     assert data['body']['city'] == dto.city
 
-    return AddressEnterpriseOUT(
-        enterprise_id = data['body']['enterprise_id'],
-        street = data['body']['street'],
-        number = data['body']['number'],
-        complement = data['body']['complement'],
-        district = data['body']['district'],
-        city = data['body']['city'],
-        state = data['body']['state'],
-        country = data['body']['country'],
-        zipcode = data['body']['zipcode'],
-        address_type = data['body']['address_type'],
-        is_default = data['body']['is_default'],
-        is_public = data['body']['is_public'],
-        created_at = data['body']['created_at'],
-        updated_at = data['body']['updated_at'],
-    )
+    return AddressEnterpriseOUT.model_validate(body)
 
 async def create_address_user(user_data: UserTestData) -> AddressUserOUT:
     URL = "/api/v1/address-user"
@@ -448,30 +352,15 @@ async def create_address_user(user_data: UserTestData) -> AddressUserOUT:
             headers={"Authorization": f"Bearer {user_data.tokens.token}"}
         )
 
-    data = response.json()
     assert response.status_code == 201
+    data = response.json()
+    body = response.json()['body']
 
     assert data['body']['id'] is not None
     assert data['body']['user_id'] == user_data.out.id
     assert data['body']['street'] == dto.street
 
-    return AddressUserOUT(
-        id = data['body']['id'],
-        user_id = data['body']['user_id'],
-        street = data['body']['street'],
-        number = data['body']['number'],
-        complement = data['body']['complement'],
-        district = data['body']['district'],
-        city = data['body']['city'],
-        state = data['body']['state'],
-        country = data['body']['country'],
-        zipcode = data['body']['zipcode'],
-        address_type = data['body']['address_type'],
-        is_default = data['body']['is_default'],
-        created_at = data['body']['created_at'],
-        updated_at = data['body']['updated_at'],
-        is_visible = data['body']['is_visible'],
-    )
+    return AddressUserOUT.model_validate(body)
 
 async def add_skill_into_vacancy(user_data, vacancy_data, skill_data) -> int:
     URL = '/api/v1/vacancy-skill'
@@ -539,30 +428,7 @@ async def create_vacancy(user_data: UserTestData, area_data: AreaOUT) -> Vacancy
     assert data['body']['area_id'] == dto.area_id
     assert data['body']['title'] == dto.title
 
-    return VacancyOUT(
-        id = data['body']['id'],
-        enterprise_id = data['body']['enterprise_id'],
-        area_id = data['body']['area_id'],
-        title = data['body']['title'],
-        description = data['body']['description'],
-        employment_type = data['body']['employment_type'],
-        experience_level = data['body']['experience_level'],
-        education_level = data['body']['education_level'],
-        workplace_type = data['body']['workplace_type'],
-        seniority = data['body']['seniority'],
-        salary_min = data['body']['salary_min'],
-        salary_max = data['body']['salary_max'],
-        currency = data['body']['currency'],
-        requirements = data['body']['requirements'],
-        responsibilities = data['body']['requirements'],
-        benefits = data['body']['benefits'],
-        status = data['body']['status'],
-        openings = data['body']['openings'],
-        application_deadline = data['body']['application_deadline'],
-        last_application_at = data['body']['last_application_at'],
-        created_at = data['body']['created_at'],
-        updated_at = data['body']['updated_at'],
-    )
+    return VacancyOUT.model_validate(data['body'])
 
 async def create_area(user_data: UserTestData) -> AreaOUT:
     num = random.randint(10000,100000000000000)
@@ -581,15 +447,7 @@ async def create_area(user_data: UserTestData) -> AreaOUT:
     data = response.json()
     assert response.status_code == 201
 
-    return AreaOUT(
-        id = data['body']['id'],
-        name = data['body']['name'],
-        description = data['body']['description'],
-        is_active = data['body']['is_active'],
-        user_id = data['body']['user_id'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return AreaOUT.model_validate(data['body'])
 
 async def create_saved_search(user_data: UserTestData) -> SavedSearchOUT:
     URL = '/api/v1/saved-search'
@@ -617,19 +475,7 @@ async def create_saved_search(user_data: UserTestData) -> SavedSearchOUT:
     assert data['body']['user_id'] == user_data.out.id
     assert data['body']['name'] == dto.name
 
-    return SavedSearchOUT(
-        id = data['body']['id'],
-        user_id = data['body']['user_id'],
-        name = data['body']['name'],
-        query = data['body']['query'],
-        description = data['body']['description'],
-        is_public = data['body']['is_public'],
-        last_executed_at = None if data['body']['last_executed_at'] is None else str(data['body']['last_executed_at']),
-        execution_count = data['body']['execution_count'],
-        notifications_enabled = data['body']['notifications_enabled'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return SavedSearchOUT.model_validate(data['body'])
 
 async def create_review(user_data, enterprise_data, user_data_two) -> ReviewEnterpriseOUT:
     URL = "/api/v1/review-enterprise"
@@ -667,25 +513,7 @@ async def create_review(user_data, enterprise_data, user_data_two) -> ReviewEnte
     assert data["body"]["title"] == dto.title
     assert data["body"]["description"] == dto.description
 
-    return ReviewEnterpriseOUT(
-        id=data["body"]["id"],
-        rating=data["body"]["rating"],
-        title=data["body"]["title"],
-        description=data["body"]["description"],
-        pros=data["body"]["pros"],
-        cons=data["body"]["cons"],
-        would_recommend=data["body"]["would_recommend"],
-        position=data["body"]["position"],
-        salary_range=data["body"]["salary_range"],
-        employment_type=data["body"]["employment_type"],
-        employment_status=data["body"]["employment_status"],
-        helpful_votes=data["body"]["helpful_votes"],
-        unhelpful_votes=data["body"]["unhelpful_votes"],
-        user_id=data["body"]["user_id"],
-        enterprise_id=data["body"]["enterprise_id"],
-        created_at=str(data["body"]["created_at"]),
-        updated_at=str(data["body"]["updated_at"]),
-    )
+    return ReviewEnterpriseOUT.model_validate(data['body'])
 
 async def create_employee(user_data: UserTestData, enterprise_data, user_data_two: UserTestData) -> EmployeeEnterpriseOUT:
     URL = "/api/v1/employee-enterprise"
@@ -712,19 +540,7 @@ async def create_employee(user_data: UserTestData, enterprise_data, user_data_tw
     assert data['body']["position"] == dto.position
     assert data['body']["salary_range"] == dto.salary_range
 
-    return EmployeeEnterpriseOUT(
-        id = data['body']['id'],
-        user_id = data['body']['user_id'],
-        enterprise_id = data['body']['enterprise_id'],
-        position = data['body']['position'],
-        salary_range = data['body']['salary_range'],
-        employment_type = data['body']['employment_type'],
-        employment_status = data['body']['employment_status'],
-        start_date = str(data['body']['start_date']),
-        end_date = str(data['body']['end_date']),
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return EmployeeEnterpriseOUT.model_validate(data['body'])
 
 async def create_favorite_post_enterprise(user_data, post_enterprise) -> int:
     URL = '/api/v1/favorite-post-enterprise'
@@ -767,16 +583,7 @@ async def create_post_enterprise(user_data, enterprise_data, category_data) -> P
     assert data['body']['category_id'] == category_data.id
     assert data['body']['enterprise_id'] == enterprise_data.id
 
-    return PostEnterpriseOUT(
-        id = data['body']['id'],
-        title = data['body']['title'],
-        content = data['body']['content'],
-        url_image = data['body']['url_image'],
-        enterprise_id = data['body']['enterprise_id'],
-        category_id = data['body']['category_id'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return PostEnterpriseOUT.model_validate(data['body'])
 
 async def create_my_skill(user_data, skill) -> MySkillOUT:
     URL = '/api/v1/my-skill'
@@ -802,17 +609,7 @@ async def create_my_skill(user_data, skill) -> MySkillOUT:
     assert data['body']['datails'] == dto.datails
     assert data['body']['years_of_experience'] == dto.years_of_experience
 
-    return MySkillOUT(
-        user_id = data['body']['user_id'],
-        skill_id = data['body']['skill_id'],
-        proficiency = data['body']['proficiency'],
-        certificate_url = data['body']['certificate_url'],
-        datails = data['body']['datails'],
-        years_of_experience = data['body']['years_of_experience'],
-        last_used_date = date.today(),
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return MySkillOUT.model_validate(data['body'])
 
 async def create_skill(user_data) -> SkillOUT:
     URL = '/api/v1/skill'
@@ -831,13 +628,7 @@ async def create_skill(user_data) -> SkillOUT:
     assert data['body']['id'] is not None
     assert data['body']['name'] == dto.name
 
-    return SkillOUT(
-        id = data['body']['id'],
-        name = data['body']['name'],
-        is_active = data['body']['is_active'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return SkillOUT.model_validate(data['body'])
 
 async def create_curriculum(user_data) -> CurriculumOUT:
     URL = '/api/v1/curriculum'
@@ -859,16 +650,7 @@ async def create_curriculum(user_data) -> CurriculumOUT:
     assert data['body']['user_id'] is not None
     assert data['body']['title'] == dto.title
 
-    return CurriculumOUT(
-        id = data['body']['id'],
-        user_id = data['body']['user_id'],
-        title = data['body']['title'],
-        is_updated = data['body']['is_updated'],
-        description = data['body']['description'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-        is_visible = data['body']['is_visible'],
-    )
+    return CurriculumOUT.model_validate(data['body'])
 
 async def create_media_post_user(user_data: UserTestData, post_user_data: PostUserOUT) -> MediaPostUserOUT:
     URL = '/api/v1/media-post-user'
@@ -894,18 +676,7 @@ async def create_media_post_user(user_data: UserTestData, post_user_data: PostUs
     assert data['body']['id'] is not None
     assert data['body']['post_id'] == post_user_data.id
 
-    return MediaPostUserOUT(
-        id = data['body']['id'],
-        url = data['body']['url'],
-        type = data['body']['type'],
-        order = data['body']['order'],
-        caption = data['body']['caption'],
-        size = data['body']['size'],
-        mime_type = data['body']['mime_type'],
-        post_id = data['body']['post_id'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return MediaPostUserOUT.model_validate(data['body'])
 
 async def create_favorite_post_user(user_data: UserTestData, category_data: CategoryOUT, post_data: PostUserOUT) -> int:
     URL = '/api/v1/favorite-post-user'
@@ -931,7 +702,7 @@ async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT)
     URL = '/api/v1/enterprise'
 
     dto = CreateEnterpriseDTO(
-        name = f'name {num}',
+        name = f'name enterprise {num}',
         description = f" description {num}",
         website_url = None,
         logo_url = None,
@@ -953,17 +724,7 @@ async def create_enterprise(user_data: UserTestData, industry_data: IndustryOUT)
     assert data['version'] == 1
     assert data['path'] is None
 
-    return EnterpriseOUT(
-        id = data['body']['id'],
-        name = data['body']['name'],
-        description = data['body']['description'],
-        website_url = data['body']['website_url'],
-        logo_url = data['body']['logo_url'],
-        user_id = data['body']['user_id'],
-        industry_id = data['body']['industry_id'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return EnterpriseOUT.model_validate(data['body'])
 
 async def create_industry(user_data: UserTestData) -> IndustryOUT:
     URL = '/api/v1/industry'
@@ -994,17 +755,7 @@ async def create_industry(user_data: UserTestData) -> IndustryOUT:
     assert isinstance(data['body']['user_id'], int)
     assert data['body']['is_active'] == True
 
-    return IndustryOUT(
-        id = data['body']['id'],
-        name = data['body']['name'],
-        description = data['body']['description'],
-        icon_url = data['body']['icon_url'],
-        is_active = data['body']['is_active'],
-        usage_count = data['body']['usage_count'],
-        user_id = data['body']['user_id'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return IndustryOUT.model_validate(data['body'])
 
 async def create_post_user(user_data: UserTestData, category_data: CategoryOUT) -> PostUserOUT:
     num = random.randint(10000,100000000000)
@@ -1031,16 +782,7 @@ async def create_post_user(user_data: UserTestData, category_data: CategoryOUT) 
     assert data['body']['url_image'] == dto.url_image
     assert data['body']['category_id'] == category_data.id
 
-    return PostUserOUT(
-        id = data['body']['id'],
-        title = data['body']['title'],
-        content = data['body']['content'],
-        url_image = data['body']['url_image'],
-        user_id = data['body']['user_id'],
-        category_id = data['body']['category_id'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return PostUserOUT.model_validate(data['body'])
 
 async def create_category(user_data: UserTestData) -> CategoryOUT:
     num = random.randint(100000,10000000000000)
@@ -1079,21 +821,7 @@ async def create_category(user_data: UserTestData) -> CategoryOUT:
     assert data['body']['user_id'] is not None
     assert data['body']['created_at'] is not None
 
-    return CategoryOUT(
-        id = data['body']['id'],
-        name = data['body']['name'],
-        slug = data['body']['slug'],
-        description = data['body']['description'],
-        is_active = data['body']['is_active'],
-        order = data['body']['order'],
-        post_count = data['body']['post_count'],
-        job_count = data['body']['job_count'],
-        icon_url = data['body']['icon_url'],
-        user_id = data['body']['user_id'],
-        parent_id = data['body']['parent_id'],
-        created_at = str(data['body']['created_at']),
-        updated_at = str(data['body']['updated_at']),
-    )
+    return CategoryOUT.model_validate(data['body'])
 
 async def create_and_login_user() -> UserTestData:
     num = random.randint(100000, 100000000000000)
@@ -1134,13 +862,6 @@ async def create_and_login_user() -> UserTestData:
         exp_refresh_token=data.get("exp_refresh_token"),
     )
 
-    out = UserOUT(
-        id = data_user['body']['id'],
-        name = data_user['body']['name'],
-        email = data_user['body']['email'],
-        avatar_url = data_user['body']['avatar_url'],
-        bio = data_user['body']['bio'],
-        created_at = str(data_user['body']['created_at']),
-    )
+    out = UserOUT.model_validate(data_user['body'])
 
     return UserTestData(dto=dto, tokens=tokens, out=out)
