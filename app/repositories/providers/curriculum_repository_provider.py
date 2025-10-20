@@ -5,27 +5,20 @@ from app.configs.db.database import CurriculumEntity
 from typing import Final
 from datetime import datetime
 
-class CurriculumRepositoryProvider(CurriculumRepositoryBase):
+from app.repositories.generics.generic_repository import GenericRepository
+
+
+class CurriculumRepositoryProvider(
+    CurriculumRepositoryBase,
+    GenericRepository[
+        CurriculumEntity,
+        None,
+        int,
+        CurriculumEntity
+    ]
+):
     def __init__(self, db: AsyncSession):
-        self.db = db
-
-    async def save(self, curri: CurriculumEntity) -> CurriculumEntity:
-        curri.updated_at = datetime.now()
-        await self.db.commit()
-        await self.db.refresh(curri)
-
-        return curri
-
-    async def add(self, curri: CurriculumEntity) -> CurriculumEntity:
-        self.db.add(curri)
-        await self.db.commit()
-        await self.db.refresh(curri)
-
-        return curri
-
-    async def delete(self, curri: CurriculumEntity):
-        await self.db.delete(curri)
-        await self.db.commit()
+        super().__init__(db=db, entity_class=CurriculumEntity)
 
     async def get_by_user_id(self, user_id: int) -> CurriculumEntity | None:
         result: Final = await self.db.execute(

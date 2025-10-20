@@ -7,35 +7,11 @@ class EnterpriseRepositoryBase(ABC):
     @abstractmethod
     async def get_by_user_id(self, user_id: int) -> EnterpriseEntity | None:
         pass
-    
-    @abstractmethod
-    async def exists_by_id(self, id: int) -> bool:
-        pass
-    
+
     @abstractmethod
     async def exists_by_user_id(self, user_id: int) -> bool:
         pass
     
     @abstractmethod
     async def exists_by_name(self, name: str) -> bool:
-        pass
-    
-    @abstractmethod
-    async def add(self, enter: EnterpriseEntity) -> EnterpriseEntity:
-        pass
-    
-    @abstractmethod
-    async def get_all(self, filter: EnterpriseFilter) -> list[EnterpriseEntity]:
-        pass
-
-    @abstractmethod
-    async def get_by_id(self, id: int) -> EnterpriseEntity | None:
-        pass
-
-    @abstractmethod
-    async def save(self, enter: EnterpriseEntity) -> EnterpriseEntity:
-        pass
-
-    @abstractmethod
-    async def delete(self, enter: EnterpriseEntity):
         pass

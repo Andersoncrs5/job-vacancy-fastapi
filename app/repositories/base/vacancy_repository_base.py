@@ -4,27 +4,4 @@ from app.utils.filter.vacancy_filter import VacancyFilter
 from typing import List
 
 class VacancyRepositoryBase(ABC):
-    
-    @abstractmethod
-    async def delete(self, vacancy: VacancyEntity):
-        pass
-
-    @abstractmethod
-    async def get_all(self, filter: VacancyFilter) -> list[VacancyEntity]:
-        pass
-
-    @abstractmethod
-    async def add(self, vacancy: VacancyEntity) -> VacancyEntity:
-        pass
-    
-    @abstractmethod
-    async def save(self, vacancy: VacancyEntity) -> VacancyEntity:
-        pass
-
-    @abstractmethod
-    async def get_by_id(self, id: int) -> VacancyEntity | None:
-        pass
-
-    @abstractmethod
-    async def exists_by_id(self, id: int) -> bool:
-        pass
+    pass
