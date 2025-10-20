@@ -3,12 +3,20 @@ from app.repositories.providers.comment_post_enterprise_repository_provider impo
     CommentPostEnterpriseRepositoryProvider
 from app.schemas.comment_post_enterprise_schemas import CreateCommentPostEnterpriseDTO, UpdateCommentPostEnterpriseDTO
 from app.services.base.comment_post_enterprise_service_base import CommentPostEnterpriseServiceBase
+from app.services.generics.generic_service import GenericService
 from app.utils.filter.comment_post_enterprise_filter import CommentPostEnterpriseFilter
 
 
-class CommentPostEnterpriseServiceProvider(CommentPostEnterpriseServiceBase):
+class CommentPostEnterpriseServiceProvider(
+    CommentPostEnterpriseServiceBase,
+    GenericService[
+        CommentPostEnterpriseEntity,
+        CommentPostEnterpriseRepositoryProvider,
+        CommentPostEnterpriseFilter
+    ]
+):
     def __init__(self, repository: CommentPostEnterpriseRepositoryProvider):
-        self.repository = repository
+        super().__init__(repository)
 
     async def update(self, comment: CommentPostEnterpriseEntity, dto: UpdateCommentPostEnterpriseDTO) -> CommentPostEnterpriseEntity:
         if dto.content is not None:
@@ -22,15 +30,3 @@ class CommentPostEnterpriseServiceProvider(CommentPostEnterpriseServiceBase):
         comment.user_id = user_id
 
         return await self.repository.add(comment)
-
-    async def exists_by_id(self, id: int) -> bool:
-        return await self.repository.exists_by_id(id)
-
-    async def get_by_id(self, id: int) -> CommentPostEnterpriseEntity | None:
-        return await self.repository.get_by_id(id)
-
-    async def delete(self, comment: CommentPostEnterpriseEntity):
-        await self.repository.delete(comment)
-
-    async def get_all(self, filter: CommentPostEnterpriseFilter) -> list[CommentPostEnterpriseEntity]:
-        return await self.repository.get_all(filter)

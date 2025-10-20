@@ -8,17 +8,10 @@ class CurriculumServiceProvider(CurriculumServiceBase):
         self.repository = repository
 
     async def update(self, curri: CurriculumEntity, dto: UpdateCurriculumDTO) -> CurriculumEntity:
-        if dto.title is not None:
-            curri.title = dto.title
+        updates = dto.model_dump(exclude_none=True)
 
-        if dto.is_updated is not None:
-            curri.is_updated = dto.is_updated
-
-        if dto.is_visible is not None:
-            curri.is_visible = dto.is_visible
-
-        if dto.description is not None:
-            curri.description = dto.description
+        for field, value in updates.items():
+            setattr(curri, field, value)
 
         return await self.repository.save(curri)
 

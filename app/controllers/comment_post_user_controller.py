@@ -5,7 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
-
+from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.comment_post_user_schemas import CommentPostUserOUT, CreateCommentPostUserDTO, UpdateCommentPostUserDTO
 from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnsPostUserMetricEnum, \
@@ -35,6 +35,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 async def get_by_id_metric(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
     comment_post_user_metric_service: CommentPostUserMetricServiceProvider = Depends(get_comment_post_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -362,6 +363,7 @@ async def get_by_id(
 async def create(
     dto: CreateCommentPostUserDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     post_user_service: PostUserServiceProvider = Depends(get_post_user_service_provider_dependency),
     comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
@@ -434,9 +436,26 @@ async def create(
         await comment_post_user_metric_service.create(comment_created.id)
 
         out_dict = out.model_dump(by_alias=True, exclude_none=True)
-        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.comment_count, SumRedEnum.SUM)
-        await post_user_metric_service.update_metric(dto.post_user_id, ColumnsPostUserMetricEnum.comments_count,
-                                                     SumRedEnum.SUM)
+        await user_metric_service.update_metric_v2(
+            user_id,
+            ColumnUserMetricEnum.comment_count,
+            SumRedEnum.SUM
+        )
+
+        await post_user_metric_service.update_metric(
+            dto.post_user_id,
+            ColumnsPostUserMetricEnum.comments_count,
+            SumRedEnum.SUM
+        )
+
+        await notification_service.notify_user_about(
+            entity_id=comment_created.id,
+            actor_id=user_id,
+            data={
+                "user_name": user.name,
+            },
+            _type=NotificationTypeEnum.NEW_COMMENT
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

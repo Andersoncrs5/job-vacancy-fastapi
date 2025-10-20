@@ -11,18 +11,6 @@ class AreaServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self, filter: AreaFilter) -> List[AreaEntity]:
-        pass
-
-    @abstractmethod
-    async def get_by_id(self, id: int) -> AreaEntity | None:
-        pass
-
-    @abstractmethod
-    async def exists_by_id(self, id: int) -> bool:
-        pass
-
-    @abstractmethod
     async def exists_by_name(self, name: str) -> bool:
         pass
 
@@ -32,8 +20,4 @@ class AreaServiceBase(ABC):
 
     @abstractmethod
     async def create(self, user_id: int, dto: CreateAreaDTO) -> AreaEntity:
-        pass
-
-    @abstractmethod
-    async def delete(self, area: AreaEntity):
         pass

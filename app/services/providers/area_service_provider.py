@@ -1,4 +1,5 @@
 from app.configs.db.database import AreaEntity
+from app.services.generics.generic_service import GenericService
 from app.utils.filter.area_filter import AreaFilter
 from typing import List
 from app.schemas.area_schemas import UpdateAreaDTO, CreateAreaDTO
@@ -8,22 +9,20 @@ from datetime import datetime
 from app.utils.res.response_body import ResponseBody
 from fastapi import HTTPException, status
 
-class AreaServiceProvider(AreaServiceBase):
+class AreaServiceProvider(
+    AreaServiceBase,
+    GenericService[
+        AreaEntity,
+        AreaRepositoryProvider,
+        AreaFilter
+    ]
+):
     def __init__(self, repository: AreaRepositoryProvider):
-        self.repository = repository
+        super().__init__(repository)
 
     async def toggle_is_active(self, area: AreaEntity) -> AreaEntity:
         area.is_active = not area.is_active
         return await self.repository.save(area)
-
-    async def get_all(self, filter: AreaFilter) -> List[AreaEntity]:
-        return await self.repository.get_all(filter)
-
-    async def get_by_id(self, id: int) -> AreaEntity | None:
-        return await self.repository.get_by_id(id)
-
-    async def exists_by_id(self, id: int) -> bool:
-        return await self.repository.exists_by_id(id)
 
     async def exists_by_name(self, name: str) -> bool:
         return await self.repository.exists_by_name(name)
@@ -62,6 +61,3 @@ class AreaServiceProvider(AreaServiceBase):
         area.user_id = user_id
 
         return await self.repository.add(area)
-
-    async def delete(self, area: AreaEntity):
-        await self.repository.delete(area)
