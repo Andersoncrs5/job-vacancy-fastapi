@@ -10,20 +10,10 @@ class MySkillServiceProvider(MySkillServiceBase):
         self.repository = repository
 
     async def update(self, my: MySkillEntity, dto: UpdateMySkillDTO) -> MySkillEntity:
-        if dto.proficiency != None:
-            my.proficiency = dto.proficiency
+        updates = dto.model_dump(exclude_none=True)
 
-        if dto.certificate_url != None:
-            my.certificate_url = dto.certificate_url
-
-        if dto.datails != None:
-            my.datails = dto.datails
-
-        if dto.years_of_experience != None:
-            my.years_of_experience = dto.years_of_experience
-
-        if dto.last_used_date != None:
-            my.last_used_date = dto.last_used_date
+        for field, value in updates.items():
+            setattr(my, field, value)
 
         return await self.repository.save(my)
 
