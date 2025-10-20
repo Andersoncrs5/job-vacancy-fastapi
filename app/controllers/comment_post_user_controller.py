@@ -324,7 +324,7 @@ async def get_by_id(
 
         out = comment.to_out()
 
-        out_dict = out.model_dump(by_alias=True)
+        out_dict = out.model_dump()
         await comment_post_user_metric_service.update_metric(comment.id, ColumnsCommentPostUserMetricEnum.views_count, SumRedEnum.SUM)
 
         return ORJSONResponse(
@@ -435,7 +435,8 @@ async def create(
         out = comment_created.to_out()
         await comment_post_user_metric_service.create(comment_created.id)
 
-        out_dict = out.model_dump(by_alias=True, exclude_none=True)
+        #out_dict = out.model_dump(by_alias=True, exclude_none=True)
+        out_dict = out.model_dump()
         await user_metric_service.update_metric_v2(
             user_id,
             ColumnUserMetricEnum.comment_count,
