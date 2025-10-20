@@ -328,11 +328,13 @@ async def get_by_id(
 
         out = comment.to_out()
 
-        out_dict = out.model_dump(by_alias=True)
+        out_dict = out.model_dump()
 
-        await comment_enterprise_metric_service.update_metric(comment.id,
-                                                              ColumnsCommentPostEnterpriseMetricEnum.views_count,
-                                                              SumRedEnum.SUM)
+        await comment_enterprise_metric_service.update_metric(
+            comment.id,
+            ColumnsCommentPostEnterpriseMetricEnum.views_count,
+            SumRedEnum.SUM
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
@@ -472,7 +474,7 @@ async def create(
 
         out = comment_created.to_out()
 
-        out_dict = out.model_dump(by_alias=True)
+        out_dict = out.model_dump()
         await user_metric_service.update_metric_v2(
             user_id,
             ColumnUserMetricEnum.comment_count,
@@ -499,9 +501,6 @@ async def create(
         )
 
     except Exception as e:
-        print("\n\n\n\n\n\n\n\n\n\n\n\n")
-        print('Error :', e)
-        print("\n\n\n\n\n\n\n\n\n\n\n\n")
         return ORJSONResponse(
             status_code=500,
             content=dict(ResponseBody[Any](
