@@ -9,7 +9,8 @@ class NotificationTypeEnum(str, enum.Enum):
     NEW_FOLLOWER = "new_follower"
     NEW_POST_FROM_FOLLOWED_USER = "new_post_from_followed_user" #
     NEW_POST = "new_post"
-    NEW_POST_ENTERPRISE = "new_post_enterprise" #
+    NEW_POST_ENTERPRISE = "new_post_enterprise"
+    NEW_REVIEW_ENTERPRISE = "new_review_enterprise" #
     POST_LIKED = "post_liked" #
     COMMENT_LIKED = "comment_liked" #
     COMMENT_RECEIVED = "comment_received" #
@@ -19,7 +20,7 @@ class NotificationTypeEnum(str, enum.Enum):
     NEW_MESSAGE = "new_message" #
     MENTION = "mention" #
     CONTENT_ALERT = "content_alert" #
-    NEW_VACANCY = "new_vacancy" #
+    NEW_VACANCY = "new_vacancy"
     NEW_COMMENT = "new_comment"
 
 class AddressTypeEnum(str, enum.Enum):
