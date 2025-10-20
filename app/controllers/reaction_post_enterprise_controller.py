@@ -1,7 +1,6 @@
 from datetime import datetime
-from typing import Final
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
@@ -95,7 +94,7 @@ async def create(
         token: Final[str] = jwt_service.valid_credentials(creden=credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token=token)
 
-        post = await post_enterprise_service.get_by_id(id=dto.post_enterprise_id)
+        post = await post_enterprise_service.get_by_id(_id=dto.post_enterprise_id)
         if not post:
             return ORJSONResponse(
                 status_code=404,
@@ -110,7 +109,7 @@ async def create(
                 ))
             )
 
-        user = await user_service.exists_by_id(id=user_id)
+        user = await user_service.exists_by_id(_id=user_id)
         if not user:
             return ORJSONResponse(
                 status_code=404,
@@ -132,8 +131,17 @@ async def create(
             reaction_updated = await reaction_service.toggle_reaction_type(check)
 
             if reaction_updated.reaction_type == ReactionTypeEnum.LIKE:
-                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_dislike_count, SumRedEnum.RED)
-                await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_like_count, SumRedEnum.SUM)
+                await post_enterprise_metric_service.update_metric(
+                    post.id,
+                    ColumnsPostEnterpriseMetricEnum.reactions_dislike_count,
+                    SumRedEnum.RED
+                )
+
+                await post_enterprise_metric_service.update_metric(
+                    post.id,
+                    ColumnsPostEnterpriseMetricEnum.reactions_like_count,
+                    SumRedEnum.SUM
+                )
 
             if reaction_updated.reaction_type == ReactionTypeEnum.DISLIKE:
                 await post_enterprise_metric_service.update_metric(post.id, ColumnsPostEnterpriseMetricEnum.reactions_dislike_count, SumRedEnum.SUM)

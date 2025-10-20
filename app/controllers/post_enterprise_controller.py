@@ -1,11 +1,10 @@
-from datetime import datetime
-
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import PostEnterpriseEntity, EnterpriseEntity, CategoryEntity
+from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.post_enterprise_schemas import *
 from app.utils.enums.sum_red import SumRedEnum, ColumnEnterpriseMetricEnum, ColumnsPostEnterpriseMetricEnum
@@ -393,6 +392,7 @@ async def create(
     dto: CreatePostEnterpriseDTO,
     enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     post_enterprise_service: PostEnterpriseServiceProvider = Depends(get_post_enterprise_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
@@ -465,10 +465,25 @@ async def create(
 
         post_enterprise_created: Final[PostEnterpriseEntity] = await post_enterprise_service.create(enter.id, category.id, dto)
 
-        await category_service.sum_red_post_count(category, SumRedEnum.SUM)
+        await category_service.sum_red_post_count(
+            category,
+            SumRedEnum.SUM
+        )
 
-        await enterprise_metric_service.update_metric(post_enterprise_created.enterprise_id, ColumnEnterpriseMetricEnum.post_count,
-                                                      SumRedEnum.SUM)
+        await enterprise_metric_service.update_metric(
+            post_enterprise_created.enterprise_id,
+            ColumnEnterpriseMetricEnum.post_count,
+            SumRedEnum.SUM
+        )
+
+        await notification_service.notify_event_to_kafka(
+            entity_id=post_enterprise_created.id,
+            actor_id=enter.id,
+            _type=NotificationTypeEnum.NEW_POST_ENTERPRISE,
+            data = {
+                "actor_name": enter.name
+            },
+        )
 
         await post_enterprise_metric_service.create(post_enterprise_created.id)
         post_enterprise_out = post_enterprise_created.to_out()

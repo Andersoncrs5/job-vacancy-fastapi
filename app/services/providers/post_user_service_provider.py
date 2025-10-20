@@ -23,7 +23,7 @@ class PostUserServiceProvider(
         post.user_id = user.id
         post.category_id = category.id
 
-        return await self.repository.create(post)
+        return await self.repository.add(post)
 
     async def update(self, post: PostUserEntity, dto: UpdatePostUserDTO) -> PostUserEntity:
         updates = dto.model_dump(exclude_none=True)

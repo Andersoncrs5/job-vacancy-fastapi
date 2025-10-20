@@ -413,7 +413,7 @@ async def get_all(
     try:
         jwt_service.valid_credentials(credentials)
         
-        all: Final = await saved_search_service.get_all(filter)
+        all: Final = await saved_search_service.get_all_by_vacancy_id(filter)
 
         return paginate(all)
     except Exception as e:

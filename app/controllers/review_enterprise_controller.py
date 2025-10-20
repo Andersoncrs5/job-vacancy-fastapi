@@ -294,6 +294,7 @@ async def create(
     dto: CreateReviewEnterpriseDTO,
     enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     review_enterprise_service: ReviewEnterpriseServiceProvider = Depends(get_review_enterprise_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
@@ -381,9 +382,11 @@ async def create(
         
         review_created: Final[ReviewEnterprise] = await review_enterprise_service.create(user_id, dto)
 
-        await enterprise_metric_service.update_metric(review_created.enterprise_id,
-                                                      ColumnEnterpriseMetricEnum.review_count,
-                                                      SumRedEnum.SUM)
+        await enterprise_metric_service.update_metric(
+            review_created.enterprise_id,
+            ColumnEnterpriseMetricEnum.review_count,
+            SumRedEnum.SUM
+        )
 
         out: Final[ReviewEnterpriseOUT] = review_created.to_out()
 

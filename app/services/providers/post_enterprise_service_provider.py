@@ -23,7 +23,7 @@ class PostEnterpriseServiceProvider(
         post.enterprise_id = enterprise_id
         post.category_id = category_id
 
-        return await self.repository.create(post)
+        return await self.repository.add(post)
 
     async def update(self, post: PostEnterpriseEntity, dto: UpdatePostEnterpriseDTO) -> PostEnterpriseEntity:
         updates = dto.model_dump(exclude_none=True)

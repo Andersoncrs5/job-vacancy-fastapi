@@ -95,7 +95,7 @@ async def create(
         token: Final[str] = jwt_service.valid_credentials(creden=credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token=token)
 
-        post = await post_user_service.exists_by_id(id=dto.post_user_id)
+        post = await post_user_service.exists_by_id(_id=dto.post_user_id)
         if not post:
             return ORJSONResponse(
                 status_code=404,
@@ -110,7 +110,7 @@ async def create(
                 ))
             )
 
-        user = await user_service.exists_by_id(id=user_id)
+        user = await user_service.exists_by_id(_id=user_id)
         if not user:
             return ORJSONResponse(
                 status_code=404,
@@ -245,7 +245,7 @@ async def get(
         token: Final[str] = jwt_service.valid_credentials(creden=credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token=token)
 
-        post = await post_user_service.exists_by_id(id=post_user_id)
+        post = await post_user_service.exists_by_id(_id=post_user_id)
         if not post:
             return ORJSONResponse(
                 status_code=404,
@@ -337,7 +337,7 @@ async def delete(
         token: Final[str] = jwt_service.valid_credentials(creden=credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token=token)
 
-        post = await post_user_service.exists_by_id(id=post_user_id)
+        post = await post_user_service.exists_by_id(_id=post_user_id)
         if not post:
             return ORJSONResponse(
                 status_code=404,
@@ -414,7 +414,7 @@ async def create(
         token: Final[str] = jwt_service.valid_credentials(creden=credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token=token)
 
-        post = await post_user_service.exists_by_id(id=dto.post_user_id)
+        post = await post_user_service.exists_by_id(_id=dto.post_user_id)
         if not post:
             return ORJSONResponse(
                 status_code=404,
@@ -429,7 +429,7 @@ async def create(
                 ))
             )
 
-        user = await user_service.exists_by_id(id=user_id)
+        user = await user_service.exists_by_id(_id=user_id)
         if not user:
             return ORJSONResponse(
                 status_code=404,

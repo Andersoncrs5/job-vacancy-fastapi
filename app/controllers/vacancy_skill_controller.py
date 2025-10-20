@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -259,7 +257,7 @@ async def get_all(
                 ))
             )
 
-        all: Final = await vacancy_skill_service.get_all(vacancy_id)
+        all: Final = await vacancy_skill_service.get_all_by_vacancy_id(vacancy_id)
 
         return paginate(all)
 

@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.vacancy_schemas import *
 from app.utils.enums.sum_red import ColumnsVacancyMetricEnum, SumRedEnum, ColumnEnterpriseMetricEnum
@@ -448,6 +449,7 @@ async def get_by_id(
 async def create(
     dto: CreateVacancyDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     area_service = Depends(get_area_service_provider_dependency),
     vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
     vacancy_metric_service: VacancyMetricServiceProvider = Depends(get_vacancy_metric_service_provider_dependency),
@@ -522,7 +524,20 @@ async def create(
         vacancy_created = await vacancy_service.create(enterprise.id, dto)
         await vacancy_metric_service.create(vacancy_created.id)
 
-        await enterprise_metric_service.update_metric(enterprise.id, ColumnEnterpriseMetricEnum.vacancies_count, SumRedEnum.SUM)
+        await enterprise_metric_service.update_metric(
+            enterprise.id,
+            ColumnEnterpriseMetricEnum.vacancies_count,
+            SumRedEnum.SUM
+        )
+
+        await notification_service.notify_event_to_kafka(
+            entity_id = vacancy_created.id,
+            actor_id = enterprise.id,
+            _type = NotificationTypeEnum.NEW_VACANCY,
+            data = {
+                "actor_name": enterprise.name
+            }
+        )
 
         out = vacancy_created.to_out()
 
