@@ -9,10 +9,6 @@ class CategoryServiceBase(ABC):
     @abstractmethod
     async def exists_by_id(self, id: int) -> bool:
         pass
-    
-    @abstractmethod
-    async def get_all(self, is_active: bool) -> list[CategoryEntity]:
-        pass
 
     @abstractmethod
     async def get_all_filter(self, is_active: bool, filter: CategoryFilter) -> list[CategoryEntity]:

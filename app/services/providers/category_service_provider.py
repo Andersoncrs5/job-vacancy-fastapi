@@ -62,11 +62,8 @@ class CategoryServiceProvider(CategoryServiceBase):
 
         return await self.repository.save(category)
 
-    async def get_all(self, is_active: bool) -> list[CategoryEntity]:
-        return await self.repository.get_all(is_active)
-
     async def get_all_filter(self, is_active: bool, filter: CategoryFilter) -> list[CategoryEntity]:
-        return await self.repository.get_all_filter(is_active, filter)
+        return await self.repository.get_all(filter)
 
     async def create(self, user: UserEntity, dto: CreateCategoryDTO) -> CategoryEntity:
         category_mapped: Final = dto.to_category_entity()
