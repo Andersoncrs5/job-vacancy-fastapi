@@ -1,13 +1,11 @@
-from datetime import datetime
-
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import PostUserEntity, UserEntity, CategoryEntity
+from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
-from app.schemas.post_user_metric_schemas import PostUserMetricOUT
 from app.schemas.post_user_schemas import *
 from app.utils.enums.sum_red import SumRedEnum, ColumnUserMetricEnum, ColumnsPostUserMetricEnum
 from app.utils.filter.post_user_filter import PostUserFilter
@@ -379,7 +377,7 @@ async def get_all(
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
-        categories: Final[list[PostUserEntity]] = await post_user_service.get_all_filter(filter)
+        categories: Final[list[PostUserEntity]] = await post_user_service.get_all(filter)
 
         return paginate(categories)
 
@@ -412,6 +410,7 @@ async def create(
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     post_user_metric_service: PostUserMetricServiceProvider = Depends(get_post_user_metric_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -480,6 +479,15 @@ async def create(
             )  
 
         post_user_created: Final[PostUserEntity] = await post_user_service.create(user, category, dto)
+
+        await notification_service.notify_user_about(
+            entity_id=post_user_created.id,
+            actor_id=user_id,
+            data={
+                "user_name": user.name,
+            },
+            _type=NotificationTypeEnum.NEW_POST
+        )
 
         await category_service.sum_red_post_count(category, SumRedEnum.SUM)
 

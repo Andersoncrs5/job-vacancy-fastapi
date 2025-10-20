@@ -471,7 +471,7 @@ async def get_all(
         token: Final[str] = jwt_service.valid_credentials(credentials)
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
-        all: Final[list[IndustryEntity]] = await industry_service.get_all_filter(filter)
+        all: Final[list[IndustryEntity]] = await industry_service.get_all(filter)
 
         return paginate(all)
 

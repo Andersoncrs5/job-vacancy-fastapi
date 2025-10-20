@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Final, List
+from typing import List
 
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
@@ -120,7 +119,7 @@ async def get_all(
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
-        all_entities: Final[List[MediaPostUserEntity]] = await media_post_user_service.get_all_filter(filter)
+        all_entities: Final[List[MediaPostUserEntity]] = await media_post_user_service.get_all(filter)
 
         return paginate(all_entities)
 
