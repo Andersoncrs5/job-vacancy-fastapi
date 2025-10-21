@@ -512,6 +512,11 @@ class NotificationEnterpriseEntity(TimestampMixin, Base):
 
     enterprise: Mapped["EnterpriseEntity"] = relationship("EnterpriseEntity", back_populates="notifications")
 
+    def to_out(self):
+        from app.schemas.notification_enterprise_schemas import NotificationEnterpriseOUT
+
+        return NotificationEnterpriseOUT.model_validate(self.__dict__)
+
 class EnterpriseMetricEntity(TimestampMixin, Base):
     __tablename__ = "enterprises_metric"
 
