@@ -313,8 +313,6 @@ async def resister(
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
     try:
-
-
         check_email: Final[bool] = await user_service.exists_by_email(str(dto.email))
         if check_email :
             return ORJSONResponse(
@@ -344,6 +342,8 @@ async def resister(
                     path=None
                 ))
             )
+
+        dto.name = dto.name.lower().replace(" ", "")
 
         user_created: Final[UserEntity] = await user_service.create(dto)
 
