@@ -40,7 +40,6 @@ async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
 
-
 class TimestampMixin(object):
     @declared_attr
     def created_at(cls) -> Mapped[datetime]:
@@ -167,10 +166,58 @@ class UserEntity(TimestampMixin, Base):
         cascade="all, delete-orphan",
     )
 
+    my_roles: Mapped[list["MyRolesEntity"]] = relationship(
+        "MyRolesEntity",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     def to_user_out(self):
         from app.schemas.user_schemas import UserOUT
 
         return UserOUT.model_validate(self.__dict__)
+
+class MyRolesEntity(TimestampMixin, Base):
+    __tablename__ = "user_roles"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True
+    )
+
+    role_id: Mapped[int] = mapped_column(
+        ForeignKey("roles.id", ondelete="CASCADE"),
+        index=True
+    )
+
+    user: Mapped["UserEntity"] = relationship(
+        back_populates="my_roles",
+        lazy="joined"
+    )
+
+    role: Mapped["RolesEntity"] = relationship(
+        back_populates="user_associations",
+        lazy="joined"
+    )
+
+class RolesEntity(TimestampMixin, Base):
+    __tablename__ = "roles"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
+    slug: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
+
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    is_immutable: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    user_associations: Mapped[list["MyRolesEntity"]] = relationship(
+        "MyRolesEntity",
+        back_populates="role",
+        cascade="all, delete-orphan",
+    )
 
 class NotificationEntity(TimestampMixin, Base):
     __tablename__ = "notification_user"
