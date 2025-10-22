@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user_with_role_super_adm, create_area, log_in_system, impl_role_in_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_area, log_in_system, \
+    impl_role_in_user, create_and_login_user_without_role
 from main import app
 from httpx import ASGITransport, AsyncClient
 from app.schemas.area_schemas import *
@@ -18,6 +19,35 @@ ROLE_MASTER: Final[str] = os.getenv("ROLE_MASTER")
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = '/api/v1/adm'
 
+@pytest.mark.asyncio
+async def test_return_unauthorized_get_all():
+    user = await create_and_login_user_without_role()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(
+            f"{URL}",
+            headers={"Authorization": f"Bearer {user.tokens.token}"}
+        )
+
+    assert response.status_code == 401
+
+@pytest.mark.asyncio
+async def test_get_all():
+    user = await log_in_system()
+    user_data = await create_and_login_user_with_role_super_adm()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(
+            f"{URL}?user_id={user_data.out.id}",
+            headers={"Authorization": f"Bearer {user.tokens.token}"}
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    items = list(data['items'])
+
+    assert items[0]['user_id'] == user_data.out.id
 
 @pytest.mark.asyncio
 async def test_role_not_exists_adm_in_user():

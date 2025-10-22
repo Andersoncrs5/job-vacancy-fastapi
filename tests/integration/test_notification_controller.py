@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from typing import Final
 
@@ -5,17 +8,51 @@ from app.dependencies.service_dependency import get_follow_service_provider_depe
 from app.schemas.category_schemas import *
 from app.schemas.follow_schemas import UpdateFollowDTO
 from app.services.providers.follow_service_provider import FollowServiceProvider
-from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_user, create_follow_user, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_user, \
+    create_follow_user, \
     create_comment_post_user, create_industry, create_enterprise, create_post_enterprise, create_follow_enterprise, \
-    create_follow_enterprise_user, create_area, create_vacancy
+    create_follow_enterprise_user, create_area, create_vacancy, log_in_system, create_and_login_user_without_role
 from main import app
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO
 from httpx import ASGITransport, AsyncClient
 import pytest
 import asyncio
 
+load_dotenv()
+
 client: Final[TestClient] = TestClient(app)
 URL = "/api/v1/notification"
+
+ROLE_SUPER_ADM: Final[str] = os.getenv("ROLE_SUPER_ADM")
+ROLE_ADM: Final[str] = os.getenv("ROLE_ADM")
+ROLE_MASTER: Final[str] = os.getenv("ROLE_MASTER")
+
+@pytest.mark.asyncio
+async def test_received_notification_about_new_system():
+    adm_master = await log_in_system()
+    user = await create_and_login_user_without_role()
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        await ac.post(
+            f"{"/api/v1/adm"}/toggle/{user.out.email}/{ROLE_SUPER_ADM}",
+            headers={"Authorization": f"Bearer {adm_master.tokens.token}"}
+        )
+
+    await asyncio.sleep(4)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.get(
+            f"{URL}?user_id={user.out.id}",
+            headers={"Authorization": f"Bearer {user.tokens.token}"}
+        )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data['items']) >= 1
+    assert data['items'][0]['user_id'] == user.out.id
+    assert data['items'][0]['entity_id'] is None
+    assert data['items'][0]['title'] == f"Congratulations! You are the new {ROLE_SUPER_ADM}"
 
 @pytest.mark.asyncio
 async def test_received_notification_about_new_vacancy_enterprise():
