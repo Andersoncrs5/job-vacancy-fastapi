@@ -166,8 +166,8 @@ class UserEntity(TimestampMixin, Base):
         cascade="all, delete-orphan",
     )
 
-    my_roles: Mapped[list["MyRolesEntity"]] = relationship(
-        "MyRolesEntity",
+    my_roles: Mapped[list["UserRolesEntity"]] = relationship(
+        "UserRolesEntity",
         back_populates="user",
         cascade="all, delete-orphan",
     )
@@ -177,7 +177,7 @@ class UserEntity(TimestampMixin, Base):
 
         return UserOUT.model_validate(self.__dict__)
 
-class MyRolesEntity(TimestampMixin, Base):
+class UserRolesEntity(TimestampMixin, Base):
     __tablename__ = "user_roles"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -213,8 +213,8 @@ class RolesEntity(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     is_immutable: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    user_associations: Mapped[list["MyRolesEntity"]] = relationship(
-        "MyRolesEntity",
+    user_associations: Mapped[list["UserRolesEntity"]] = relationship(
+        "UserRolesEntity",
         back_populates="role",
         cascade="all, delete-orphan",
     )
