@@ -1,7 +1,10 @@
 import asyncio
 
 from aiokafka import AIOKafkaProducer
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import HTTPException
+from datetime import datetime
 
 from app.configs.commands.command_linner import CommandLinner
 from app.configs.kafka_configs.kafka_admin import KafkaAdmin, KAFKA_BROKER
@@ -19,7 +22,7 @@ from app.controllers import (
     comment_post_user_controller, comment_post_enterprise_controller, favorite_comment_post_enterprise_controller,
     favorite_comment_post_user_controller, reaction_comment_post_user_controller,
     reaction_comment_post_enterprise_controller, enterprise_follows_user_controller, notification_controller,
-    notification_enterprise_controller
+    notification_enterprise_controller, adm_controller
 )
 from app.configs.db.database import get_db, engine, Base, AsyncSessionLocal
 from contextlib import asynccontextmanager
@@ -31,6 +34,7 @@ import uuid
 from app.repositories.providers.my_roles_repository_provider import MyRolesRepositoryProvider
 from app.repositories.providers.roles_repository_provider import RolesRepositoryProvider
 from app.repositories.providers.user_repository_provider import UserRepositoryProvider
+from app.utils.res.response_body import ResponseBody
 
 logger: Final[structlog.BoundLogger] = setup_logging()
 
@@ -71,6 +75,36 @@ app: Final[FastAPI] = FastAPI(
     }
 )
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return ORJSONResponse(
+        status_code=exc.status_code,
+        content=dict(ResponseBody(
+            code=exc.status_code,
+            message=exc.detail.get("message") if isinstance(exc.detail, dict) else str(exc.detail),
+            body=exc.detail.get("body") if isinstance(exc.detail, dict) else None,
+            status=False,
+            timestamp=str(datetime.now()),
+            path=str(request.url.path),
+            version=1
+        ))
+    )
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    return ORJSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=dict(ResponseBody(
+            code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error",
+            body=str(exc),
+            status=False,
+            timestamp=str(datetime.now()),
+            path=str(request.url.path),
+            version=1
+        ))
+    )
+
 @app.middleware("http")
 async def add_request_id(request, call_next):
     request_id = str(uuid.uuid4())
@@ -78,6 +112,7 @@ async def add_request_id(request, call_next):
     response = await call_next(request)
     return response
 
+app.include_router(adm_controller.router)
 app.include_router(notification_controller.router)
 app.include_router(notification_enterprise_controller.router)
 app.include_router(enterprise_follows_user_controller.router)
