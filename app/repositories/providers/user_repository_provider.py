@@ -25,6 +25,16 @@ class UserRepositoryProvider(
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def exists_by_name(self, name: str) -> bool:
+        stmt = select(func.count(UserEntity.id)).where(UserEntity.name == name)
+
+        result: Final[int | None] = await self.db.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return result > 0
+
     async def exists_by_email(self, email: str) -> bool:
         stmt = select(func.count(UserEntity.id)).where(UserEntity.email == email)
 
