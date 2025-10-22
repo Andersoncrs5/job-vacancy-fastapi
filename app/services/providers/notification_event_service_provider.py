@@ -32,7 +32,7 @@ class NotificationEventServiceProvider(NotificationEventServiceBase):
 
         await send_message_to_kafka(self.producer, event.model_dump_json(), NOTIFICATION_TOPIC)
 
-    async def notify_user_about(self, entity_id: int, actor_id: int | None, _type: NotificationTypeEnum, data: dict):
+    async def notify_user_about(self, entity_id: int | None, actor_id: int | None, _type: NotificationTypeEnum, data: dict):
         event = EventNotification(
             event_id = uuid4(),
             actor_id = actor_id,
