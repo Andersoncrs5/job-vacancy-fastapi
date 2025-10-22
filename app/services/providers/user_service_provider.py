@@ -48,6 +48,9 @@ class UserServiceProvider(
     async def exists_by_email(self, email: str) -> bool:
         return await self.repository.exists_by_email(email)
 
+    async def exists_by_name(self, name: str) -> bool:
+        return await self.repository.exists_by_name(name)
+
     async def get_by_email(self, email: str) -> (UserEntity | None):
         if not email or not email.strip() or email is None:
             return None
