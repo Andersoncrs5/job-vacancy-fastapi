@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
@@ -42,6 +42,24 @@ async def patch(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
+
         if id <= 0:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -121,6 +139,24 @@ async def toggle_status_active(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
+
         if id <= 0:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -135,8 +171,6 @@ async def toggle_status_active(
                 ))
             )
 
-        jwt_service.valid_credentials(credentials)
-        
         area: Final[AreaEntity | None] = await area_service.get_by_id(id)
         if area is None :
             return ORJSONResponse(
@@ -200,6 +234,25 @@ async def delete(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
+
+
         if id <= 0:
             return ORJSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -390,12 +443,28 @@ async def post(
     dto: CreateAreaDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     area_service: AreaServiceProvider = Depends(get_area_service_provider_dependency),
-    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    jwt_service: JwtServiceProvider = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user: Final[bool] = await user_service.exists_by_id(user_id)
         if not user:

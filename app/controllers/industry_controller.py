@@ -15,7 +15,7 @@ router: Final[APIRouter] = APIRouter(
     prefix="/api/v1/industry", 
     tags=["Industry"],
     responses={
-        500: RESPONSE_500,
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE_500,
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     },
     deprecated=False,
@@ -71,8 +71,8 @@ async def check_name_exists(
     response_model=ResponseBody[IndustryOUT],
     status_code=status.HTTP_201_CREATED,
     responses={
-        404: RESPONSE_404,
-        409: RESPONSE_409
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_409_CONFLICT: RESPONSE_409
     }
 )
 async def create(
@@ -84,6 +84,22 @@ async def create(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         check_name: Final[bool] = await industry_service.exists_by_name(dto.name)
@@ -177,6 +193,22 @@ async def toggle_status_is_active(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
@@ -256,6 +288,22 @@ async def put(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
@@ -334,6 +382,22 @@ async def delete(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)

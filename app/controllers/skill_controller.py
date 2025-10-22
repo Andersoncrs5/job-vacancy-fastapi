@@ -82,11 +82,27 @@ async def toggle_is_active(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     skill_service: SkillServiceProvider = Depends(get_skill_service_provider_dependency),
-    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    jwt_service: JwtServiceProvider = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
-        jwt_service.valid_credentials(credentials)
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
         
         skill: Final[SkillEntity | None] = await skill_service.get_by_id(id)
         if skill is None :
@@ -151,7 +167,23 @@ async def update(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
-        jwt_service.valid_credentials(credentials)
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
         
         skill: Final[SkillEntity | None] = await skill_service.get_by_id(id)
         if skill is None :
@@ -247,7 +279,23 @@ async def delete(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
-        jwt_service.valid_credentials(credentials)
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
         
         skill: Final[SkillEntity | None] = await skill_service.get_by_id(id)
         if skill is None :
@@ -371,7 +419,23 @@ async def create(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     try:
-        jwt_service.valid_credentials(credentials)
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
         
         check: Final[bool] = await skill_service.exists_by_name(dto.name)
         if check:

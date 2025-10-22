@@ -87,6 +87,22 @@ async def toggle_change_is_status(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
@@ -168,6 +184,22 @@ async def update(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
@@ -343,7 +375,7 @@ async def get_by_id(
 async def delete(
     category_id: int,
     category_service: CategoryServiceProvider = Depends(get_category_service_provider_dependency),
-    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    jwt_service: JwtServiceProvider = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if category_id <= 0:
@@ -362,6 +394,22 @@ async def delete(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
@@ -426,6 +474,22 @@ async def create(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master_or_super_adm(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
 
