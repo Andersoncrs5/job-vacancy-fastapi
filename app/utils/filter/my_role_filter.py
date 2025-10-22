@@ -6,10 +6,12 @@ from app.configs.db.database import UserRolesEntity
 
 
 class MyRolesFilter(Filter):
-    user_id: Optional[int] = Field(None, description="Search by user ID")
-    role_id: Optional[int] = Field(None, description="Search by role ID")
-    created_at__gte: Optional[datetime] = Field(None, description="Filter by creation date, greater than or equal to.")
-    created_at__lte: Optional[datetime] = Field(None, description="Filter by creation date, less than or equal to.")
+
+    user_id: Optional[int] = Field(None, description="Search by ID of the associated user.")
+    role_id: Optional[int] = Field(None, description="Search by ID of the associated role.")
+    created_at__gte: Optional[datetime] = Field(None, description="Filter: Created on or after this datetime.")
+    created_at__lte: Optional[datetime] = Field(None, description="Filter: Created on or before this datetime.")
 
     class Constants(Filter.Constants):
         model = UserRolesEntity
+
