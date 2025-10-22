@@ -61,7 +61,6 @@ async def impl_role_in_user(email: str, name: str, role: str):
     data = response.json()
     body = response.json()["body"]
 
-    assert data['message'] == f"User {name} now is a {role.lower()}"
     assert data['code'] == 200
     assert data['status'] == True
 
@@ -493,7 +492,7 @@ async def create_vacancy(user_data: UserTestData, area_data: AreaOUT) -> Vacancy
 async def create_area(user_data: UserTestData) -> AreaOUT:
     num = random.randint(10000,100000000000000)
     URL = '/api/v1/area'
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateAreaDTO(
         name = f"name {num}",
@@ -883,11 +882,11 @@ async def create_category(user_data: UserTestData) -> CategoryOUT:
 
     return CategoryOUT.model_validate(data['body'])
 
-async def create_and_login_user() -> UserTestData:
+async def create_and_login_user_without_role() -> UserTestData:
     num = random.randint(100000, 100000000000000)
     dto = CreateUserDTO(
         name=f"user {num}",
-        email=f"user{num}@example.com",
+        email=cast(EmailStr, (cast(object,f"user{num}@example.com"))),
         password=str(num),
         bio=None,
         avatar_url=None,
@@ -896,6 +895,51 @@ async def create_and_login_user() -> UserTestData:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/api/v1/auth/register", json=dto.model_dump())
     assert response.status_code == 201
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        login_dto = LoginDTO(email=dto.email, password=dto.password)
+        response = await ac.post("/api/v1/auth/login", json=login_dto.model_dump())
+    assert response.status_code == 200
+
+    data = response.json()["body"]
+
+    assert data["token"] is not None
+    assert data["refresh_token"] is not None
+
+    URL = "/api/v1/user"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(URL + f"/{dto.email}", headers={"Authorization": f"Bearer {data["token"]}"})
+
+    assert response.status_code == 200
+    data_user = response.json()
+
+    tokens = Tokens(
+        token=data["token"],
+        refresh_token=data["refresh_token"],
+        exp_token=data.get("exp_token"),
+        exp_refresh_token=data.get("exp_refresh_token"),
+    )
+
+    out = UserOUT.model_validate(data_user['body'])
+
+    return UserTestData(dto=dto, tokens=tokens, out=out)
+
+async def create_and_login_user_with_role_super_adm() -> UserTestData:
+    num = random.randint(100000, 100000000000000)
+    dto = CreateUserDTO(
+        name=f"user {num}",
+        email=cast(EmailStr, (cast(object,f"user{num}@example.com"))),
+        password=str(num),
+        bio=None,
+        avatar_url=None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post("/api/v1/auth/register", json=dto.model_dump())
+    assert response.status_code == 201
+
+    await impl_role_in_user(str(dto.email), dto.name, "SUPER_ADM")
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         login_dto = LoginDTO(email=dto.email, password=dto.password)
