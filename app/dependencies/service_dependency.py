@@ -32,6 +32,7 @@ from app.repositories.providers.reaction_comment_post_user_repository_provider i
     ReactionCommentPostUserRepositoryProvider
 from app.repositories.providers.reaction_post_enterprise_provider import ReactionPostEnterpriseRepositoryProvider
 from app.repositories.providers.reaction_post_user_repository_provider import ReactionPostUserRepositoryProvider
+from app.repositories.providers.roles_repository_provider import RolesRepositoryProvider
 from app.repositories.providers.skill_repository_provider import SkillRepositoryProvider
 from app.repositories.providers.user_metric_repository_provider import UserMetricRepositoryProvider
 from app.repositories.providers.vacancy_metric_repository_provider import VacancyMetricRepositoryProvider
@@ -61,6 +62,7 @@ from app.services.providers.reaction_post_user_service_provider import ReactionP
 from app.services.providers.application_service_provider import ApplicationServiceProvider
 from app.services.providers.follow_enterprise_service_provider import FollowEnterpriseServiceProvider
 from app.services.providers.follow_service_provider import FollowServiceProvider
+from app.services.providers.roles_service_provider import RolesServiceProvider
 from app.services.providers.skill_service_provider import SkillServiceProvider
 from app.repositories.providers.my_skill_repository_provider import MySkillRepositoryProvider
 from app.services.providers.my_skill_service_provider import MySkillServiceProvider
@@ -108,6 +110,10 @@ from app.services.providers.address_enterprise_service_provider import AddressEn
 def get_my_role_provider_dependency(db: AsyncSession = Depends(get_db)) -> MyRolesServiceProvider:
     repository = MyRolesRepositoryProvider(db)
     return MyRolesServiceProvider(repository)
+
+def get_role_provider_dependency(db: AsyncSession = Depends(get_db)) -> RolesServiceProvider:
+    repository = RolesRepositoryProvider(db)
+    return RolesServiceProvider(repository)
 
 def get_notification_service_provider_dependency(
     producer: AIOKafkaProducer = Depends(get_producer_dependency),
