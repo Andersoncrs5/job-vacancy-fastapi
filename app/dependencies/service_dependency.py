@@ -20,6 +20,7 @@ from app.repositories.providers.favorite_comment_post_user_repository_provider i
     FavoriteCommentPostUserRepositoryProvider
 from app.repositories.providers.follow_enterprise_repository_provider import FollowEnterpriseRepositoryProvider
 from app.repositories.providers.follow_repository_provider import FollowRepositoryProvider
+from app.repositories.providers.my_roles_repository_provider import MyRolesRepositoryProvider
 from app.repositories.providers.notification_enterprise_repository_provider import \
     NotificationEnterpriseRepositoryProvider
 from app.repositories.providers.notification_repository_provider import NotificationRepositoryProvider
@@ -46,6 +47,7 @@ from app.services.providers.enterprise_metric_service_provider import Enterprise
 from app.services.providers.favorite_comment_post_enterprise_service_provider import \
     FavoriteCommentPostEnterpriseServiceProvider
 from app.services.providers.favorite_comment_post_user_service_provider import FavoriteCommentPostUserServiceProvider
+from app.services.providers.my_roles_service_provider import MyRolesServiceProvider
 from app.services.providers.notication_enteprise_service_provider import NotificationEnterpriseServiceProvider
 from app.services.providers.notication_service_provider import NotificationServiceProvider
 from app.services.providers.notification_event_service_provider import NotificationEventServiceProvider
@@ -102,6 +104,10 @@ from app.repositories.providers.address_user_repository_provider import AddressU
 from app.services.providers.address_user_service_provider import AddressUserServiceProvider
 from app.repositories.providers.address_enterprise_repository_provider import AddressEnterpriseRepositoryProvider
 from app.services.providers.address_enterprise_service_provider import AddressEnterpriseServiceProvider
+
+def get_my_role_provider_dependency(db: AsyncSession = Depends(get_db)) -> MyRolesServiceProvider:
+    repository = MyRolesRepositoryProvider(db)
+    return MyRolesServiceProvider(repository)
 
 def get_notification_service_provider_dependency(
     producer: AIOKafkaProducer = Depends(get_producer_dependency),
