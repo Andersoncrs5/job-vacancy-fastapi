@@ -1,12 +1,12 @@
 from app.services.base.jwt_service_base import JwtServiceBase
 import os
 from dotenv import load_dotenv
-from app.configs.db.database import UserEntity
+from app.configs.db.database import UserEntity, MyRolesEntity
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, UTC
 from fastapi import HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
-from typing import Final
+from typing import Final, Any
 from app.utils.res.response_body import ResponseBody
 
 load_dotenv()
@@ -19,7 +19,7 @@ REFRESH_TOKEN_EXPIRE_MINUTES: Final[str | None] = os.getenv("REFRESH_TOKEN_EXPIR
 class JwtServiceProvider(JwtServiceBase):
 
     def create_access_token(self, user: UserEntity) -> str:
-        if ACCESS_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY == None or ALGORITHM == None:
+        if ACCESS_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY is None or ALGORITHM is None:
             raise ValueError("ACCESS_TOKEN_EXPIRE_MINUTES is not defined")
         
         payload: Final = {
@@ -33,10 +33,42 @@ class JwtServiceProvider(JwtServiceBase):
         token: str = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         return token
 
+    def _create_token_payload(self, user: UserEntity, roles: list[MyRolesEntity], expires_minutes: float) -> dict[str, Any]:
+        names_role = [role_association.role.title for role_association in roles]
+
+        now = datetime.now(UTC)
+        expiration = now + timedelta(minutes=expires_minutes)
+
+        payload: Final = {
+            "sub": str(user.id),
+            "email": user.email,
+            "name": user.name,
+            "roles": names_role,
+            "iat": now,
+            "exp": expiration
+        }
+        return payload
+
+    def create_access_token_with_roles(self, user: UserEntity, roles: list[MyRolesEntity]) -> str:
+        if ACCESS_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY is None or ALGORITHM is None:
+            raise ValueError("ACCESS_TOKEN_EXPIRE_MINUTES is not defined or key is missing.")
+
+        payload = self._create_token_payload(user, roles, float(ACCESS_TOKEN_EXPIRE_MINUTES))
+
+        return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    def create_refresh_token_with_roles(self, user: UserEntity, roles: list[MyRolesEntity]) -> str:
+        if REFRESH_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY is None or ALGORITHM is None:
+            raise ValueError("REFRESH_TOKEN_EXPIRE_MINUTES is not defined or key is missing.")
+
+        payload = self._create_token_payload(user, roles, float(REFRESH_TOKEN_EXPIRE_MINUTES))
+
+        return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
     def create_refresh_token(self, user: UserEntity) -> str:
-        if REFRESH_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY == None or ALGORITHM == None:
+        if REFRESH_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY is None or ALGORITHM is None:
             raise ValueError("REFRESH_TOKEN_EXPIRE_MINUTES is not defined")
-        
+
         payload: Final = {
             "sub": str(user.id),
             "email": user.email,
@@ -158,5 +190,3 @@ class JwtServiceProvider(JwtServiceBase):
             )
 
         return token
-
-    
