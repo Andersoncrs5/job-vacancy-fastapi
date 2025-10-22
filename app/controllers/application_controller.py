@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import ApplicationEntity
+from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.application_schemas import ApplicationOUT, UpdateApplicationDTO
 from app.utils.enums.sum_red import ColumnUserMetricEnum, SumRedEnum, ColumnsVacancyMetricEnum
@@ -281,9 +282,10 @@ async def create(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     vacancy_service: VacancyServiceProvider = Depends(get_vacancy_service_provider_dependency),
+    enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     vacancy_metric_service: VacancyMetricServiceProvider = Depends(get_vacancy_metric_service_provider_dependency),
-    application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),    application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
     email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -351,6 +353,21 @@ async def create(
                 ))
             )
 
+        enterprise: Final = await enterprise_service.get_by_id(vacancy.enterprise_id)
+        if not enterprise:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Enterprise not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
         if vacancy.application_deadline and vacancy.application_deadline < datetime.now().date():
             return ORJSONResponse(
                 status_code=400,
@@ -366,12 +383,34 @@ async def create(
             )
 
         applied = await application_service.create(vacancy.id, user_id)
-        await user_metric_service.update_metric_v2(user_id, ColumnUserMetricEnum.vacancy_application_count,
-                                                   SumRedEnum.SUM)
 
-        await vacancy_metric_service.update_metric(vacancy.id, ColumnsVacancyMetricEnum.applications_count, SumRedEnum.SUM)
+        await user_metric_service.update_metric_v2(
+            user_id,
+            ColumnUserMetricEnum.vacancy_application_count,
+            SumRedEnum.SUM
+        )
 
-        await email_service.send_email_informing_application(user.email, "", {'vacancy': vacancy})
+        await vacancy_metric_service.update_metric(
+            vacancy.id,
+            ColumnsVacancyMetricEnum.applications_count,
+            SumRedEnum.SUM
+        )
+
+        await email_service.send_email_informing_application(
+            user.email,
+            "",
+            {'vacancy': vacancy}
+        )
+
+        await notification_service.notify_event_to_kafka(
+            entity_id=applied.id,
+            actor_id=enterprise.id,
+            _type=NotificationTypeEnum.APPLICATION_RECEIVED,
+            data={
+                "actor_name": user.name,
+                "vacancy_name": vacancy.title,
+            }
+        )
 
         out = applied.to_out()
 
