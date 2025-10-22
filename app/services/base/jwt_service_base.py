@@ -1,20 +1,43 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from app.configs.db.database import UserEntity, MyRolesEntity
+from fastapi import HTTPException
+
+from app.configs.db.database import UserEntity, UserRolesEntity
 from fastapi.security import HTTPAuthorizationCredentials
 
 class JwtServiceBase(ABC):
+
     @abstractmethod
-    def create_refresh_token_with_roles(self, user: UserEntity, roles: list[MyRolesEntity]) -> str:
+    def check_master_or_super_adm(self, token: str) -> bool:
         pass
 
     @abstractmethod
-    def create_access_token_with_roles(self, user: UserEntity, roles: list[MyRolesEntity]) -> str:
+    def check_super_adm(self, token: str) -> bool:
         pass
 
     @abstractmethod
-    def _create_token_payload(self, user: UserEntity, roles: list[MyRolesEntity], expires_minutes: float) -> dict[str, Any]:
+    def check_master(self, token: str) -> bool:
+        pass
+
+    @abstractmethod
+    def check_adm(self, token: str) -> bool:
+        pass
+
+    @abstractmethod
+    def _check_required_role(self, token: str, required_role: str) -> bool:
+        pass
+
+    @abstractmethod
+    def create_refresh_token_with_roles(self, user: UserEntity, roles: list[UserRolesEntity]) -> str:
+        pass
+
+    @abstractmethod
+    def create_access_token_with_roles(self, user: UserEntity, roles: list[UserRolesEntity]) -> str:
+        pass
+
+    @abstractmethod
+    def _create_token_payload(self, user: UserEntity, roles: list[UserRolesEntity], expires_minutes: float) -> dict[str, Any]:
         pass
 
     @abstractmethod
