@@ -2,7 +2,7 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import Field
 from typing import Optional
 from datetime import datetime
-from app.configs.db.database import MyRolesEntity
+from app.configs.db.database import UserRolesEntity
 
 
 class MyRolesFilter(Filter):
@@ -12,4 +12,4 @@ class MyRolesFilter(Filter):
     created_at__lte: Optional[datetime] = Field(None, description="Filter by creation date, less than or equal to.")
 
     class Constants(Filter.Constants):
-        model = MyRolesEntity
+        model = UserRolesEntity
