@@ -207,7 +207,7 @@ async def delete(
     status_code=status.HTTP_200_OK,
     response_model=ResponseBody[PostUserOUT],
     responses={
-        404: RESPONSE_404_POST_USER,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def get(
@@ -489,10 +489,17 @@ async def create(
             _type=NotificationTypeEnum.NEW_POST
         )
 
-        await category_service.sum_red_post_count(category, SumRedEnum.SUM)
+        await category_service.sum_red_post_count(
+            category,
+            SumRedEnum.SUM
+        )
 
         metric_user = await user_metric_service.get_by_id(user_id)
-        await user_metric_service.update_metric(metric_user, ColumnUserMetricEnum.post_count, SumRedEnum.SUM)
+        await user_metric_service.update_metric(
+            metric_user,
+            ColumnUserMetricEnum.post_count,
+            SumRedEnum.SUM
+        )
 
         post_user_out = post_user_created.to_out()
         await post_user_metric_service.create(post_user_created.id)
