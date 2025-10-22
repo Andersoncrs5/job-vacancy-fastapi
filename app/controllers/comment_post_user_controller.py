@@ -285,6 +285,7 @@ async def delete(
 async def get_by_id(
     id: int,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),    application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
     comment_service: CommentPostUserServiceProvider = Depends(get_comment_post_user_service_provider_dependency),
     comment_post_user_metric_service: CommentPostUserMetricServiceProvider = Depends(get_comment_post_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
@@ -325,7 +326,12 @@ async def get_by_id(
         out = comment.to_out()
 
         out_dict = out.model_dump()
-        await comment_post_user_metric_service.update_metric(comment.id, ColumnsCommentPostUserMetricEnum.views_count, SumRedEnum.SUM)
+
+        await comment_post_user_metric_service.update_metric(
+            comment.id,
+            ColumnsCommentPostUserMetricEnum.views_count,
+            SumRedEnum.SUM
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_200_OK,
