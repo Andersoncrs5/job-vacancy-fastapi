@@ -1,7 +1,9 @@
 import random
-from typing import Final
+from typing import Final, cast
 
+from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient
+from pydantic import EmailStr
 
 from app.configs.db.enums import (
     MediaType, ReactionTypeEnum
@@ -33,11 +35,69 @@ from app.schemas.vacancy_schemas import *
 from app.schemas.vacancy_skill_schemas import CreateVacancySkillDTO
 from app.utils.res.tokens import Tokens
 from main import app
+import os
+
+load_dotenv()
+
+NAME_APP = os.getenv("NAME_APP")
 
 class UserTestData(BaseModel):
-    dto: CreateUserDTO
+    dto: CreateUserDTO | None
     tokens: Tokens
     out: UserOUT
+
+async def impl_role_in_user(email: str, name: str, role: str):
+    adm_master = await log_in_system()
+    URL: Final[str] = '/api/v1/adm'
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post(
+            f"{URL}/toggle/{email}/{role}",
+            headers={"Authorization": f"Bearer {adm_master.tokens.token}"}
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    body = response.json()["body"]
+
+    assert data['message'] == f"User {name} now is a {role.lower()}"
+    assert data['code'] == 200
+    assert data['status'] == True
+
+    assert body is None
+
+async def log_in_system():
+    login_dto = LoginDTO(email=cast(EmailStr, cast(object, f"{NAME_APP.lower()}.system@gmail.com")),
+                         password=str(12345678))
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post("/api/v1/auth/login", json=login_dto.model_dump())
+    assert response.status_code == 200
+
+    data = response.json()["body"]
+
+    assert data["token"] is not None
+    assert data["refresh_token"] is not None
+
+    URL = "/api/v1/user"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(URL + f"/{login_dto.email}", headers={"Authorization": f"Bearer {data["token"]}"})
+
+    assert response.status_code == 200
+    data_user = response.json()
+
+    tokens = Tokens(
+        token=data["token"],
+        refresh_token=data["refresh_token"],
+        exp_token=data.get("exp_token"),
+        exp_refresh_token=data.get("exp_refresh_token"),
+    )
+
+    out = UserOUT.model_validate(data_user['body'])
+
+    return UserTestData(dto=None, tokens=tokens, out=out)
 
 async def create_follow_enterprise_user(user_data: UserTestData ,user_data_two: UserTestData):
     URL = "/api/v1/enterprise-follow-user"
@@ -865,3 +925,4 @@ async def create_and_login_user() -> UserTestData:
     out = UserOUT.model_validate(data_user['body'])
 
     return UserTestData(dto=dto, tokens=tokens, out=out)
+
