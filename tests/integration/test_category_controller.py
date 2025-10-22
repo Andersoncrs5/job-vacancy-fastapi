@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.category_schemas import *
-from tests.integration.helper import create_and_login_user, create_category
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, \
+    create_and_login_user_without_role
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -11,7 +12,7 @@ client: Final[TestClient] = TestClient(app)
 
 @pytest.mark.asyncio
 async def test_return_null_change_status_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.put(f"/api/v1/category/{676467564486543}/toggle/status/is_active", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -29,7 +30,7 @@ async def test_return_null_change_status_category():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_change_status_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response_negative: Final = await ac.put(f"/api/v1/category/{-45}/toggle/status/is_active", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -47,7 +48,7 @@ async def test_return_bad_request_change_status_category():
 
 @pytest.mark.asyncio
 async def test_change_status_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
@@ -74,9 +75,29 @@ async def test_change_status_category():
     assert data["body"]["parent_id"] == category_data.parent_id
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_change_status_category():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+    category_data: Final = await create_category(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.put(
+            f"/api/v1/category/{category_data.id}/toggle/status/is_active",
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    assert response.status_code == 401
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_update_category():
     num = random.randint(10000,100000000000)
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
 
     dto = UpdateCategoryDTO(
@@ -114,8 +135,40 @@ async def test_update_category():
     assert data["body"]['parent_id'] == category_data.parent_id
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_update_category():
+    num = random.randint(10000,100000000000)
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+    category_data: Final = await create_category(user_data)
+
+    dto = UpdateCategoryDTO(
+        name = f"category updated {num}",
+        slug = category_data.slug,
+        description = "description update",
+        order = 8,
+        icon_url = None,
+        is_active=None,
+        parent_id=None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.put(
+            f"/api/v1/category/{category_data.id}",
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    assert response.status_code == 401
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_return_bad_request_update_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateCategoryDTO(
         name = None,
@@ -143,7 +196,7 @@ async def test_return_bad_request_update_category():
 
 @pytest.mark.asyncio
 async def test_return_null_update_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateCategoryDTO(
         name = None,
@@ -171,7 +224,27 @@ async def test_return_null_update_category():
 
 @pytest.mark.asyncio
 async def test_delete_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+    category_data: Final = await create_category(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response: Final = await ac.delete(
+            f"/api/v1/category/{category_data.id}",
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
+async def test_delete_category():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
@@ -190,7 +263,7 @@ async def test_delete_category():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response_negative: Final = await ac.delete(f"/api/v1/category/{-45}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -208,7 +281,7 @@ async def test_return_bad_request_delete_category():
 
 @pytest.mark.asyncio
 async def test_return_null_delete_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.delete(f"/api/v1/category/{67646756443}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -226,7 +299,7 @@ async def test_return_null_delete_category():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response_negative: Final = await ac.get(f"/api/v1/category/{-45}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -244,7 +317,7 @@ async def test_return_bad_request_get_category():
 
 @pytest.mark.asyncio
 async def test_return_null_get_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(f"/api/v1/category/{67646756443}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -262,7 +335,7 @@ async def test_return_null_get_category():
 
 @pytest.mark.asyncio
 async def test_get_category():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
@@ -289,10 +362,39 @@ async def test_get_category():
     assert data["body"]["parent_id"] == category_data.parent_id
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_create_category():
+    num = random.randint(10000,100000000000)
+
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+
+    dto = CreateCategoryDTO(
+        name = f"name {num}",
+        slug = f"slug {num}",
+        description = None,
+        order = 5,
+        icon_url = None,
+        parent_id=None
+    )
+
+    token = user_data_no_roles.tokens.token
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post("/api/v1/category", json=dict(dto), headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 401
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_create_category():
     num = random.randint(10000,100000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateCategoryDTO(
         name = f"name {num}",
@@ -332,7 +434,7 @@ async def test_create_category():
 async def test_conflict_name_category():
     num = random.randint(10000,100000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateCategoryDTO(
         name = f"name {num}",
@@ -370,7 +472,7 @@ async def test_conflict_name_category():
 async def test_conflict_slug_category():
     num = random.randint(10000,100000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateCategoryDTO(
         name = f"name {num}",

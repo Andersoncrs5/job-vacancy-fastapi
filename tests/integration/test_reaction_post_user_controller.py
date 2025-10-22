@@ -7,7 +7,7 @@ from httpx import AsyncClient, ASGITransport
 from app.configs.db.enums import ReactionTypeEnum
 from app.schemas.reaction_post_user_schemas import CreateReactionPostUserDTO
 from main import app
-from tests.integration.helper import create_post_user, create_and_login_user, create_category, create_reaction_post_user
+from tests.integration.helper import create_post_user, create_and_login_user_with_role_super_adm, create_category, create_reaction_post_user
 
 client: Final[TestClient] = TestClient(app)
 URL = "/api/v1/area/reaction-post-user"
@@ -16,7 +16,7 @@ URL_TOGGLE = "/api/v1/area/reaction-post-user/toggle"
 
 @pytest.mark.asyncio
 async def test_return_null_ids_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(
@@ -35,7 +35,7 @@ async def test_return_null_ids_get_all():
 
 @pytest.mark.asyncio
 async def test_return_2_ids_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
 
@@ -56,7 +56,7 @@ async def test_return_2_ids_get_all():
 
 @pytest.mark.asyncio
 async def test_get_all_by_user_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
 
@@ -87,7 +87,7 @@ async def test_get_all_by_user_id():
 
 @pytest.mark.asyncio
 async def test_get_all_by_post_user_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
 
@@ -118,7 +118,7 @@ async def test_get_all_by_post_user_id():
 
 @pytest.mark.asyncio
 async def test_toggle_create_reaction_like():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_user_data = await create_post_user(user_data, category_data)
 
@@ -143,7 +143,7 @@ async def test_toggle_create_reaction_like():
 
 @pytest.mark.asyncio
 async def test_toggle_remove_reaction_like():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_user_data = await create_post_user(user_data, category_data)
 
@@ -170,7 +170,7 @@ async def test_toggle_remove_reaction_like():
 
 @pytest.mark.asyncio
 async def test_toggle_change_reaction_like_to_dislike():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_user_data = await create_post_user(user_data, category_data)
 
@@ -197,7 +197,7 @@ async def test_toggle_change_reaction_like_to_dislike():
 
 @pytest.mark.asyncio
 async def test_toggle_post_not_found():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionPostUserDTO(
         post_user_id=999999,
@@ -220,7 +220,7 @@ async def test_toggle_post_not_found():
 
 @pytest.mark.asyncio
 async def test_bad_request_get_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     await create_reaction_post_user(post_user_data=post_user_data, reaction=ReactionTypeEnum.LIKE, user_data=user_data)
@@ -243,7 +243,7 @@ async def test_bad_request_get_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_bad_request_get_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     await create_reaction_post_user(post_user_data=post_user_data, reaction=ReactionTypeEnum.LIKE, user_data=user_data)
@@ -266,7 +266,7 @@ async def test_bad_request_get_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_get_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     await create_reaction_post_user(post_user_data=post_user_data, reaction=ReactionTypeEnum.LIKE, user_data=user_data)
@@ -290,7 +290,7 @@ async def test_get_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_bad_request_delete_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     await create_reaction_post_user(post_user_data=post_user_data, reaction=ReactionTypeEnum.LIKE, user_data=user_data)
@@ -313,7 +313,7 @@ async def test_bad_request_delete_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_bad_request_delete_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     await create_reaction_post_user(post_user_data=post_user_data, reaction=ReactionTypeEnum.LIKE, user_data=user_data)
@@ -336,7 +336,7 @@ async def test_bad_request_delete_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_delete_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     await create_reaction_post_user(post_user_data=post_user_data, reaction=ReactionTypeEnum.LIKE, user_data=user_data)
@@ -358,7 +358,7 @@ async def test_delete_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_not_found_post_create_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionPostUserDTO(
         post_user_id = 9999999,
@@ -383,7 +383,7 @@ async def test_not_found_post_create_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_conflict_create_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     await create_reaction_post_user(post_user_data=post_user_data, reaction=ReactionTypeEnum.LIKE, user_data=user_data)
@@ -411,7 +411,7 @@ async def test_conflict_create_reaction_like_to_post():
 
 @pytest.mark.asyncio
 async def test_create_reaction_like_to_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 

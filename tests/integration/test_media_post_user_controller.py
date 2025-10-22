@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.media_post_user_schemas import *
-from tests.integration.helper import create_and_login_user, create_media_post_user, create_post_user, create_category, create_favorite_post_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_media_post_user, create_post_user, create_category, create_favorite_post_user
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -12,7 +12,7 @@ URL: Final[str] = '/api/v1/media-post-user'
 
 @pytest.mark.asyncio
 async def test_return_bad_request_patch_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto: Final = UpdateMediaPostUserDTO(
         url = "https://picsum.photos/200/300",
@@ -37,7 +37,7 @@ async def test_return_bad_request_patch_media():
 
 @pytest.mark.asyncio
 async def test_return_not_found_patch_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
 
     dto: Final = UpdateMediaPostUserDTO(
@@ -63,7 +63,7 @@ async def test_return_not_found_patch_media():
 
 @pytest.mark.asyncio
 async def test_patch_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     media_post_user_data = await create_media_post_user(user_data, post_user_data)
@@ -94,7 +94,7 @@ async def test_patch_media():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -109,7 +109,7 @@ async def test_get_all():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -125,7 +125,7 @@ async def test_return_bad_request_get_media():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     media_post_user_data = await create_media_post_user(user_data, post_user_data)
@@ -144,7 +144,7 @@ async def test_return_not_found_get_media():
 
 @pytest.mark.asyncio
 async def test_get_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     media_post_user_data = await create_media_post_user(user_data, post_user_data)
@@ -164,7 +164,7 @@ async def test_get_media():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -180,7 +180,7 @@ async def test_return_bad_request_delete_media():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     media_post_user_data = await create_media_post_user(user_data, post_user_data)
@@ -199,7 +199,7 @@ async def test_return_not_found_delete_media():
 
 @pytest.mark.asyncio
 async def test_delete_media():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     media_post_user_data = await create_media_post_user(user_data, post_user_data)
@@ -218,7 +218,7 @@ async def test_delete_media():
 
 @pytest.mark.asyncio
 async def test_return_not_found_create_media_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
 
     dto = CreateMediaPostUserDTO(
@@ -243,7 +243,7 @@ async def test_return_not_found_create_media_post_user():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_create_media_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -269,7 +269,7 @@ async def test_return_bad_request_create_media_post_user():
 
 @pytest.mark.asyncio
 async def test_create_media_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -296,7 +296,7 @@ async def test_create_media_post_user():
 
 @pytest.mark.asyncio
 async def test_return_conflict_create_media_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 

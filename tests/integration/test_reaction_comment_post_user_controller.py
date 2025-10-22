@@ -8,7 +8,7 @@ from app.configs.db.enums import ReactionTypeEnum
 from app.schemas.reaction_comment_post_user_schemas import CreateReactionCommentPostUserDTO
 from app.schemas.reaction_post_enterprise_schemas import CreateReactionPostEnterpriseDTO
 from main import app
-from tests.integration.helper import create_and_login_user, create_category, create_post_enterprise, create_enterprise, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_enterprise, create_enterprise, \
     create_industry, create_reaction_post_enterprise, create_post_user, create_comment_post_user, \
     create_react_comment_post_user
 
@@ -17,12 +17,12 @@ URL = "/api/v1/area/reaction-comment-user"
 
 @pytest.mark.asyncio
 async def test_get_all_by_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     await create_react_comment_post_user(user_data_two, comment_data, ReactionTypeEnum.LIKE)
 
@@ -47,12 +47,12 @@ async def test_get_all_by_comment():
 
 @pytest.mark.asyncio
 async def test_get_all_by_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     await create_react_comment_post_user(user_data_two, comment_data, ReactionTypeEnum.LIKE)
 
@@ -76,7 +76,7 @@ async def test_get_all_by_user():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(
@@ -88,12 +88,12 @@ async def test_get_all():
 
 @pytest.mark.asyncio
 async def test_change_to_reaction_type_react_comment_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionCommentPostUserDTO(
         comment_user_id=comment_data.id,
@@ -120,12 +120,12 @@ async def test_change_to_reaction_type_react_comment_post_user():
 
 @pytest.mark.asyncio
 async def test_delete_react_comment_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionCommentPostUserDTO(
         comment_user_id=comment_data.id,
@@ -152,12 +152,12 @@ async def test_delete_react_comment_post_user():
 
 @pytest.mark.asyncio
 async def test_create_react_comment_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionCommentPostUserDTO(
         comment_user_id=comment_data.id,

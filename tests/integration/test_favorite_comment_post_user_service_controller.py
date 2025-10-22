@@ -6,7 +6,7 @@ from httpx import ASGITransport, AsyncClient
 import pytest
 
 from tests.integration.helper import (
-    create_and_login_user,
+    create_and_login_user_with_role_super_adm,
     create_category,
     create_post_user,
     create_favorite_comment_user, create_comment_post_user
@@ -17,7 +17,7 @@ URL = "/api/v1/favorite-comment-post-user"
 
 @pytest.mark.asyncio
 async def test_get_all_no_ids():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
@@ -34,7 +34,7 @@ async def test_get_all_no_ids():
 
 @pytest.mark.asyncio
 async def test_get_all_both_ids():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_user_data = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -54,7 +54,7 @@ async def test_get_all_both_ids():
 
 @pytest.mark.asyncio
 async def test_get_all_user_not_found():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
@@ -71,7 +71,7 @@ async def test_get_all_user_not_found():
 
 @pytest.mark.asyncio
 async def test_get_all_comment_not_found():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get(
@@ -88,7 +88,7 @@ async def test_get_all_comment_not_found():
 
 @pytest.mark.asyncio
 async def test_get_all_success():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_user_data = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -111,7 +111,7 @@ async def test_get_all_success():
 
 @pytest.mark.asyncio
 async def test_not_found_favorite_comment_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.post(
@@ -128,7 +128,7 @@ async def test_not_found_favorite_comment_user():
 
 @pytest.mark.asyncio
 async def test_bad_request_favorite_comment_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.post(
@@ -145,7 +145,7 @@ async def test_bad_request_favorite_comment_user():
 
 @pytest.mark.asyncio
 async def test_delete_favorite_comment_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_user_data = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -166,7 +166,7 @@ async def test_delete_favorite_comment_user():
 
 @pytest.mark.asyncio
 async def test_favorite_comment_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_user_data = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)

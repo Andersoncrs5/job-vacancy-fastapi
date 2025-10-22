@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.enterprise_schemas import *
-from tests.integration.helper import create_and_login_user, create_industry, create_enterprise
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -12,7 +12,7 @@ URL: Final[str] = '/api/v1/enterprise'
 
 @pytest.mark.asyncio
 async def test_update_enterprise_success():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -38,7 +38,7 @@ async def test_update_enterprise_success():
 
 @pytest.mark.asyncio
 async def test_update_enterprise_not_authorized():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateEnterpriseDTO(
         name="invalid update",
@@ -57,7 +57,7 @@ async def test_update_enterprise_not_authorized():
 
 @pytest.mark.asyncio
 async def test_update_enterprise_not_found():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     dto = UpdateEnterpriseDTO(
@@ -79,7 +79,7 @@ async def test_update_enterprise_not_found():
 
 @pytest.mark.asyncio
 async def test_update_enterprise_industry_not_exists():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -102,11 +102,11 @@ async def test_update_enterprise_industry_not_exists():
 
 @pytest.mark.asyncio
 async def test_update_enterprise_name_conflict():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_1: Final = await create_enterprise(user_data, industry_data)
     
-    other_user: Final = await create_and_login_user()
+    other_user: Final = await create_and_login_user_with_role_super_adm()
     other_industry: Final = await create_industry(other_user)
     enterprise_2: Final = await create_enterprise(other_user, other_industry)
 
@@ -129,7 +129,7 @@ async def test_update_enterprise_name_conflict():
 
 @pytest.mark.asyncio
 async def test_exists_by_name_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}/{"aaaa"}/exists/name', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -146,7 +146,7 @@ async def test_exists_by_name_enterprise():
 
 @pytest.mark.asyncio
 async def test_delete_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -165,7 +165,7 @@ async def test_delete_enterprise():
 
 @pytest.mark.asyncio
 async def test_not_found_delete_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}/{222283423214545}', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -182,7 +182,7 @@ async def test_not_found_delete_enterprise():
 
 @pytest.mark.asyncio
 async def test_bad_request_get_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}/{-22223423214545}', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -212,7 +212,7 @@ async def test_bad_request_get_enterprise():
 
 @pytest.mark.asyncio
 async def test_not_found_get_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -230,7 +230,7 @@ async def test_not_found_get_enterprise():
 
 @pytest.mark.asyncio
 async def test_get_metric_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -249,7 +249,7 @@ async def test_get_metric_enterprise():
 
 @pytest.mark.asyncio
 async def test_get_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -270,7 +270,7 @@ async def test_get_enterprise():
 
 @pytest.mark.asyncio
 async def test_not_found_get_my_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -288,7 +288,7 @@ async def test_not_found_get_my_enterprise():
 
 @pytest.mark.asyncio
 async def test_get_my_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -311,7 +311,7 @@ async def test_get_my_enterprise():
 async def test_create_enterprise():
     num: Final = random.randint(1000,10000000000000)
 
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     dto = CreateEnterpriseDTO(
@@ -341,7 +341,7 @@ async def test_create_enterprise():
 async def test_return_not_found_industry_create_enterprise():
     num: Final = random.randint(1000,10000000000000)
 
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = CreateEnterpriseDTO(
         name = f'name {num}',
@@ -369,7 +369,7 @@ async def test_return_not_found_industry_create_enterprise():
 async def test_return_bad_request_industry_create_enterprise():
     num: Final = random.randint(1000,10000000000000)
 
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = CreateEnterpriseDTO(
         name = f'name {num}',
@@ -411,7 +411,7 @@ async def test_return_bad_request_industry_create_enterprise():
 async def test_confict_name_create_enterprise():
     num: Final = random.randint(1000,10000000000000)
 
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     dto = CreateEnterpriseDTO(
@@ -445,7 +445,7 @@ async def test_confict_name_create_enterprise():
 async def test_confict_user_create_enterprise():
     num: Final = random.randint(1000,10000000000000)
 
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     dto = CreateEnterpriseDTO(

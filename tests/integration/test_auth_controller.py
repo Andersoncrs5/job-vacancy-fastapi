@@ -5,7 +5,7 @@ from main import app
 import random
 from httpx import ASGITransport, AsyncClient
 import pytest
-from tests.integration.helper import create_and_login_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm
 
 client: Final[TestClient] = TestClient(app)
 
@@ -42,7 +42,7 @@ async def test_register_user():
 
 @pytest.mark.anyio
 async def test_register_and_login_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         dto_login = LoginDTO(email=user_data.dto.email, password=user_data.dto.password)
@@ -60,7 +60,7 @@ async def test_register_and_login_user():
     
 @pytest.mark.anyio
 async def test_refresh_token():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     assert user_data.tokens.refresh_token is not None
 

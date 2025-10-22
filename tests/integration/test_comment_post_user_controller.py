@@ -3,7 +3,7 @@ from typing import Final
 
 from app.schemas.comment_post_user_schemas import CreateCommentPostUserDTO, UpdateCommentPostUserDTO
 from app.schemas.industry_schemas import *
-from tests.integration.helper import create_and_login_user, create_category, create_post_user, create_comment_post_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_user, create_comment_post_user
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -14,7 +14,7 @@ URL: Final[str] = "/api/v1/comment-post-user"
 
 @pytest.mark.asyncio
 async def test_get_metric_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -38,7 +38,7 @@ async def test_get_metric_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_patch_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -69,7 +69,7 @@ async def test_patch_comment():
 
 @pytest.mark.asyncio
 async def test_not_found_patch_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateCommentPostUserDTO(
         content = "update" * 50
@@ -95,7 +95,7 @@ async def test_not_found_patch_comment():
 
 @pytest.mark.asyncio
 async def test_bad_request_patch_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateCommentPostUserDTO(
         content = "update" * 50
@@ -121,7 +121,7 @@ async def test_bad_request_patch_comment():
 
 @pytest.mark.asyncio
 async def test_not_found_delete_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.delete(
@@ -142,7 +142,7 @@ async def test_not_found_delete_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_delete_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -166,7 +166,7 @@ async def test_delete_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_get_all_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(
@@ -182,7 +182,7 @@ async def test_get_all_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_bad_request_delete_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.delete(
@@ -203,7 +203,7 @@ async def test_bad_request_delete_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_not_found_delete_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.delete(
@@ -224,7 +224,7 @@ async def test_not_found_delete_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_delete_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -248,7 +248,7 @@ async def test_delete_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_bad_request_get_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(
@@ -269,7 +269,7 @@ async def test_bad_request_get_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_not_found_get_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(
@@ -290,7 +290,7 @@ async def test_not_found_get_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_get_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -315,7 +315,7 @@ async def test_get_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_not_found_post_create_on_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -345,7 +345,7 @@ async def test_not_found_post_create_on_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_not_found_comment_create_on_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -375,7 +375,7 @@ async def test_not_found_comment_create_on_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_create_on_comment_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
     comment_data = await create_comment_post_user(user_data, post_user_data)
@@ -413,7 +413,7 @@ async def test_create_on_comment_create_comment():
 
 @pytest.mark.asyncio
 async def test_create_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 

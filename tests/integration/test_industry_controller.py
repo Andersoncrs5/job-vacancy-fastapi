@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.industry_schemas import *
-from tests.integration.helper import create_and_login_user, create_industry
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, \
+    create_and_login_user_without_role
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -12,7 +13,7 @@ URL: Final[str] = '/api/v1/industry'
 
 @pytest.mark.asyncio
 async def test_update_industry_just_description():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     dto = UpdateIndustryDTO(
@@ -41,7 +42,7 @@ async def test_update_industry_just_description():
 
 @pytest.mark.asyncio
 async def test_update_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     dto = UpdateIndustryDTO(
@@ -60,7 +61,7 @@ async def test_update_industry():
     assert data['code'] == 200
     assert data['message'] == "Industry updated with successfully"
     assert data['status'] == True
-    assert data['path'] == None
+    assert data['path'] is None
     assert data['version'] == 1
     assert data['body'] is not None
     assert data['body']['name'] == dto.name
@@ -68,8 +69,36 @@ async def test_update_industry():
     assert data['body']['user_id'] == industry_data.user_id
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_update_industry():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+    industry_data: Final = await create_industry(user_data)
+
+    dto = UpdateIndustryDTO(
+        name = f"nome update {random.randint(10000,100000000000)}",
+        description = None,
+        icon_url = None,
+        is_active = None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.put(
+            f'{URL}/{industry_data.id}',
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    assert response.status_code == 401
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_return_not_found_update_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateIndustryDTO(
         name = f"nome update {random.randint(10000,100000000000)}",
@@ -87,13 +116,13 @@ async def test_return_not_found_update_industry():
     assert data['code'] == 404
     assert data['message'] == "Industry not found"
     assert data['status'] == False
-    assert data['path'] == None
+    assert data['path'] is None
     assert data['version'] == 1
     assert data['body'] is None
 
 @pytest.mark.asyncio
 async def test_return_bad_requet_update_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateIndustryDTO(
         name = f"nome update {random.randint(10000,100000000000)}",
@@ -124,13 +153,13 @@ async def test_return_bad_requet_update_industry():
     assert data_two['code'] == 400
     assert data_two['message'] == "Id is required"
     assert data_two['status'] == False
-    assert data_two['path'] == None
+    assert data_two['path'] is None
     assert data_two['version'] == 1
     assert data_two['body'] is None
 
 @pytest.mark.asyncio
 async def test_exists_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}/{"ACDC"}/exists', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -141,13 +170,13 @@ async def test_exists_industry():
     assert data['code'] == 200
     assert data['message'] == "Industry name not exists"
     assert data['status'] == True
-    assert data['path'] == None
+    assert data['path'] is None
     assert data['version'] == 1
     assert data['body'] == False
 
 @pytest.mark.asyncio
 async def test_toggle_status_is_active_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -159,7 +188,7 @@ async def test_toggle_status_is_active_industry():
     assert data['code'] == 200
     assert data['message'] == "Industry active status changed with successfully"
     assert data['status'] == True
-    assert data['path'] == None
+    assert data['path'] is None
     assert data['version'] == 1
     assert data['body'] is not None
     assert data['body']['id'] == industry_data.id
@@ -167,8 +196,28 @@ async def test_toggle_status_is_active_industry():
     assert data['body']['is_active'] != industry_data.is_active
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_toggle_status_is_active_industry():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+    industry_data: Final = await create_industry(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.put(
+            f'{URL}/{industry_data.id}/toggle/status/active',
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    assert response.status_code == 401
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_return_not_found_toggle_status_is_active_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.put(f'{URL}/{999999999999}/toggle/status/active', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -179,13 +228,13 @@ async def test_return_not_found_toggle_status_is_active_industry():
     assert data['code'] == 404
     assert data['message'] == "Industry not found"
     assert data['status'] == False
-    assert data['path'] == None
+    assert data['path'] is None
     assert data['version'] == 1
     assert data['body'] is None
 
 @pytest.mark.asyncio
-async def test_return_bad_requet_toggle_status_is_active_industry():
-    user_data: Final = await create_and_login_user()
+async def test_return_bad_resquet_toggle_status_is_active_industry():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.put(f'{URL}/{-1}/toggle/status/active', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -196,7 +245,7 @@ async def test_return_bad_requet_toggle_status_is_active_industry():
     assert data['code'] == 400
     assert data['message'] == "Id is required"
     assert data['status'] == False
-    assert data['path'] == None
+    assert data['path'] is None
     assert data['version'] == 1
     assert data['body'] is None
 
@@ -209,13 +258,13 @@ async def test_return_bad_requet_toggle_status_is_active_industry():
     assert data_two['code'] == 400
     assert data_two['message'] == "Id is required"
     assert data_two['status'] == False
-    assert data_two['path'] == None
+    assert data_two['path'] is None
     assert data_two['version'] == 1
     assert data_two['body'] is None
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}/{999999999999}', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -226,13 +275,13 @@ async def test_return_not_found_get_industry():
     assert data['code'] == 404
     assert data['message'] == "Industry not found"
     assert data['status'] == False
-    assert data['path'] == None
+    assert data['path'] is None
     assert data['version'] == 1
     assert data['body'] is None
 
 @pytest.mark.asyncio
 async def test_return_bad_requet_get_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}/{-1}', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -256,13 +305,13 @@ async def test_return_bad_requet_get_industry():
     assert data_two['code'] == 400
     assert data_two['message'] == "Id is required"
     assert data_two['status'] == False
-    assert data_two['path'] == None
+    assert data_two['path'] is None
     assert data_two['version'] == 1
     assert data_two['body'] is None
 
 @pytest.mark.asyncio
 async def test_get_industry():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -282,7 +331,7 @@ async def test_get_industry():
 @pytest.mark.asyncio
 async def test_conflict_name_create_industry():
     num: Final = random.randint(1000,10000000000000)
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto: Final = CreateIndustryDTO(
         name = f"name {num}",
@@ -310,9 +359,36 @@ async def test_conflict_name_create_industry():
     assert data['version'] == 1
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_create_industry():
+    num: Final = random.randint(1000,10000000000000)
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+
+    dto: Final = CreateIndustryDTO(
+        name = f"name {num}",
+        description = None,
+        icon_url = None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response = await acdc.post(
+            f"{URL}",
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    assert response.status_code == 401
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_create_industry():
     num: Final = random.randint(1000,10000000000000)
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto: Final = CreateIndustryDTO(
         name = f"name {num}",

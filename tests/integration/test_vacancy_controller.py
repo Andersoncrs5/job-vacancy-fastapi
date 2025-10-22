@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.enterprise_schemas import *
-from tests.integration.helper import create_and_login_user, create_industry, create_enterprise, create_area, create_vacancy
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, create_area, create_vacancy
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -18,7 +18,7 @@ URL: Final[str] = '/api/v1/vacancy'
 
 @pytest.mark.asyncio
 async def test_return_bad_request_patch_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -62,7 +62,7 @@ async def test_return_bad_request_patch_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_not_found_patch_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -106,7 +106,7 @@ async def test_return_not_found_patch_vacancy():
 
 @pytest.mark.asyncio
 async def test_patch_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -153,7 +153,7 @@ async def test_patch_vacancy():
 
 @pytest.mark.asyncio
 async def test_get_all_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -163,7 +163,7 @@ async def test_get_all_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -179,7 +179,7 @@ async def test_return_bad_request_delete_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{9999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -195,7 +195,7 @@ async def test_return_not_found_delete_vacancy():
 
 @pytest.mark.asyncio
 async def test_delete_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -225,7 +225,7 @@ async def test_delete_vacancy():
     
 @pytest.mark.asyncio
 async def test_return_bad_request_get_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -245,7 +245,7 @@ async def test_return_bad_request_get_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -265,7 +265,7 @@ async def test_return_not_found_get_vacancy():
 
 @pytest.mark.asyncio
 async def test_get_metric_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -286,7 +286,7 @@ async def test_get_metric_vacancy():
 
 @pytest.mark.asyncio
 async def test_get_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -309,7 +309,7 @@ async def test_get_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_not_found_enterprise_create_vacancy_success():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     area_data = await create_area(user_data)
 
     dto = CreateVacancyDTO(
@@ -347,7 +347,7 @@ async def test_return_not_found_enterprise_create_vacancy_success():
 
 @pytest.mark.asyncio
 async def test_return_not_found_area_create_vacancy_success():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -386,7 +386,7 @@ async def test_return_not_found_area_create_vacancy_success():
     
 @pytest.mark.asyncio
 async def test_create_vacancy_success():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, create_curriculum
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_curriculum
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -12,7 +12,7 @@ URL: Final[str] = '/api/v1/curriculum'
 
 @pytest.mark.asyncio
 async def test_update_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     curriculum_data = await create_curriculum(user_data)
 
     dto = UpdateCurriculumDTO(
@@ -40,7 +40,7 @@ async def test_update_curriculum():
 
 @pytest.mark.asyncio
 async def test_toggle_is_updated_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     curriculum_data = await create_curriculum(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -58,7 +58,7 @@ async def test_toggle_is_updated_curriculum():
 
 @pytest.mark.asyncio
 async def test_delete_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     curriculum_data = await create_curriculum(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -74,7 +74,7 @@ async def test_delete_curriculum():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{99999999999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -89,7 +89,7 @@ async def test_return_not_found_get_curriculum():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -104,8 +104,8 @@ async def test_return_bad_request_get_curriculum():
 
 @pytest.mark.asyncio
 async def test_return_forb_get_curriculum():
-    user_data = await create_and_login_user()
-    user_data_two = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
+    user_data_two = await create_and_login_user_with_role_super_adm()
     curriculum_data = await create_curriculum(user_data)
 
     dto = UpdateCurriculumDTO(
@@ -136,7 +136,7 @@ async def test_return_forb_get_curriculum():
 
 @pytest.mark.asyncio
 async def test_get_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     curriculum_data = await create_curriculum(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -154,7 +154,7 @@ async def test_get_curriculum():
 
 @pytest.mark.asyncio
 async def test_conflict_create_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     curriculum_data = await create_curriculum(user_data)
 
     dto = CreateCurriculumDTO(
@@ -174,7 +174,7 @@ async def test_conflict_create_curriculum():
 
 @pytest.mark.asyncio
 async def test_create_curriculum():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateCurriculumDTO(
         title = "a little about me",

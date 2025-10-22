@@ -7,7 +7,7 @@ from httpx import AsyncClient, ASGITransport
 from app.configs.db.enums import ApplicationStatusEnum
 from app.schemas.application_schemas import UpdateApplicationDTO
 from main import app
-from tests.integration.helper import create_and_login_user, create_industry, create_enterprise, create_area, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, create_area, \
     create_vacancy, UserTestData, create_application
 
 client: Final[TestClient] = TestClient(app)
@@ -15,7 +15,7 @@ URL: Final[str] = "/api/v1/application"
 
 @pytest.mark.asyncio
 async def test_patch_return_not_found_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateApplicationDTO(
         status=None,
@@ -43,7 +43,7 @@ async def test_patch_return_not_found_application():
 
 @pytest.mark.asyncio
 async def test_patch_application_successfully():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -85,7 +85,7 @@ async def test_patch_application_successfully():
 
 @pytest.mark.asyncio
 async def test_patch_return_bad_request_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateApplicationDTO(
         status=None,
@@ -113,14 +113,14 @@ async def test_patch_return_bad_request_application():
 
 @pytest.mark.asyncio
 async def test_delete_application():
-    user_data: UserTestData = await create_and_login_user()
-    user_data_two: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
+    user_data_two: UserTestData = await create_and_login_user_with_role_super_adm()
 
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
     vacancy_data = await create_vacancy(user_data, area_data)
-    application = await create_application(user_data, vacancy_data)
+    application = await create_application(user_data_two, vacancy_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
@@ -139,7 +139,7 @@ async def test_delete_application():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_vacancy_delete_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -161,7 +161,7 @@ async def test_return_bad_request_vacancy_delete_application():
 
 @pytest.mark.asyncio
 async def test_return_not_found_vacancy_delete_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -183,7 +183,7 @@ async def test_return_not_found_vacancy_delete_application():
 
 @pytest.mark.asyncio
 async def test_delete_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -207,7 +207,7 @@ async def test_delete_application():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -227,7 +227,7 @@ async def test_get_all():
 
 @pytest.mark.asyncio
 async def test_conflict_exists_create_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -253,7 +253,7 @@ async def test_conflict_exists_create_application():
 
 @pytest.mark.asyncio
 async def test_return_not_found_vacancy_create_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -275,7 +275,7 @@ async def test_return_not_found_vacancy_create_application():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_vacancy_create_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -297,7 +297,7 @@ async def test_return_bad_request_vacancy_create_application():
 
 @pytest.mark.asyncio
 async def test_create_application():
-    user_data: UserTestData = await create_and_login_user()
+    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)

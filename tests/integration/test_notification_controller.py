@@ -5,7 +5,7 @@ from app.dependencies.service_dependency import get_follow_service_provider_depe
 from app.schemas.category_schemas import *
 from app.schemas.follow_schemas import UpdateFollowDTO
 from app.services.providers.follow_service_provider import FollowServiceProvider
-from tests.integration.helper import create_and_login_user, create_category, create_post_user, create_follow_user, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_user, create_follow_user, \
     create_comment_post_user, create_industry, create_enterprise, create_post_enterprise, create_follow_enterprise, \
     create_follow_enterprise_user, create_area, create_vacancy
 from main import app
@@ -19,8 +19,8 @@ URL = "/api/v1/notification"
 
 @pytest.mark.asyncio
 async def test_received_notification_about_new_vacancy_enterprise():
-    user_owner_enterprise = await create_and_login_user()
-    user_data_2: Final = await create_and_login_user()
+    user_owner_enterprise = await create_and_login_user_with_role_super_adm()
+    user_data_2: Final = await create_and_login_user_with_role_super_adm()
 
     industry_data: Final = await create_industry(user_owner_enterprise)
     enterprise_data: Final = await create_enterprise(user_owner_enterprise, industry_data)
@@ -47,8 +47,8 @@ async def test_received_notification_about_new_vacancy_enterprise():
 
 @pytest.mark.asyncio
 async def test_received_notification_about_new_post_enterprise():
-    user_owner_enterprise = await create_and_login_user()
-    user_data_2 = await create_and_login_user()
+    user_owner_enterprise = await create_and_login_user_with_role_super_adm()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
 
     industry_data = await create_industry(user_owner_enterprise)
     enterprise_data = await create_enterprise(user_owner_enterprise, industry_data)
@@ -74,8 +74,8 @@ async def test_received_notification_about_new_post_enterprise():
 
 @pytest.mark.asyncio
 async def test_sending_notification_about_new_follow():
-    user_follower_A = await create_and_login_user()
-    user_followed_B = await create_and_login_user()
+    user_follower_A = await create_and_login_user_with_role_super_adm()
+    user_followed_B = await create_and_login_user_with_role_super_adm()
 
     await create_follow_user(
         follower_data=user_follower_A,
@@ -97,8 +97,8 @@ async def test_sending_notification_about_new_follow():
 
 @pytest.mark.asyncio
 async def test_sending_notification_about_new_comment():
-    user_follower_A = await create_and_login_user()
-    user_followed_B = await create_and_login_user()
+    user_follower_A = await create_and_login_user_with_role_super_adm()
+    user_followed_B = await create_and_login_user_with_role_super_adm()
 
     await create_follow_user(
         follower_data=user_follower_A,
@@ -124,8 +124,8 @@ async def test_sending_notification_about_new_comment():
 
 @pytest.mark.asyncio
 async def test_received_notification_by_new_post():
-    user_follower_A = await create_and_login_user()
-    user_followed_B = await create_and_login_user()
+    user_follower_A = await create_and_login_user_with_role_super_adm()
+    user_followed_B = await create_and_login_user_with_role_super_adm()
 
     await create_follow_user(
         follower_data=user_follower_A,

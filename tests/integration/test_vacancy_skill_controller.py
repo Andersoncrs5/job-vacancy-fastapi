@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.enterprise_schemas import *
-from tests.integration.helper import create_and_login_user, create_industry, create_enterprise, create_area, create_vacancy, create_skill, add_skill_into_vacancy
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, create_area, create_vacancy, create_skill, add_skill_into_vacancy
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -20,7 +20,7 @@ URL: Final[str] = '/api/v1/vacancy-skill'
 
 @pytest.mark.asyncio
 async def test_get_return_bad_request_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -44,7 +44,7 @@ async def test_get_return_bad_request_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_get_return_not_found_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -68,7 +68,7 @@ async def test_get_return_not_found_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_delete_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -93,7 +93,7 @@ async def test_delete_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_patch_return_bad_request_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -126,7 +126,7 @@ async def test_patch_return_bad_request_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_patch_return_not_found_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -159,7 +159,7 @@ async def test_patch_return_not_found_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_patch_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -192,7 +192,7 @@ async def test_patch_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -215,7 +215,7 @@ async def test_return_bad_request_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_not_found_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -238,7 +238,7 @@ async def test_return_not_found_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_get_all_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -269,7 +269,7 @@ async def test_get_all_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_delete_return_bad_request_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -293,7 +293,7 @@ async def test_delete_return_bad_request_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_delete_return_not_found_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -317,7 +317,7 @@ async def test_delete_return_not_found_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_delete_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -341,7 +341,7 @@ async def test_delete_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_not_found_skill_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -376,7 +376,7 @@ async def test_return_not_found_skill_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_return_not_found_vacancy_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -411,7 +411,7 @@ async def test_return_not_found_vacancy_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_error_exists_skill_in_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
@@ -446,7 +446,7 @@ async def test_error_exists_skill_in_vacancy():
 
 @pytest.mark.asyncio
 async def test_create_skill_to_vacancy():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)

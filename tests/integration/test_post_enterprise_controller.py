@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.category_schemas import *
-from tests.integration.helper import create_and_login_user, create_category, create_enterprise, create_industry, create_post_enterprise
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_enterprise, create_industry, create_post_enterprise
 from main import app
 from app.schemas.post_enterprise_schemas import CreatePostEnterpriseDTO, UpdatePostEnterpriseDTO
 from httpx import ASGITransport, AsyncClient
@@ -14,7 +14,7 @@ URL: Final[str] = "/api/v1/post-enterprise"
 
 @pytest.mark.asyncio
 async def test_get_metric_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -35,7 +35,7 @@ async def test_get_metric_post_user():
 
 @pytest.mark.asyncio 
 async def test_update_post_success(): 
-    user_data = await create_and_login_user() 
+    user_data = await create_and_login_user_with_role_super_adm()
     industry = await create_industry(user_data) 
     enterprise = await create_enterprise(user_data, industry) 
     category = await create_category(user_data) 
@@ -60,7 +60,7 @@ async def test_update_post_success():
 
 @pytest.mark.asyncio 
 async def test_update_post_not_found(): 
-    user_data = await create_and_login_user() 
+    user_data = await create_and_login_user_with_role_super_adm()
     dto = UpdatePostEnterpriseDTO(title="Does not exist", content="Not found", url_image=None) 
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac: 
@@ -75,7 +75,7 @@ async def test_update_post_not_found():
 
 @pytest.mark.asyncio 
 async def test_update_post_bad_request_id_zero(): 
-    user_data = await create_and_login_user() 
+    user_data = await create_and_login_user_with_role_super_adm()
     dto = UpdatePostEnterpriseDTO(title="New title", content="Updated content", url_image=None) 
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac: 
@@ -89,7 +89,7 @@ async def test_update_post_bad_request_id_zero():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -109,7 +109,7 @@ async def test_return_not_found_delete_post_user():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -130,7 +130,7 @@ async def test_return_bad_request_delete_post_user():
 
 @pytest.mark.asyncio
 async def test_delete_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -151,7 +151,7 @@ async def test_delete_post_user():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -171,7 +171,7 @@ async def test_return_not_found_get_post_user():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -192,7 +192,7 @@ async def test_return_bad_request_get_post_user():
 
 @pytest.mark.asyncio
 async def test_get_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -216,7 +216,7 @@ async def test_get_post_user():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(f"{URL}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -228,7 +228,7 @@ async def test_get_all():
 async def test_return_not_found_enterprise_create_post_enterprise():
     num = random.randint(10000,10000000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     category_data: Final = await create_category(user_data)
 
@@ -253,7 +253,7 @@ async def test_return_not_found_enterprise_create_post_enterprise():
 async def test_return_not_found_create_post_enterprise():
     num = random.randint(10000,10000000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
 
@@ -278,7 +278,7 @@ async def test_return_not_found_create_post_enterprise():
 async def test_return_bad_request_create_post_enterprise():
     num = random.randint(10000,10000000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)
@@ -304,7 +304,7 @@ async def test_return_bad_request_create_post_enterprise():
 async def test_create_post_enterprise():
     num = random.randint(10000,10000000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     category_data: Final = await create_category(user_data)

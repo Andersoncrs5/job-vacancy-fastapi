@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, create_address_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_address_user
 from main import app
 from httpx import ASGITransport, AsyncClient
 from app.schemas.address_user_schemas import *
@@ -13,7 +13,7 @@ URL: Final[str] = "/api/v1/address-user"
 
 @pytest.mark.asyncio
 async def test_bad_request_found_exists_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -27,7 +27,7 @@ async def test_bad_request_found_exists_address():
 
 @pytest.mark.asyncio
 async def test_exists_by_user_id_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     address_data = await create_address_user(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -42,7 +42,7 @@ async def test_exists_by_user_id_address():
 
 @pytest.mark.asyncio
 async def test_patch_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     address_data = await create_address_user(user_data)
 
     dto = UpdateAddressUserDTO(
@@ -79,7 +79,7 @@ async def test_patch_address():
 
 @pytest.mark.asyncio
 async def test_return_not_found_patch_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateAddressUserDTO(
         street = "Any ST updated",
@@ -109,7 +109,7 @@ async def test_return_not_found_patch_address():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
@@ -123,7 +123,7 @@ async def test_return_not_found_delete_address():
 
 @pytest.mark.asyncio
 async def test_delete_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     address_data = await create_address_user(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -146,7 +146,7 @@ async def test_delete_address():
 
 @pytest.mark.asyncio
 async def test_bad_request_found_get_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -160,7 +160,7 @@ async def test_bad_request_found_get_address():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -174,7 +174,7 @@ async def test_return_not_found_get_address():
 
 @pytest.mark.asyncio
 async def test_get_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     address_data = await create_address_user(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -191,7 +191,7 @@ async def test_get_address():
 
 @pytest.mark.asyncio
 async def test_conflict_exists_address_create_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     address_data = await create_address_user(user_data)
 
     dto = CreateAddressUserDTO(
@@ -224,7 +224,7 @@ async def test_conflict_exists_address_create_address():
     
 @pytest.mark.asyncio
 async def test_create_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateAddressUserDTO(
         street = "Any ST",

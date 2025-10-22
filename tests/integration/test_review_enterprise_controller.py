@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.review_enterprise_schemas import *
 from tests.integration.helper import (
-    create_and_login_user, create_industry, 
+    create_and_login_user_with_role_super_adm, create_industry,
     create_enterprise, create_employee, create_review
 )
 from main import app
@@ -17,7 +17,7 @@ URL: Final[str] = '/api/v1/review-enterprise'
 
 @pytest.mark.asyncio
 async def test_return_bad_request_update_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateReviewEnterpriseDTO(
         title="new title",
@@ -43,7 +43,7 @@ async def test_return_bad_request_update_review():
 
 @pytest.mark.asyncio
 async def test_return_not_found_update_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     dto = UpdateReviewEnterpriseDTO(
         title="new title",
@@ -69,10 +69,10 @@ async def test_return_not_found_update_review():
 
 @pytest.mark.asyncio
 async def test_update_review_within_7_days():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
     review_data = await create_review(user_data, enterprise_data, user_data_two)
 
@@ -102,11 +102,11 @@ async def test_update_review_within_7_days():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data_two.tokens.token}"})
@@ -122,11 +122,11 @@ async def test_return_bad_request_delete_review():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(f"{URL}/{999999999}", headers={"Authorization": f"Bearer {user_data_two.tokens.token}"})
@@ -142,11 +142,11 @@ async def test_return_not_found_delete_review():
 
 @pytest.mark.asyncio
 async def test_delete_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -166,11 +166,11 @@ async def test_delete_review():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data_two.tokens.token}"})
@@ -186,11 +186,11 @@ async def test_return_bad_request_get_review():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{999999999}", headers={"Authorization": f"Bearer {user_data_two.tokens.token}"})
@@ -206,11 +206,11 @@ async def test_return_not_found_get_review():
 
 @pytest.mark.asyncio
 async def test_get_review():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -232,11 +232,11 @@ async def test_get_review():
 
 @pytest.mark.asyncio
 async def test_not_exists_enterprise_create_review_in_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -265,11 +265,11 @@ async def test_not_exists_enterprise_create_review_in_enterprise():
 
 @pytest.mark.asyncio
 async def test_employee_not_exists_create_review_in_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReviewEnterpriseDTO(
         rating = 5,
@@ -297,11 +297,11 @@ async def test_employee_not_exists_create_review_in_enterprise():
 
 @pytest.mark.asyncio
 async def test_exists_review_create_review_in_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -331,11 +331,11 @@ async def test_exists_review_create_review_in_enterprise():
 
 @pytest.mark.asyncio
 async def test_create_review_in_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -362,7 +362,7 @@ async def test_create_review_in_enterprise():
 
 @pytest.mark.asyncio
 async def test_get_all_review_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}', headers={"Authorization": f"Bearer {user_data.tokens.token}"})

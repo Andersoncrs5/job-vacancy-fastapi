@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, UserTestData, create_follow_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm, UserTestData, create_follow_user
 from main import app
 from httpx import ASGITransport, AsyncClient
 from app.schemas.follow_schemas import *
@@ -11,9 +11,9 @@ URL: Final[str] = "/api/v1/follow"
 
 @pytest.mark.asyncio
 async def test_return_bad_request_exists_follow():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    followed_data_1 = await create_and_login_user()
+    followed_data_1 = await create_and_login_user_with_role_super_adm()
     await create_follow_user(user_data, followed_data_1)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -30,9 +30,9 @@ async def test_return_bad_request_exists_follow():
 
 @pytest.mark.asyncio
 async def test_check_exists_follow():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    followed_data_1 = await create_and_login_user()
+    followed_data_1 = await create_and_login_user_with_role_super_adm()
     await create_follow_user(user_data, followed_data_1)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -50,7 +50,7 @@ async def test_check_exists_follow():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_follow():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
@@ -71,7 +71,7 @@ async def test_return_bad_request_delete_follow():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_follow():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
@@ -92,9 +92,9 @@ async def test_return_not_found_delete_follow():
 
 @pytest.mark.asyncio
 async def test_delete_follow():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    followed_data_1 = await create_and_login_user()
+    followed_data_1 = await create_and_login_user_with_role_super_adm()
     await create_follow_user(user_data, followed_data_1)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -129,7 +129,7 @@ async def test_delete_follow():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -150,7 +150,7 @@ async def test_return_bad_request_get_all():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -171,10 +171,10 @@ async def test_return_not_found_get_all():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data = await create_and_login_user()
-    followed_data_1 = await create_and_login_user()
-    followed_data_2 = await create_and_login_user()
-    followed_data_3 = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
+    followed_data_1 = await create_and_login_user_with_role_super_adm()
+    followed_data_2 = await create_and_login_user_with_role_super_adm()
+    followed_data_3 = await create_and_login_user_with_role_super_adm()
 
     await create_follow_user(user_data, followed_data_1)
     await create_follow_user(user_data, followed_data_2)
@@ -195,8 +195,8 @@ async def test_get_all():
 
 @pytest.mark.asyncio
 async def test_conflict_already_follow():
-    follower_data: UserTestData = await create_and_login_user()
-    followed_data: UserTestData = await create_and_login_user()
+    follower_data: UserTestData = await create_and_login_user_with_role_super_adm()
+    followed_data: UserTestData = await create_and_login_user_with_role_super_adm()
     await create_follow_user(follower_data, followed_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -217,7 +217,7 @@ async def test_conflict_already_follow():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_follow_create():
-    follower_data: UserTestData = await create_and_login_user()
+    follower_data: UserTestData = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.post(
@@ -237,7 +237,7 @@ async def test_return_bad_request_follow_create():
 
 @pytest.mark.asyncio
 async def test_return_not_found_follow_create():
-    follower_data: UserTestData = await create_and_login_user()
+    follower_data: UserTestData = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.post(
@@ -257,8 +257,8 @@ async def test_return_not_found_follow_create():
 
 @pytest.mark.asyncio
 async def test_follow_create():
-    follower_data: UserTestData = await create_and_login_user()
-    followed_data: UserTestData = await create_and_login_user()
+    follower_data: UserTestData = await create_and_login_user_with_role_super_adm()
+    followed_data: UserTestData = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.post(

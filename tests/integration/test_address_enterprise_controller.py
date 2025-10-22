@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, create_address_user, create_enterprise, create_industry, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_address_user, create_enterprise, create_industry, \
     create_address_to_enterprise
 from main import app
 from httpx import ASGITransport, AsyncClient
@@ -16,7 +16,7 @@ URL_EXISTS: Final[str] = "/api/v1/address-enterprise"
 
 @pytest.mark.asyncio
 async def test_patch_toggle_status_is_public():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     address_data = await create_address_to_enterprise(user_data, enterprise_data)
@@ -38,7 +38,7 @@ async def test_patch_toggle_status_is_public():
 
 @pytest.mark.asyncio
 async def test_patch_toggle_status_is_public_not_found():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.patch(
@@ -53,7 +53,7 @@ async def test_patch_toggle_status_is_public_not_found():
 
 @pytest.mark.asyncio
 async def test_exists_by_id_true():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
     await create_address_to_enterprise(user_data, enterprise_data)
@@ -72,7 +72,7 @@ async def test_exists_by_id_true():
 
 @pytest.mark.asyncio
 async def test_exists_by_id_false():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -88,7 +88,7 @@ async def test_exists_by_id_false():
 
 @pytest.mark.asyncio
 async def test_exists_by_id_bad_request():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL_EXISTS}/0",
                                          headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -99,7 +99,7 @@ async def test_exists_by_id_bad_request():
 
 @pytest.mark.asyncio
 async def test_patch_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     address_data = await create_address_to_enterprise(user_data, enterprise_data)
@@ -137,7 +137,7 @@ async def test_patch_address():
 
 @pytest.mark.asyncio
 async def test_return_not_found_patch_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -170,7 +170,7 @@ async def test_return_not_found_patch_address():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -188,7 +188,7 @@ async def test_return_not_found_delete_address():
 
 @pytest.mark.asyncio
 async def test_delete_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     address_data = await create_address_to_enterprise(user_data, enterprise_data)
@@ -208,7 +208,7 @@ async def test_delete_address():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -226,7 +226,7 @@ async def test_return_bad_request_get_address():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 
@@ -244,7 +244,7 @@ async def test_return_not_found_get_address():
 
 @pytest.mark.asyncio
 async def test_get_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     address_data = await create_address_to_enterprise(user_data, enterprise_data)
@@ -264,7 +264,7 @@ async def test_get_address():
 
 @pytest.mark.asyncio
 async def test_create_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateAddressEnterpriseDTO(
         street = "Any ST",
@@ -296,7 +296,7 @@ async def test_create_address():
 
 @pytest.mark.asyncio
 async def test_conflict_exists_address_create_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     address_data = await create_address_to_enterprise(user_data, enterprise_data)
@@ -331,7 +331,7 @@ async def test_conflict_exists_address_create_address():
 
 @pytest.mark.asyncio
 async def test_create_address():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
 

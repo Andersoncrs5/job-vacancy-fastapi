@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, create_industry, create_enterprise, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, \
     create_follow_enterprise
 from main import app
 from httpx import ASGITransport, AsyncClient
@@ -11,7 +11,7 @@ URL: Final[str] = "/api/v1/follow-enterprise"
 
 @pytest.mark.asyncio
 async def test_delete_follow_enterprise_bad_request():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
@@ -29,9 +29,9 @@ async def test_delete_follow_enterprise_bad_request():
 
 @pytest.mark.asyncio
 async def test_delete_follow_enterprise_not_found():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
 
@@ -51,9 +51,9 @@ async def test_delete_follow_enterprise_not_found():
 
 @pytest.mark.asyncio
 async def test_delete_follow_enterprise_success():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
     await create_follow_enterprise(user_data, enterprise_data)
@@ -73,7 +73,7 @@ async def test_delete_follow_enterprise_success():
 
 @pytest.mark.asyncio
 async def test_exists_bad_request():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -92,9 +92,9 @@ async def test_exists_bad_request():
 
 @pytest.mark.asyncio
 async def test_exists_return_true_when_user_follows_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
 
@@ -117,9 +117,9 @@ async def test_exists_return_true_when_user_follows_enterprise():
 
 @pytest.mark.asyncio
 async def test_exists_return_false_when_user_not_follows_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
 
@@ -141,7 +141,7 @@ async def test_exists_return_false_when_user_not_follows_enterprise():
 
 @pytest.mark.asyncio
 async def test_return_null_ids_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -160,9 +160,9 @@ async def test_return_null_ids_get_all():
 
 @pytest.mark.asyncio
 async def test_return_2_ids_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
 
@@ -183,9 +183,9 @@ async def test_return_2_ids_get_all():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
     await create_follow_enterprise(user_data, enterprise_data)
@@ -206,7 +206,7 @@ async def test_get_all():
 
 @pytest.mark.asyncio
 async def test_bad_request_follow_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.post(
@@ -226,7 +226,7 @@ async def test_bad_request_follow_enterprise():
 
 @pytest.mark.asyncio
 async def test_not_found_follow_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.post(
@@ -246,9 +246,9 @@ async def test_not_found_follow_enterprise():
 
 @pytest.mark.asyncio
 async def test_exists_create_follow_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
     await create_follow_enterprise(user_data, enterprise_data)
@@ -271,9 +271,9 @@ async def test_exists_create_follow_enterprise():
 
 @pytest.mark.asyncio
 async def test_follow_self_enterprise_create_follow_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
 
@@ -295,9 +295,9 @@ async def test_follow_self_enterprise_create_follow_enterprise():
 
 @pytest.mark.asyncio
 async def test_create_follow_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
-    user_data_2 = await create_and_login_user()
+    user_data_2 = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data_2)
     enterprise_data = await create_enterprise(user_data_2, industry_data)
 

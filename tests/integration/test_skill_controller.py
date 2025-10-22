@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, create_skill
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_skill, \
+    create_and_login_user_without_role
 from main import app
 from httpx import ASGITransport, AsyncClient
 from app.schemas.skill_schemas import *
@@ -12,7 +13,7 @@ URL: Final[str] = '/api/v1/skill'
 
 @pytest.mark.asyncio
 async def test_exists_name_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -26,7 +27,7 @@ async def test_exists_name_skill():
 
 @pytest.mark.asyncio
 async def test_toggle_is_active_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -42,8 +43,53 @@ async def test_toggle_is_active_skill():
     assert data['body']['is_active'] != skill_data.is_active
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_toggle_is_active_skill():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+
+    skill_data = await create_skill(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.put(
+            f"{URL}/{skill_data.id}/toggle/status/active",
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
+async def test_return_unauthorized_skill():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+
+    skill_data = await create_skill(user_data)
+    num = random.randint(10000,100000000000000)
+
+    dto = UpdateSkillDTO(
+        name = f"name {num}" ,
+        is_active = None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.put(
+            f"{URL}/{skill_data.id}",
+            json=dict(dto),
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    data = response.json()
+
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_update_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     num = random.randint(10000,100000000000000)
 
@@ -68,7 +114,7 @@ async def test_update_skill():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -78,7 +124,7 @@ async def test_get_all():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -92,8 +138,26 @@ async def test_return_not_found_delete_skill():
     assert data['body'] is None
 
 @pytest.mark.asyncio
+async def test_return_unauthorized_delete_skill():
+    user_data: Final = await create_and_login_user_with_role_super_adm()
+    user_data_no_roles: Final = await create_and_login_user_without_role()
+
+    skill_data = await create_skill(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.delete(
+            f"{URL}/{skill_data.id}",
+            headers={"Authorization": f"Bearer {user_data_no_roles.tokens.token}"}
+        )
+
+    data = response.json()
+    assert data["code"] == 401
+    assert data["message"] == "You are not authorized"
+    assert data["status"] == False
+
+@pytest.mark.asyncio
 async def test_delete_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -108,7 +172,7 @@ async def test_delete_skill():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{99999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -122,7 +186,7 @@ async def test_return_not_found_get_skill():
 
 @pytest.mark.asyncio
 async def test_get_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -138,7 +202,7 @@ async def test_get_skill():
 
 @pytest.mark.asyncio
 async def test_create_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     num = random.randint(10000,100000000000000)
 
     dto = CreateSkillDTO(

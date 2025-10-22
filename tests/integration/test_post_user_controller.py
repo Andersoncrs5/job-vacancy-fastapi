@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.category_schemas import *
-from tests.integration.helper import create_and_login_user, create_category, create_post_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_user
 from main import app
 from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO
 from httpx import ASGITransport, AsyncClient
@@ -14,7 +14,7 @@ URL: Final[str] = "/api/v1/post-user"
 
 @pytest.mark.asyncio
 async def test_get_metric_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -33,7 +33,7 @@ async def test_get_metric_post_user():
 
 @pytest.mark.asyncio
 async def test_return_not_found_put_post_by_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = UpdatePostUserDTO(
         title = None,
@@ -56,7 +56,7 @@ async def test_return_not_found_put_post_by_id():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_put_post_by_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = UpdatePostUserDTO(
         title = None,
@@ -92,7 +92,7 @@ async def test_return_bad_request_put_post_by_id():
 
 @pytest.mark.asyncio
 async def test_update_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -121,7 +121,7 @@ async def test_update_post():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_post_by_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.delete(f"{URL}/{99999999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -138,7 +138,7 @@ async def test_return_not_found_delete_post_by_id():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_post_by_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.delete(f"{URL}/{-1}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -168,7 +168,7 @@ async def test_return_bad_request_delete_post_by_id():
 
 @pytest.mark.asyncio
 async def test_delete_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -189,7 +189,7 @@ async def test_delete_post_user():
 async def test_return_not_found_category_create_post_user():
     num = random.randint(10000,100000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreatePostUserDTO(
         title = f"title {num}",
@@ -214,7 +214,7 @@ async def test_return_not_found_category_create_post_user():
 async def test_return_bad_request_create_post_user():
     num = random.randint(10000,100000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreatePostUserDTO(
         title = f"title {num}",
@@ -237,7 +237,7 @@ async def test_return_bad_request_create_post_user():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_post_by_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(f"{URL}/{99999999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -254,7 +254,7 @@ async def test_return_not_found_get_post_by_id():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_post_by_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(f"{URL}/{-1}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -284,7 +284,7 @@ async def test_return_bad_request_get_post_by_id():
 
 @pytest.mark.asyncio
 async def test_get_post_user():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     post_user_data: Final = await create_post_user(user_data, category_data)
 
@@ -306,7 +306,7 @@ async def test_get_post_user():
 async def test_create_post_user():
     num = random.randint(10000,100000000000)
 
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
 
     dto = CreatePostUserDTO(

@@ -7,7 +7,7 @@ from httpx import AsyncClient, ASGITransport
 from app.configs.db.enums import ReactionTypeEnum
 from app.schemas.reaction_comment_post_enterprise_schemas import CreateReactionCommentPostEnterpriseDTO
 from main import app
-from tests.integration.helper import create_and_login_user, create_category, create_industry, create_enterprise, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_industry, create_enterprise, \
     create_post_enterprise, create_comment_enterprise_user, create_react_comment_post_enterprise
 
 client: Final[TestClient] = TestClient(app)
@@ -15,15 +15,15 @@ URL = "/api/v1/area/reaction-comment-enterprise"
 
 @pytest.mark.asyncio
 async def test_get_all_filter_by_reaction_type():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category = await create_category(user_data)
     industry = await create_industry(user_data)
     enterprise = await create_enterprise(user_data, industry)
     post_enterprise = await create_post_enterprise(user_data, enterprise, category)
     comment = await create_comment_enterprise_user(user_data, post_enterprise)
 
-    user_data_two = await create_and_login_user()
-    user_data_three = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
+    user_data_three = await create_and_login_user_with_role_super_adm()
 
     await create_react_comment_post_enterprise(user_data_two, comment, ReactionTypeEnum.LIKE)
     await create_react_comment_post_enterprise(user_data_three, comment, ReactionTypeEnum.DISLIKE)
@@ -42,14 +42,14 @@ async def test_get_all_filter_by_reaction_type():
 
 @pytest.mark.asyncio
 async def test_get_all_by_comment_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category = await create_category(user_data)
     industry = await create_industry(user_data)
     enterprise = await create_enterprise(user_data, industry)
     post_enterprise = await create_post_enterprise(user_data, enterprise, category)
     comment = await create_comment_enterprise_user(user_data, post_enterprise)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     await create_react_comment_post_enterprise(user_data_two, comment, ReactionTypeEnum.LIKE)
 
@@ -70,14 +70,14 @@ async def test_get_all_by_comment_enterprise():
 
 @pytest.mark.asyncio
 async def test_get_all_by_user_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category = await create_category(user_data)
     industry = await create_industry(user_data)
     enterprise = await create_enterprise(user_data, industry)
     post_enterprise = await create_post_enterprise(user_data, enterprise, category)
     comment = await create_comment_enterprise_user(user_data, post_enterprise)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     await create_react_comment_post_enterprise(user_data_two, comment, ReactionTypeEnum.LIKE)
 
@@ -97,7 +97,7 @@ async def test_get_all_by_user_enterprise():
 
 @pytest.mark.asyncio
 async def test_get_all_enterprise_reacts():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(
             URL,
@@ -107,14 +107,14 @@ async def test_get_all_enterprise_reacts():
 
 @pytest.mark.asyncio
 async def test_change_to_reaction_type_react_comment_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category = await create_category(user_data)
     industry = await create_industry(user_data)
     enterprise = await create_enterprise(user_data, industry)
     post_enterprise = await create_post_enterprise(user_data, enterprise, category)
     comment = await create_comment_enterprise_user(user_data, post_enterprise)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionCommentPostEnterpriseDTO(
         comment_enterprise_id=comment.id,
@@ -138,14 +138,14 @@ async def test_change_to_reaction_type_react_comment_enterprise():
 
 @pytest.mark.asyncio
 async def test_delete_react_comment_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category = await create_category(user_data)
     industry = await create_industry(user_data)
     enterprise = await create_enterprise(user_data, industry)
     post_enterprise = await create_post_enterprise(user_data, enterprise, category)
     comment = await create_comment_enterprise_user(user_data, post_enterprise)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionCommentPostEnterpriseDTO(
         comment_enterprise_id=comment.id,
@@ -169,14 +169,14 @@ async def test_delete_react_comment_enterprise():
 
 @pytest.mark.asyncio
 async def test_create_react_comment_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category = await create_category(user_data)
     industry = await create_industry(user_data)
     enterprise = await create_enterprise(user_data, industry)
     post_enterprise = await create_post_enterprise(user_data, enterprise, category)
     comment = await create_comment_enterprise_user(user_data, post_enterprise)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionCommentPostEnterpriseDTO(
         comment_enterprise_id=comment.id,
@@ -197,7 +197,7 @@ async def test_create_react_comment_enterprise():
 
 @pytest.mark.asyncio
 async def test_create_reaction_comment():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data: Final = await create_category(user_data)
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)

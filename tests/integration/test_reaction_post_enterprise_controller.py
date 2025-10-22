@@ -7,7 +7,7 @@ from httpx import AsyncClient, ASGITransport
 from app.configs.db.enums import ReactionTypeEnum
 from app.schemas.reaction_post_enterprise_schemas import CreateReactionPostEnterpriseDTO
 from main import app
-from tests.integration.helper import create_and_login_user, create_category, create_post_enterprise, create_enterprise, \
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_enterprise, create_enterprise, \
     create_industry, create_reaction_post_enterprise
 
 client: Final[TestClient] = TestClient(app)
@@ -15,7 +15,7 @@ URL = "/api/v1/area/reaction-post-enterprise"
 
 @pytest.mark.asyncio
 async def test_toggle_post_enterprise_not_found():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionPostEnterpriseDTO(
         post_enterprise_id=999999,
@@ -38,7 +38,7 @@ async def test_toggle_post_enterprise_not_found():
 
 @pytest.mark.asyncio
 async def test_toggle_change_reaction_like_to_dislike_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data=industry_data)
     category_data = await create_category(user_data)
@@ -71,7 +71,7 @@ async def test_toggle_change_reaction_like_to_dislike_enterprise():
 
 @pytest.mark.asyncio
 async def test_toggle_remove_reaction_like_enterprise():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data=industry_data)
     category_data = await create_category(user_data)
@@ -104,7 +104,7 @@ async def test_toggle_remove_reaction_like_enterprise():
 
 @pytest.mark.asyncio
 async def test_get_all_by_user_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data=industry_data)
     category_data = await create_category(user_data)
@@ -137,7 +137,7 @@ async def test_get_all_by_user_id():
 
 @pytest.mark.asyncio
 async def test_get_all_by_post_enterprise_id():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data=industry_data)
     category_data = await create_category(user_data)
@@ -170,7 +170,7 @@ async def test_get_all_by_post_enterprise_id():
 
 @pytest.mark.asyncio
 async def test_return_null_ids_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response: Final = await ac.get(
@@ -189,7 +189,7 @@ async def test_return_null_ids_get_all():
 
 @pytest.mark.asyncio
 async def test_return_2_ids_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data=industry_data)
     category_data = await create_category(user_data)
@@ -212,13 +212,13 @@ async def test_return_2_ids_get_all():
 
 @pytest.mark.asyncio
 async def test_toggle_create_reaction_like():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data=industry_data)
     category_data = await create_category(user_data)
     post_data = await create_post_enterprise(user_data, enterprise_data, category_data=category_data)
 
-    user_data_two = await create_and_login_user()
+    user_data_two = await create_and_login_user_with_role_super_adm()
 
     dto = CreateReactionPostEnterpriseDTO(
         post_enterprise_id=post_data.id,

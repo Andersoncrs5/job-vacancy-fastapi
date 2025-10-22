@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, create_saved_search
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_saved_search
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -13,7 +13,7 @@ URL: Final[str] = '/api/v1/saved-search'
 
 @pytest.mark.asyncio
 async def test_return_bad_request_patch_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     dto = {
         "name": "new name",
         "query": {"term": "developer"},
@@ -39,7 +39,7 @@ async def test_return_bad_request_patch_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_not_found_patch_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     dto = UpdateSavedSearchDTO(
         name = None,
         query = dict({"name": "new name"}),
@@ -65,8 +65,8 @@ async def test_return_not_found_patch_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_forbidden_patch_saved_search():
-    user_data = await create_and_login_user()
-    user_data_two = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
+    user_data_two = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     dto = UpdateSavedSearchDTO(
@@ -94,7 +94,7 @@ async def test_return_forbidden_patch_saved_search():
 
 @pytest.mark.asyncio
 async def test_patch_saved_search_successfully():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     dto = dict(UpdateSavedSearchDTO(
@@ -128,8 +128,8 @@ async def test_patch_saved_search_successfully():
 
 @pytest.mark.asyncio
 async def test_return_forbbirn_patch_toggle_public_saved_search():
-    user_data = await create_and_login_user()
-    user_data_two = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
+    user_data_two = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -147,7 +147,7 @@ async def test_return_forbbirn_patch_toggle_public_saved_search():
 
 @pytest.mark.asyncio
 async def test_patch_toggle_public_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -168,7 +168,7 @@ async def test_patch_toggle_public_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_patch_toggle_public_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.patch(
@@ -186,7 +186,7 @@ async def test_return_bad_request_patch_toggle_public_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_not_found_patch_toggle_public_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.patch(
@@ -204,8 +204,8 @@ async def test_return_not_found_patch_toggle_public_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_forbbirn_patch_toggle_noti_saved_search():
-    user_data = await create_and_login_user()
-    user_data_two = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
+    user_data_two = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -223,7 +223,7 @@ async def test_return_forbbirn_patch_toggle_noti_saved_search():
 
 @pytest.mark.asyncio
 async def test_patch_toggle_noti_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -244,7 +244,7 @@ async def test_patch_toggle_noti_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_patch_toggle_noti_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.patch(
@@ -262,7 +262,7 @@ async def test_return_bad_request_patch_toggle_noti_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_not_found_patch_toggle_noti_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.patch(
@@ -280,8 +280,8 @@ async def test_return_not_found_patch_toggle_noti_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_forbbirn_delete_saved_search():
-    user_data = await create_and_login_user()
-    user_data_two = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
+    user_data_two = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -298,7 +298,7 @@ async def test_return_forbbirn_delete_saved_search():
 
 @pytest.mark.asyncio
 async def test_delete_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -315,7 +315,7 @@ async def test_delete_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
@@ -332,7 +332,7 @@ async def test_return_bad_request_delete_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
@@ -349,7 +349,7 @@ async def test_return_not_found_delete_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -366,7 +366,7 @@ async def test_return_bad_request_get_saved_search():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(
@@ -383,7 +383,7 @@ async def test_return_not_found_get_saved_search():
 
 @pytest.mark.asyncio
 async def test_get_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     saved_search_data = await create_saved_search(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -400,7 +400,7 @@ async def test_get_saved_search():
 
 @pytest.mark.asyncio
 async def test_create_saved_search():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     dto = CreateSavedSearchDTO(
         name = "any query",

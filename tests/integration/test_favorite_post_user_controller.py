@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.enterprise_schemas import *
-from tests.integration.helper import create_and_login_user, create_enterprise, create_post_user, create_category, create_favorite_post_user
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_enterprise, create_post_user, create_category, create_favorite_post_user
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -13,7 +13,7 @@ URL: Final[str] = '/api/v1/favorite-post-user'
 
 @pytest.mark.asyncio
 async def test_return_bad_request_check_exists():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
     favorite_data: Final[int] = await create_favorite_post_user(user_data, category_data, post_data)
@@ -48,7 +48,7 @@ async def test_return_bad_request_check_exists():
 
 @pytest.mark.asyncio
 async def test_check_exists():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
     favorite_data: Final[int] = await create_favorite_post_user(user_data, category_data, post_data)
@@ -69,7 +69,7 @@ async def test_check_exists():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_favorite_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
     favorite_data: Final[int] = await create_favorite_post_user(user_data, category_data, post_data)
@@ -90,7 +90,7 @@ async def test_return_not_found_delete_favorite_post():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_favorite_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
     favorite_data: Final[int] = await create_favorite_post_user(user_data, category_data, post_data)
@@ -125,7 +125,7 @@ async def test_return_bad_request_delete_favorite_post():
 
 @pytest.mark.asyncio
 async def test_delete_favorite_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
     favorite_data: Final[int] = await create_favorite_post_user(user_data, category_data, post_data)
@@ -146,7 +146,7 @@ async def test_delete_favorite_post():
 
 @pytest.mark.asyncio
 async def test_return_conflict_post_create_favorite_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
     favorite_data = await create_favorite_post_user(user_data, category_data, post_data)
@@ -167,7 +167,7 @@ async def test_return_conflict_post_create_favorite_post():
 
 @pytest.mark.asyncio
 async def test_return_not_found_post_create_favorite_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.post(f"{URL}/{9999999999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -185,7 +185,7 @@ async def test_return_not_found_post_create_favorite_post():
 
 @pytest.mark.asyncio
 async def test_bad_request_create_favorite_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
     # favorite_data = await create_favorite_post_user(user_data, category_data, post_data)
@@ -220,7 +220,7 @@ async def test_bad_request_create_favorite_post():
 
 @pytest.mark.asyncio
 async def test_create_favorite_post():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     category_data = await create_category(user_data)
     post_data = await create_post_user(user_data, category_data)
 

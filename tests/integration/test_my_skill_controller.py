@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from typing import Final
-from tests.integration.helper import create_and_login_user, create_skill, create_my_skill
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_skill, create_my_skill
 from main import app
 from httpx import ASGITransport, AsyncClient
 from app.schemas.my_skill_schemas import *
@@ -14,7 +14,7 @@ URL: Final[str] = '/api/v1/my-skill'
 
 @pytest.mark.asyncio
 async def test_return_bad_requests_exists_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{0}/exists", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -29,7 +29,7 @@ async def test_return_bad_requests_exists_my_skil():
 
 @pytest.mark.asyncio
 async def test_return_false_exists_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{999999999999}/exists", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -44,7 +44,7 @@ async def test_return_false_exists_my_skil():
 
 @pytest.mark.asyncio
 async def test_return_true_existsexists_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -62,7 +62,7 @@ async def test_return_true_existsexists_my_skil():
 
 @pytest.mark.asyncio
 async def test_return_bad_requests_get_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{0}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -77,7 +77,7 @@ async def test_return_bad_requests_get_my_skil():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}/{999999999999}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -92,7 +92,7 @@ async def test_return_not_found_get_my_skil():
 
 @pytest.mark.asyncio
 async def test_get_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -113,7 +113,7 @@ async def test_get_my_skil():
 
 @pytest.mark.asyncio
 async def test_get_all():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.get(f"{URL}", headers={"Authorization": f"Bearer {user_data.tokens.token}"})
@@ -123,7 +123,7 @@ async def test_get_all():
 
 @pytest.mark.asyncio
 async def test_return_bad_requests_update_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -148,7 +148,7 @@ async def test_return_bad_requests_update_my_skil():
 
 @pytest.mark.asyncio
 async def test_return_not_found_update_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -173,7 +173,7 @@ async def test_return_not_found_update_my_skil():
 
 @pytest.mark.asyncio
 async def test_update_my_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -203,7 +203,7 @@ async def test_update_my_skill():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
@@ -219,7 +219,7 @@ async def test_return_not_found_delete_my_skil():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_my_skil():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -236,7 +236,7 @@ async def test_return_bad_request_delete_my_skil():
 
 @pytest.mark.asyncio
 async def test_delete_my_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -253,7 +253,7 @@ async def test_delete_my_skill():
 
 @pytest.mark.asyncio
 async def test_return_not_found_create_my_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -279,7 +279,7 @@ async def test_return_not_found_create_my_skill():
 
 @pytest.mark.asyncio
 async def test_return_create_my_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill_data = await create_skill(user_data)
     my_skill_data = await create_my_skill(user_data, skill_data)
 
@@ -305,7 +305,7 @@ async def test_return_create_my_skill():
 
 @pytest.mark.asyncio
 async def test_create_my_skill():
-    user_data = await create_and_login_user()
+    user_data = await create_and_login_user_with_role_super_adm()
     skill = await create_skill(user_data)
 
     dto = CreateMySkillDTO(

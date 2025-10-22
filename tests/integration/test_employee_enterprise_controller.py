@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.employee_enterprise_schemas import *
-from tests.integration.helper import create_and_login_user, create_industry, create_enterprise, create_employee
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, create_employee
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -14,10 +14,10 @@ URL: Final[str] = '/api/v1/employee-enterprise'
 
 @pytest.mark.asyncio
 async def test_patch_employee_successfully():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     dto = UpdateEmployeeEnterpriseDTO(
@@ -50,10 +50,10 @@ async def test_patch_employee_successfully():
 
 @pytest.mark.asyncio
 async def test_patch_employee_bad_request():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     dto = UpdateEmployeeEnterpriseDTO(
@@ -81,10 +81,10 @@ async def test_patch_employee_bad_request():
 
 @pytest.mark.asyncio
 async def test_patch_employee_not_found():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     industry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, industry_data)
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
     dto = UpdateEmployeeEnterpriseDTO(
@@ -112,11 +112,11 @@ async def test_patch_employee_not_found():
 
 @pytest.mark.asyncio
 async def test_delete_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -133,11 +133,11 @@ async def test_delete_employee():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_delete_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -154,11 +154,11 @@ async def test_return_bad_request_delete_employee():
 
 @pytest.mark.asyncio
 async def test_return_not_found_delete_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -175,11 +175,11 @@ async def test_return_not_found_delete_employee():
 
 @pytest.mark.asyncio
 async def test_return_bad_request_get_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -196,11 +196,11 @@ async def test_return_bad_request_get_employee():
 
 @pytest.mark.asyncio
 async def test_return_not_found_get_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -217,11 +217,11 @@ async def test_return_not_found_get_employee():
 
 @pytest.mark.asyncio
 async def test_get_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -241,7 +241,7 @@ async def test_get_employee():
 
 @pytest.mark.asyncio
 async def test_return_conflict_user_enterprise_create_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
@@ -267,11 +267,11 @@ async def test_return_conflict_user_enterprise_create_employee():
 
 @pytest.mark.asyncio
 async def test_return_not_found_user_create_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     dto = CreateEmployeeEnterpriseDTO(
         user_id = 9999999999999,
@@ -295,11 +295,11 @@ async def test_return_not_found_user_create_employee():
 
 @pytest.mark.asyncio
 async def test_return_conflict_create_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     employee_data = await create_employee(user_data, enterprise_data, user_data_two)
 
@@ -325,11 +325,11 @@ async def test_return_conflict_create_employee():
 
 @pytest.mark.asyncio
 async def test_create_employee():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
     inudstry_data = await create_industry(user_data)
     enterprise_data = await create_enterprise(user_data, inudstry_data)
 
-    user_data_two: Final = await create_and_login_user()
+    user_data_two: Final = await create_and_login_user_with_role_super_adm()
 
     dto = CreateEmployeeEnterpriseDTO(
         user_id = user_data_two.out.id,
@@ -356,7 +356,7 @@ async def test_create_employee():
 
 @pytest.mark.asyncio
 async def test_get_all_enterprise():
-    user_data: Final = await create_and_login_user()
+    user_data: Final = await create_and_login_user_with_role_super_adm()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response = await acdc.get(f'{URL}', headers={"Authorization": f"Bearer {user_data.tokens.token}"})
