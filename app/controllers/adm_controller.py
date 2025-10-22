@@ -7,6 +7,9 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.db.enums import NotificationTypeEnum
+from app.schemas.user_roles_schemas import UserRolesOUT
+from app.utils.filter.my_role_filter import MyRolesFilter
 from app.utils.filter.roles_filter import RolesFilter
 from app.utils.res.responses_http import *
 from app.dependencies.service_dependency import *
@@ -31,6 +34,8 @@ router: Final[APIRouter] = APIRouter(
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
+
+
 @router.post(
     "/toggle/{email}/{role_title}",
     response_model=ResponseBody,
@@ -41,6 +46,7 @@ async def impl_role_in_user(
     role_title: str,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     my_roles_service: MyRolesServiceProvider = Depends(get_my_role_provider_dependency),
+    notification_service: NotificationEventServiceProvider = Depends(get_notification_service_provider_dependency),
     roles_service: RolesServiceProvider = Depends(get_role_provider_dependency),
     jwt_service: JwtServiceProvider = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -101,6 +107,21 @@ async def impl_role_in_user(
         if check is not None:
             await my_roles_service.delete(check)
 
+            await notification_service.notify_user_about(
+                entity_id=None,
+                actor_id=user.id,
+                _type=NotificationTypeEnum.SYSTEM,
+                data={
+                    "status": True,
+                    "title": f"Role {check.role.title} Removed",
+                    "content": (
+                        f"Please be advised that your **{check.role.title}** role has been removed from your profile. "
+                        f"We appreciate the time and dedication you showed while serving in this capacity. "
+                        f"You still have regular access to the system."
+                    )
+                }
+            )
+
             return ORJSONResponse(
                 status_code=status.HTTP_200_OK,
                 content=dict(ResponseBody(
@@ -114,9 +135,24 @@ async def impl_role_in_user(
                 ))
             )
 
-        await my_roles_service.create(
+        role_added = await my_roles_service.create(
             user_id=user.id,
             role_id=role.id,
+        )
+
+        await notification_service.notify_user_about(
+            entity_id=None,
+            actor_id=user.id,
+            _type=NotificationTypeEnum.SYSTEM,
+            data={
+                "status": True,
+                "title": f"Congratulations! You are the new {role_added.role.title}",
+                "content": (
+                    f"Congratulations! You have just been assigned the **{role_added.role.title}** role within the system. "
+                    f"This new responsibility reflects our confidence in your dedication and collaboration for the smooth operation of the platform. "
+                    f"Thank you for your contribution!"
+                )
+            }
         )
 
         return ORJSONResponse(
@@ -149,3 +185,54 @@ async def impl_role_in_user(
                 ))
             )
 
+
+@router.get(
+    "",
+    response_model=Page[UserRolesOUT],
+    status_code=status.HTTP_200_OK
+)
+async def get_all(
+    _filter: MyRolesFilter  = Depends(),
+    my_roles_service: MyRolesServiceProvider = Depends(get_my_role_provider_dependency),
+    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    try:
+        token: Final[str] = jwt_service.valid_credentials(credentials)
+        auth = jwt_service.check_master(token=token)
+        if not auth:
+            response_body = ResponseBody(
+                code=status.HTTP_401_UNAUTHORIZED,
+                message="You are not authorized",
+                body=None,
+                status=False,
+                timestamp=str(datetime.now()),
+                path=None,
+                version=1
+            ).model_dump()
+
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=response_body
+            )
+
+        jwt_service.valid_credentials(credentials)
+
+        _all: Final = await my_roles_service.get_all(_filter)
+
+        return paginate(_all)
+    except Exception as e:
+        return ORJSONResponse(
+                status_code=500,
+                content=dict(ResponseBody[Any](
+                    code=500,
+                    message="Error in server! Please try again later",
+                    status=False,
+                    body=str(e),
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+add_pagination(router)
