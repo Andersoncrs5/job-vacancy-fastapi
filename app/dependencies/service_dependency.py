@@ -20,6 +20,8 @@ from app.repositories.providers.favorite_comment_post_user_repository_provider i
     FavoriteCommentPostUserRepositoryProvider
 from app.repositories.providers.follow_enterprise_repository_provider import FollowEnterpriseRepositoryProvider
 from app.repositories.providers.follow_repository_provider import FollowRepositoryProvider
+from app.repositories.providers.notification_enterprise_repository_provider import \
+    NotificationEnterpriseRepositoryProvider
 from app.repositories.providers.notification_repository_provider import NotificationRepositoryProvider
 from app.repositories.providers.post_enterprise_metric_repository_provider import PostEnterpriseMetricRepositoryProvider
 from app.repositories.providers.post_user_metric_repository_provider import PostUserMetricRepositoryProvider
@@ -44,6 +46,7 @@ from app.services.providers.enterprise_metric_service_provider import Enterprise
 from app.services.providers.favorite_comment_post_enterprise_service_provider import \
     FavoriteCommentPostEnterpriseServiceProvider
 from app.services.providers.favorite_comment_post_user_service_provider import FavoriteCommentPostUserServiceProvider
+from app.services.providers.notication_enteprise_service_provider import NotificationEnterpriseServiceProvider
 from app.services.providers.notication_service_provider import NotificationServiceProvider
 from app.services.providers.notification_event_service_provider import NotificationEventServiceProvider
 from app.services.providers.post_enterprise_metric_service_provider import PostEnterpriseMetricServiceProvider
@@ -104,6 +107,10 @@ def get_notification_service_provider_dependency(
     producer: AIOKafkaProducer = Depends(get_producer_dependency),
 ) -> NotificationEventServiceProvider:
     return NotificationEventServiceProvider(producer=producer)
+
+def get_notification_enterprise_provider_dependency(db: AsyncSession = Depends(get_db)) -> NotificationEnterpriseServiceProvider:
+    repository = NotificationEnterpriseRepositoryProvider(db)
+    return NotificationEnterpriseServiceProvider(repository)
 
 def get_notification_provider_dependency(db: AsyncSession = Depends(get_db)) -> NotificationServiceProvider:
     repository = NotificationRepositoryProvider(db)
