@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.configs.db.database import MyRolesEntity
+from app.configs.db.database import UserRolesEntity
 
 
 class MyRolesServiceBase(ABC):
@@ -9,7 +9,7 @@ class MyRolesServiceBase(ABC):
         pass
 
     @abstractmethod
-    async def get_by_user_id_and_role_id(self, user_id: int, role_id: int) -> MyRolesEntity | None:
+    async def get_by_user_id_and_role_id(self, user_id: int, role_id: int) -> UserRolesEntity | None:
         pass
 
     @abstractmethod
