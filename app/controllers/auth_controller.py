@@ -9,6 +9,7 @@ from app.dependencies.service_dependency import *
 from app.schemas.user_schemas import CreateUserDTO
 from app.schemas.user_schemas import LoginDTO
 from app.services.providers.crypto_service import verify_password
+from app.utils.filter.my_role_filter import MyRolesFilter
 from app.utils.res.responses_http import *
 from app.utils.res.tokens import Tokens
 
@@ -23,6 +24,46 @@ router: Final[APIRouter] = APIRouter(
 )
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
+
+
+@router.get(
+    "/{name}/exists/name",
+    status_code=200,
+    response_model=ResponseBody[bool],
+)
+async def exists_by_name(
+        name: str,
+        user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+):
+    try:
+        check: Final[bool] = await user_service.exists_by_name(name)
+
+        return ORJSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=dict(ResponseBody[bool](
+                message="",
+                code=status.HTTP_200_OK,
+                status=True,
+                body=check,
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
+
+    except Exception as e:
+        return ORJSONResponse(
+            status_code=500,
+            content=dict(ResponseBody[Any](
+                code=500,
+                message="Error in server! Please try again later",
+                status=False,
+                body=str(e),
+                timestamp=str(datetime.now()),
+                version=1,
+                path=None
+            ))
+        )
 
 @router.get(
     "/{email}/exists/email",
@@ -161,6 +202,7 @@ async def refresh_token_method(
 async def login(
     dto: LoginDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    my_roles_service: MyRolesServiceProvider = Depends(get_my_role_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
     try:
@@ -207,8 +249,17 @@ async def login(
                 ))
             )
 
-        token: Final[str] = jwt_service.create_access_token(user)
-        refresh_token: Final[str] = jwt_service.create_refresh_token(user)
+        filter_to_my_roles = MyRolesFilter(
+            user_id=user.id,
+            created_at__gte=None,
+            created_at__lte=None,
+            role_id=None,
+        )
+
+        roles = await my_roles_service.get_all(filter_to_my_roles)
+
+        token: Final[str] = jwt_service.create_access_token_with_roles(user, roles)
+        refresh_token: Final[str] = jwt_service.create_refresh_token_with_roles(user, roles)
 
         await user_service.set_refresh_token(refresh_token, user)
 
@@ -263,8 +314,9 @@ async def resister(
 ):
     try:
 
-        check: Final[bool] = await user_service.exists_by_email(str(dto.email))
-        if check :
+
+        check_email: Final[bool] = await user_service.exists_by_email(str(dto.email))
+        if check_email :
             return ORJSONResponse(
                 status_code=status.HTTP_409_CONFLICT,
                 content=dict(ResponseBody(
@@ -278,6 +330,21 @@ async def resister(
                 ))
             )
 
+        check_name: Final[bool] = await user_service.exists_by_name(str(dto.name))
+        if check_name:
+            return ORJSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content=dict(ResponseBody(
+                    code=status.HTTP_409_CONFLICT,
+                    message="Name already in use",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
+
         user_created: Final[UserEntity] = await user_service.create(dto)
 
         token: Final = jwt_service.create_access_token(user_created)
@@ -285,7 +352,13 @@ async def resister(
 
         await user_service.set_refresh_token(refresh_token, user_created)
 
-        await email_service.send_email_welcome_user(user_created.email, "Welcome", {})
+        await email_service.send_email_welcome_user(
+            user_created.email,
+            "Welcome",
+            {}
+        )
+
+        await user_metric_service.create(user_created.id)
 
         tokens: Final[Tokens] = Tokens(
             token=token, 
@@ -293,8 +366,6 @@ async def resister(
             exp_token = None,
             exp_refresh_token = None
         )
-
-        await user_metric_service.create(user_created.id)
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,
