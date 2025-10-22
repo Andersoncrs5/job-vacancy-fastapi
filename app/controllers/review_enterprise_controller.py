@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
 from app.configs.db.database import EnterpriseEntity
+from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
 from app.schemas.review_enterprise_schemas import *
 from app.utils.enums.sum_red import ColumnEnterpriseMetricEnum, SumRedEnum
@@ -350,7 +351,7 @@ async def create(
                 ))
             )
 
-        user: Final[bool] = await user_service.exists_by_id(user_id)
+        user: Final = await user_service.get_by_id(user_id)
         if not user:
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -386,6 +387,15 @@ async def create(
             review_created.enterprise_id,
             ColumnEnterpriseMetricEnum.review_count,
             SumRedEnum.SUM
+        )
+
+        await notification_service.notify_event_to_kafka(
+            entity_id=review_created.id,
+            actor_id=enterprise.id,
+            _type=NotificationTypeEnum.NEW_REVIEW_ENTERPRISE,
+            data = {
+                "actor_name": user.name
+            }
         )
 
         out: Final[ReviewEnterpriseOUT] = review_created.to_out()
