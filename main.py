@@ -3,6 +3,7 @@ import asyncio
 from aiokafka import AIOKafkaProducer
 from fastapi import FastAPI
 
+from app.configs.commands.command_linner import CommandLinner
 from app.configs.kafka_configs.kafka_admin import KafkaAdmin, KAFKA_BROKER
 from app.configs.logs.log_config import setup_logging
 from app.controllers import (
@@ -17,14 +18,19 @@ from app.controllers import (
     follow_enterprise_controller, reaction_post_user_controller, reaction_post_enterprise_controller,
     comment_post_user_controller, comment_post_enterprise_controller, favorite_comment_post_enterprise_controller,
     favorite_comment_post_user_controller, reaction_comment_post_user_controller,
-    reaction_comment_post_enterprise_controller, enterprise_follows_user_controller, notification_controller
+    reaction_comment_post_enterprise_controller, enterprise_follows_user_controller, notification_controller,
+    notification_enterprise_controller
 )
-from app.configs.db.database import get_db, engine, Base
+from app.configs.db.database import get_db, engine, Base, AsyncSessionLocal
 from contextlib import asynccontextmanager
 from fastapi.responses import ORJSONResponse
 from typing import Final
 import structlog
 import uuid
+
+from app.repositories.providers.my_roles_repository_provider import MyRolesRepositoryProvider
+from app.repositories.providers.roles_repository_provider import RolesRepositoryProvider
+from app.repositories.providers.user_repository_provider import UserRepositoryProvider
 
 logger: Final[structlog.BoundLogger] = setup_logging()
 
@@ -37,6 +43,18 @@ async def lifespan(app: FastAPI):
 
     # admin_service = KafkaAdmin(bootstrap_servers=[KAFKA_BROKER])
     # await asyncio.to_thread(admin_service.create_topics_from_file)
+
+    async with AsyncSessionLocal() as db:
+        user_repository = UserRepositoryProvider(db)
+        role_repository = RolesRepositoryProvider(db)
+        my_role_repository = MyRolesRepositoryProvider(db)
+        cmd = CommandLinner(
+            user_repository=user_repository,
+            role_repository=role_repository,
+            my_role_repository=my_role_repository,
+        )
+
+        await cmd.init_commands()
 
     yield
     logger.info("Shutting down the application...")
@@ -61,6 +79,7 @@ async def add_request_id(request, call_next):
     return response
 
 app.include_router(notification_controller.router)
+app.include_router(notification_enterprise_controller.router)
 app.include_router(enterprise_follows_user_controller.router)
 app.include_router(reaction_comment_post_enterprise_controller.router)
 app.include_router(favorite_comment_post_user_controller.router)
