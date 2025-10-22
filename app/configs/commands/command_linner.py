@@ -5,7 +5,7 @@ from typing import cast
 import structlog
 from dotenv import load_dotenv
 
-from app.configs.db.database import UserEntity, RolesEntity, MyRolesEntity
+from app.configs.db.database import UserEntity, RolesEntity, UserRolesEntity
 from app.repositories.providers.my_roles_repository_provider import MyRolesRepositoryProvider
 from app.repositories.providers.roles_repository_provider import RolesRepositoryProvider
 from app.repositories.providers.user_repository_provider import UserRepositoryProvider
@@ -14,8 +14,12 @@ from app.services.providers.crypto_service import hash_password
 load_dotenv()
 
 NAME_APP = os.getenv("NAME_APP")
+
 ROLE_SUPER_ADM = os.getenv("ROLE_SUPER_ADM")
 ROLE_ADM = os.getenv("ROLE_ADM")
+ROLE_MASTER = os.getenv("ROLE_MASTER")
+ROLE_USER = os.getenv("ROLE_USER")
+ROLE_ENTERPRISE = os.getenv("ROLE_ENTERPRISE")
 
 logger = structlog.get_logger()
 
@@ -38,7 +42,10 @@ class CommandLinner:
 
         role_super_adm = await self._get_or_create_role(title=ROLE_SUPER_ADM, is_immutable=True)
         role_adm = await self._get_or_create_role(title=ROLE_ADM, is_immutable=True)
-        await self.create_super_adm(role_super_adm)
+        role_master = await self._get_or_create_role(title=ROLE_MASTER, is_immutable=True)
+        role_user = await self._get_or_create_role(title=ROLE_USER, is_immutable=True)
+        role_enterprise = await self._get_or_create_role(title=ROLE_ENTERPRISE, is_immutable=True)
+        await self.create_master_adm(role_master)
 
         logger.info("✅ System initialization commands completed successfully.")
 
@@ -65,16 +72,16 @@ class CommandLinner:
         logger.info(f"✨ New Role '{title}' created with ID: {cast(int, created_role.id)}.")
         return created_role
 
-    async def create_super_adm(self, role: RolesEntity | None):
+    async def create_master_adm(self, role: RolesEntity | None):
         logger.info("Starting check and creation of SUPER_ADM system user.")
 
         if NAME_APP is None:
             logger.critical("NAME_APP environment variable is missing. Cannot create system user.")
             raise ValueError("NAME_APP is None")
 
-        if role.title != "SUPER_ADM":
-            logger.error(f"Expected SUPER_ADM role, but received '{role.title}'. Aborting user creation.")
-            raise ValueError("role title is different of SUPER_ADM")
+        if role.title != "MASTER":
+            logger.error(f"Expected MASTER role, but received '{role.title}'. Aborting user creation.")
+            raise ValueError("role title is different of MASTER")
 
         email = f"{NAME_APP.lower()}.system@gmail.com"
 
@@ -108,7 +115,7 @@ class CommandLinner:
             logger.warning(f"Role {role_id} already assigned to user {user_id}. Skipping role assignment.")
             return None
 
-        my_role = MyRolesEntity()
+        my_role = UserRolesEntity()
         my_role.role_id = role.id
         my_role.user_id = user_created.id
 
