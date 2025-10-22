@@ -1,0 +1,19 @@
+from fastapi_filter.contrib.sqlalchemy import Filter
+from pydantic import Field
+from typing import Optional
+from datetime import datetime
+from app.configs.db.database import RolesEntity
+
+
+class RolesFilter(Filter):
+    id: Optional[int] = Field(None, description="Search by role ID (exact match)")
+    title__ilike: Optional[str] = Field(None, description="Search by title")
+    slug__ilike: Optional[str] = Field(None, description="Search by slug")
+    is_active: Optional[bool] = Field(None, description="Search by is active")
+    is_immutable: Optional[bool] = Field(None, description="Search by is immutable")
+    role_id: Optional[int] = Field(None, description="Search by role ID")
+    created_at__gte: Optional[datetime] = Field(None, description="Filter by creation date, greater than or equal to.")
+    created_at__lte: Optional[datetime] = Field(None, description="Filter by creation date, less than or equal to.")
+
+    class Constants(Filter.Constants):
+        model = RolesEntity
