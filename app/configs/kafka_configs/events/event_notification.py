@@ -1,16 +1,8 @@
-from datetime import datetime
-from uuid import UUID
-
 from app.configs.db.enums import NotificationTypeEnum
-from app.configs.orjson.orjson_config import ORJSONModel
+from app.configs.kafka_configs.events.base import EventBase
 
 
-class EventNotification(ORJSONModel):
-    event_id: UUID
+class EventNotification(EventBase):
     event_type: NotificationTypeEnum
     actor_id: int | None
     entity_id: int
-    created_at: datetime
-    source_service: str
-    data: dict
-    metadata: dict

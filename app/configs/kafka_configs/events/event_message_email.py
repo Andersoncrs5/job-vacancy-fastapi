@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
+from app.configs.kafka_configs.events.base import EventBase
 from app.configs.orjson.orjson_config import ORJSONModel
 
 class TemplateEnum(str, Enum):
@@ -14,14 +15,9 @@ class TemplateEnum(str, Enum):
     hired_confirmation = 'hired_confirmation'
     rejected_application = 'rejected_application'
 
-class EventMessageEmail(ORJSONModel):
-    event_id: UUID
+class EventMessageEmail(EventBase):
     email: str
     template_name: TemplateEnum
-    created_at: datetime
-    source_service: str
     subject: str
     cc: list[str] | None = None,
     bcc: list[str] | None = None
-    data: dict
-    metadata: dict
