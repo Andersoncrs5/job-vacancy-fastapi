@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.commands.command_linner import ROLE_ENTERPRISE
 from app.configs.db.database import ApplicationEntity
 from app.configs.db.enums import NotificationTypeEnum
 from app.dependencies.service_dependency import *
@@ -28,7 +29,7 @@ bearer_scheme: Final[HTTPBearer] = HTTPBearer()
 
 @router.patch(
     "/{id}",
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     response_model=ResponseBody,
 )
 async def patch(
@@ -37,7 +38,7 @@ async def patch(
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
     application_service: ApplicationServiceProvider = Depends(get_application_service_provider_dependency),
-    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    jwt_service: JwtServiceProvider = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if id <= 0:
@@ -87,6 +88,10 @@ async def patch(
                     path=None
                 ))
             )
+
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_ENTERPRISE])
+        if not auth:
+            return jwt_service.throw_unauthorized("You are not authorized")
 
         app_updated = await application_service.update(app, dto)
 
@@ -178,20 +183,6 @@ async def delete(
                 content=dict(ResponseBody(
                     code=status.HTTP_404_NOT_FOUND,
                     message="Application not found",
-                    status=False,
-                    body=None,
-                    timestamp=str(datetime.now()),
-                    version=1,
-                    path=None
-                ))
-            )
-
-        if app.user_id != user.id:
-            return ORJSONResponse(
-                status_code=status.HTTP_403_FORBIDDEN,
-                content=dict(ResponseBody(
-                    code=status.HTTP_403_FORBIDDEN,
-                    message="You are not authorized to removed this application",
                     status=False,
                     body=None,
                     timestamp=str(datetime.now()),
@@ -307,6 +298,10 @@ async def create(
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
+
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_ENTERPRISE])
+        if auth:
+            return jwt_service.throw_unauthorized("You are not authorized")
 
         user: Final = await user_service.get_by_id(user_id)
         if not user:

@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.commands.command_linner import ROLE_ENTERPRISE
 from app.configs.db.database import EnterpriseEntity, UserEntity, IndustryEntity, EnterpriseMetricEntity
 from app.dependencies.service_dependency import *
 from app.schemas.enterprise_schemas import *
@@ -497,9 +498,11 @@ async def create(
     dto: CreateEnterpriseDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     industry_service: IndustryServiceProvider = Depends(get_industry_service_provider_dependency),
+    my_roles_service: MyRolesServiceProvider = Depends(get_my_role_provider_dependency),
+    roles_service: RolesServiceProvider = Depends(get_role_provider_dependency),
     enterprise_metric_service: EnterpriseMetricServiceProvider = Depends(get_enterprise_metric_service_provider_dependency),
     enterprise_service: EnterpriseServiceProvider = Depends(get_enterprise_service_provider_dependency),
-    jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
+    jwt_service: JwtServiceProvider = Depends(get_jwt_service_dependency),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     if industry_id <= 0:
@@ -600,6 +603,26 @@ async def create(
         enterprise_out: Final[EnterpriseOUT] = enterprise_created.to_out()
 
         await enterprise_metric_service.create(enterprise_created.id)
+
+        role = await roles_service.get_by_title(title=ROLE_ENTERPRISE)
+        if role is None:
+            return ORJSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=dict(ResponseBody(
+                    code=status.HTTP_404_NOT_FOUND,
+                    message="Role not found",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version = 1,
+                    path = None
+                ))
+            )
+
+        await my_roles_service.create(
+            user_id=user_id,
+            role_id=role.id
+        )
 
         return ORJSONResponse(
             status_code=status.HTTP_201_CREATED,

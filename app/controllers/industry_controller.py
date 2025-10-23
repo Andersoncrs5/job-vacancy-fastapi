@@ -5,6 +5,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.commands.command_linner import ROLE_MASTER, ROLE_SUPER_ADM
 from app.configs.db.database import IndustryEntity, UserEntity
 from app.dependencies.service_dependency import *
 from app.schemas.industry_schemas import *
@@ -84,7 +85,7 @@ async def create(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
             response_body = ResponseBody(
                 code=status.HTTP_401_UNAUTHORIZED,
@@ -170,7 +171,7 @@ async def create(
     responses={
         404: RESPONSE_404_INDUSTRY
     }
-    )
+)
 async def toggle_status_is_active(
     industry_id: int,
     industry_service: IndustryServiceProvider = Depends(get_industry_service_provider_dependency),
@@ -193,7 +194,7 @@ async def toggle_status_is_active(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
             response_body = ResponseBody(
                 code=status.HTTP_401_UNAUTHORIZED,
@@ -288,7 +289,7 @@ async def put(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
             response_body = ResponseBody(
                 code=status.HTTP_401_UNAUTHORIZED,
@@ -359,7 +360,7 @@ async def put(
     responses={
         404: RESPONSE_404_INDUSTRY
     }
-    )
+)
 async def delete(
     industry_id: int,
     industry_service: IndustryServiceProvider = Depends(get_industry_service_provider_dependency),
@@ -382,22 +383,9 @@ async def delete(
 
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
-            response_body = ResponseBody(
-                code=status.HTTP_401_UNAUTHORIZED,
-                message="You are not authorized",
-                body=None,
-                status=False,
-                timestamp=str(datetime.now()),
-                path=None,
-                version=1
-            ).model_dump()
-
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=response_body
-            )
+            return jwt_service.throw_unauthorized("You are not authorized")
 
         user_id: Final[int] = jwt_service.extract_user_id_v2(token)
         industry: Final[IndustryEntity | None] = await industry_service.get_by_id(industry_id)
@@ -451,7 +439,7 @@ async def delete(
     responses={
         404: RESPONSE_404_INDUSTRY
     }
-    )
+)
 async def get(
     industry_id: int,
     industry_service: IndustryServiceProvider = Depends(get_industry_service_provider_dependency),
