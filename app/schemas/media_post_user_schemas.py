@@ -4,8 +4,10 @@ from pydantic import Field
 
 from app.configs.db.enums import MediaType
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
-class MediaPostUserOUT(ORJSONModel):
+
+class MediaPostUserOUT(BaseSchemas):
     id: int 
     url: str 
     type: MediaType 
@@ -13,9 +15,7 @@ class MediaPostUserOUT(ORJSONModel):
     caption: str | None 
     size: int | None 
     mime_type: str | None 
-    post_id: int 
-    created_at: datetime | str
-    updated_at: datetime | str
+    post_id: int
 
 class CreateMediaPostUserDTO(ORJSONModel):
     url: str = Field(..., min_length=5, max_length=800, description="The URL of the media file (max 800 characters).")

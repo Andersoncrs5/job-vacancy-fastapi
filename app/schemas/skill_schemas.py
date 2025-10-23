@@ -3,12 +3,13 @@ from pydantic import Field
 from app.configs.orjson.orjson_config import ORJSONModel
 from datetime import datetime
 
-class SkillOUT(ORJSONModel):
+from app.schemas.base import BaseSchemas
+
+
+class SkillOUT(BaseSchemas):
     id: int
     name: str
     is_active: bool
-    created_at: datetime | str
-    updated_at: datetime | str 
 
 class CreateSkillDTO(ORJSONModel):
     name: str = Field(..., min_length=3, max_length=100, description="The name of the skill (3 to 100 characters).")

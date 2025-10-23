@@ -3,7 +3,10 @@ from pydantic import Field
 from app.configs.orjson.orjson_config import ORJSONModel
 from datetime import datetime
 
-class SavedSearchOUT(ORJSONModel):
+from app.schemas.base import BaseSchemas
+
+
+class SavedSearchOUT(BaseSchemas):
     id: int
     user_id: int
     name: str
@@ -13,8 +16,6 @@ class SavedSearchOUT(ORJSONModel):
     last_executed_at: datetime | str | None
     execution_count: int
     notifications_enabled: bool
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class CreateSavedSearchDTO(ORJSONModel):
     name: str = Field(..., min_length=3, max_length=100, description="A unique name for the saved search (3 to 100 characters).")

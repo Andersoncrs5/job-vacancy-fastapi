@@ -3,15 +3,16 @@ from pydantic import Field
 from app.configs.orjson.orjson_config import ORJSONModel
 from datetime import datetime
 
-class PostUserOUT(ORJSONModel):
+from app.schemas.base import BaseSchemas
+
+
+class PostUserOUT(BaseSchemas):
     id: int
     title: str
     content: str
     url_image: str | None
     user_id: int
     category_id: int
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class CreatePostUserDTO(ORJSONModel):
     title: str = Field(..., min_length=5, max_length=255, description="The post title (5 to 255 characters).")

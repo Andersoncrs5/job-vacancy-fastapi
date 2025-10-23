@@ -3,19 +3,18 @@ from datetime import datetime
 from pydantic import Field
 
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 from app.schemas.post_enterprise_schemas import PostEnterpriseOUT
 from app.schemas.user_schemas import UserOUT
 
 
-class CommentPostEnterpriseOUT(ORJSONModel):
+class CommentPostEnterpriseOUT(BaseSchemas):
     id: int
     content: str
     user_id: int
     post_enterprise_id: int
     parent_comment_id: int | None
     is_edited: bool
-    created_at: datetime
-    updated_at: datetime
     user: UserOUT
     post: PostEnterpriseOUT
 

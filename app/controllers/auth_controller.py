@@ -115,6 +115,7 @@ async def exists_by_email(
 async def refresh_token_method(
     refresh_token: str,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
+    my_roles_service: MyRolesServiceProvider = Depends(get_my_role_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency),
 ):
     
@@ -151,10 +152,19 @@ async def refresh_token_method(
                 ))
             )
 
-        token: Final[str] = jwt_service.create_access_token(user)
-        new_refresh_token: Final[str] = jwt_service.create_refresh_token(user)
+        filter_to_my_roles = MyRolesFilter(
+            user_id=user.id,
+            created_at__gte=None,
+            created_at__lte=None,
+            role_id=None,
+        )
 
-        await user_service.set_refresh_token(new_refresh_token, user)
+        roles = await my_roles_service.get_all(filter_to_my_roles)
+
+        token: Final[str] = jwt_service.create_access_token_with_roles(user, roles)
+        refresh_token_new: Final[str] = jwt_service.create_refresh_token_with_roles(user, roles)
+
+        await user_service.set_refresh_token(refresh_token_new, user)
 
         tokens: Final[Tokens] = Tokens(
             token=token, 
@@ -309,6 +319,7 @@ async def resister(
     dto: CreateUserDTO,
     user_service: UserServiceProvider = Depends(get_user_service_provider_dependency),
     email_service: EmailServiceProvider = Depends(get_email_service_provider_dependency),
+    my_roles_service: MyRolesServiceProvider = Depends(get_my_role_provider_dependency),
     user_metric_service: UserMetricServiceProvider = Depends(get_user_metric_service_provider_dependency),
     jwt_service: JwtServiceBase = Depends(get_jwt_service_dependency)
 ):
@@ -343,12 +354,21 @@ async def resister(
                 ))
             )
 
-        dto.name = dto.name.lower().replace(" ", "")
+        dto.name = dto.name.replace(" ", "")
 
         user_created: Final[UserEntity] = await user_service.create(dto)
 
-        token: Final = jwt_service.create_access_token(user_created)
-        refresh_token: Final = jwt_service.create_refresh_token(user_created)
+        filter_to_my_roles = MyRolesFilter(
+            user_id=user_created.id,
+            created_at__gte=None,
+            created_at__lte=None,
+            role_id=None,
+        )
+
+        roles = await my_roles_service.get_all(filter_to_my_roles)
+
+        token: Final[str] = jwt_service.create_access_token_with_roles(user_created, roles)
+        refresh_token: Final[str] = jwt_service.create_refresh_token_with_roles(user_created, roles)
 
         await user_service.set_refresh_token(refresh_token, user_created)
 

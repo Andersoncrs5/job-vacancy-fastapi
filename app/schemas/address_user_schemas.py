@@ -4,8 +4,10 @@ from pydantic import Field
 
 from app.configs.orjson.orjson_config import ORJSONModel
 from app.configs.db.enums import AddressTypeEnum
+from app.schemas.base import BaseSchemas
 
-class AddressUserOUT(ORJSONModel):
+
+class AddressUserOUT(BaseSchemas):
     id: int
     user_id: int
     street: str
@@ -19,8 +21,6 @@ class AddressUserOUT(ORJSONModel):
     address_type: AddressTypeEnum
     is_default: bool
     is_visible: bool
-    created_at: datetime
-    updated_at: datetime
 
 class CreateAddressUserDTO(ORJSONModel):
     street: str = Field(..., min_length=3, max_length=255, description="Street name (3–255 characters)")

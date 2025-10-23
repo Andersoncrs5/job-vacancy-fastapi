@@ -6,8 +6,10 @@ from app.configs.db.enums import (
 )
 from datetime import datetime
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
-class VacancyOUT(ORJSONModel):
+
+class VacancyOUT(BaseSchemas):
     id: int
     enterprise_id: int
     area_id: int
@@ -28,8 +30,6 @@ class VacancyOUT(ORJSONModel):
     openings: int
     application_deadline: datetime | str | None
     last_application_at: datetime | str | None
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class CreateVacancyDTO(ORJSONModel):
     area_id: int = Field(..., ge=1, description="The ID of the functional area the vacancy belongs to.")

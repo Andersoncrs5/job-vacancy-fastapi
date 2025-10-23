@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
-class CategoryOUT(ORJSONModel):
+
+class CategoryOUT(BaseSchemas):
     id: int
     name: str
     slug: str
@@ -14,8 +16,6 @@ class CategoryOUT(ORJSONModel):
     icon_url: str | None
     user_id: int
     parent_id: int | None
-    created_at: datetime | str
-    updated_at: datetime | str        
 
 class CreateCategoryDTO(ORJSONModel):
     name: str = Field(..., min_length=3, max_length=100, description="The category name must be between 3 and 100 characters.")

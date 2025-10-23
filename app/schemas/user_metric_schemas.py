@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
 
-class UserMetricOUT(ORJSONModel):
+class UserMetricOUT(BaseSchemas):
     user_id: int
     post_count: int
     favorite_post_count: int
@@ -23,5 +24,3 @@ class UserMetricOUT(ORJSONModel):
     last_login_at: datetime | None
     last_post_at: datetime | None
     last_comment_at: datetime | None
-    created_at: datetime
-    updated_at: datetime

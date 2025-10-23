@@ -1,15 +1,15 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, date
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
-class AreaOUT(ORJSONModel):
+
+class AreaOUT(BaseSchemas):
     id: int
     name: str
     description: str | None
     is_active: bool
     user_id: int
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class CreateAreaDTO(ORJSONModel):
     name: str = Field(..., min_length=4, max_length=50, description="Name should is between range of 4 and 50")

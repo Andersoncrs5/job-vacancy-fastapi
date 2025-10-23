@@ -4,8 +4,10 @@ from app.configs.orjson.orjson_config import ORJSONModel
 from datetime import datetime
 from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
 from app.configs.db.database import ReviewEnterprise
+from app.schemas.base import BaseSchemas
 
-class ReviewEnterpriseOUT(ORJSONModel):
+
+class ReviewEnterpriseOUT(BaseSchemas):
     id: int
     rating: int
     title: str
@@ -21,8 +23,6 @@ class ReviewEnterpriseOUT(ORJSONModel):
     unhelpful_votes: int
     user_id: int
     enterprise_id: int
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class UpdateReviewEnterpriseDTO(ORJSONModel):
     rating: int | None = Field(None, ge=1, le=5,

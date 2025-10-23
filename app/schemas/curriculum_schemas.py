@@ -2,16 +2,16 @@ from datetime import datetime
 from pydantic import Field
 
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
-class CurriculumOUT(ORJSONModel):
+
+class CurriculumOUT(BaseSchemas):
     id: int
     user_id: int
     title: str
     is_updated: bool
     is_visible: bool
     description: str | None
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class CreateCurriculumDTO(ORJSONModel):
     title: str = Field(..., min_length=5, max_length=200, description="The curriculum title (5 to 200 characters).")

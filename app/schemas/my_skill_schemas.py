@@ -4,8 +4,10 @@ from pydantic.v1 import validator
 from app.configs.orjson.orjson_config import ORJSONModel
 from datetime import datetime, date
 from app.configs.db.enums import ProficiencyEnum
+from app.schemas.base import BaseSchemas
 
-class MySkillOUT(ORJSONModel):
+
+class MySkillOUT(BaseSchemas):
     user_id: int
     skill_id: int
     proficiency: ProficiencyEnum
@@ -13,8 +15,6 @@ class MySkillOUT(ORJSONModel):
     datails: str | None
     years_of_experience: int | None
     last_used_date: date | str
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class UpdateMySkillDTO(ORJSONModel):
     proficiency: ProficiencyEnum | None = Field(None, description="The updated proficiency level in the skill.")

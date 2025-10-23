@@ -2,8 +2,10 @@ from pydantic import BaseModel, Field
 from datetime import datetime, date
 from app.configs.orjson.orjson_config import ORJSONModel
 from app.configs.db.enums import EmploymentTypeEnum, EmploymentStatusEnum
+from app.schemas.base import BaseSchemas
 
-class EmployeeEnterpriseOUT(ORJSONModel):
+
+class EmployeeEnterpriseOUT(BaseSchemas):
     id: int
     user_id: int 
     enterprise_id: int 
@@ -13,8 +15,6 @@ class EmployeeEnterpriseOUT(ORJSONModel):
     employment_status: EmploymentStatusEnum 
     start_date: date | None | str
     end_date: date | None | str
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class CreateEmployeeEnterpriseDTO(ORJSONModel):
     user_id: int = Field(..., ge=1, description="The ID of the user being hired.")

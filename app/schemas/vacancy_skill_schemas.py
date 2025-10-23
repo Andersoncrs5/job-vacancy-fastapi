@@ -2,10 +2,11 @@ from pydantic import Field
 
 from app.configs.orjson.orjson_config import ORJSONModel
 from app.configs.db.enums import ProficiencyEnum
+from app.schemas.base import BaseSchemas
 from app.schemas.skill_schemas import SkillOUT
 from app.schemas.vacancy_schemas import VacancyOUT
 
-class VacancySkillOUT(ORJSONModel):
+class VacancySkillOUT(BaseSchemas):
     is_required: bool
     proficiency: ProficiencyEnum | None
     years_experience: int | None

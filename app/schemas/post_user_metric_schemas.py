@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
 
-class PostUserMetricOUT(ORJSONModel):
+class PostUserMetricOUT(BaseSchemas):
     post_id: int
     views_count: int
     shares_count: int
@@ -11,5 +12,3 @@ class PostUserMetricOUT(ORJSONModel):
     reactions_dislike_count: int
     favorites_count: int
     comments_count: int
-    created_at: datetime
-    updated_at: datetime

@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from app.configs.orjson.orjson_config import ORJSONModel
+from app.schemas.base import BaseSchemas
 
-class EnterpriseOUT(ORJSONModel):
+
+class EnterpriseOUT(BaseSchemas):
     id: int
     name: str
     description: str | None
@@ -10,8 +12,6 @@ class EnterpriseOUT(ORJSONModel):
     logo_url: str | None
     user_id: int
     industry_id: int
-    created_at: datetime | str
-    updated_at: datetime | str
 
 class CreateEnterpriseDTO(ORJSONModel):
     name: str = Field(..., min_length=3, max_length=100, description="The enterprise name (3 to 100 characters).")
