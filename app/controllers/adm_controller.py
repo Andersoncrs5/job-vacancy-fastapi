@@ -1,24 +1,17 @@
-import os
 from datetime import datetime
 
-from dotenv import load_dotenv
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.commands.command_linner import ROLE_SUPER_ADM, ROLE_ADM, ROLE_USER, ROLE_MASTER
 from app.configs.db.enums import NotificationTypeEnum
 from app.schemas.user_roles_schemas import UserRolesOUT
 from app.utils.filter.my_role_filter import MyRolesFilter
 from app.utils.filter.roles_filter import RolesFilter
 from app.utils.res.responses_http import *
 from app.dependencies.service_dependency import *
-
-load_dotenv()
-
-ROLE_SUPER_ADM: Final[str] = os.getenv("ROLE_SUPER_ADM")
-ROLE_ADM: Final[str] = os.getenv("ROLE_ADM")
-ROLE_MASTER: Final[str] = os.getenv("ROLE_MASTER")
 
 URL = "/api/v1/adm"
 
@@ -33,7 +26,6 @@ router: Final[APIRouter] = APIRouter(
 )
 
 bearer_scheme: Final[HTTPBearer] = HTTPBearer()
-
 
 
 @router.post(
@@ -53,9 +45,22 @@ async def impl_role_in_user(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        jwt_service.check_master(token)
+        auth: bool = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER])
+        if not auth:
+            return ORJSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=dict(ResponseBody(
+                    code=status.HTTP_401_UNAUTHORIZED,
+                    message=f"You cannot access this route",
+                    status=False,
+                    body=None,
+                    timestamp=str(datetime.now()),
+                    version=1,
+                    path=None
+                ))
+            )
 
-        if not (role_title in [ROLE_SUPER_ADM, ROLE_ADM]):
+        if not (role_title in [ROLE_SUPER_ADM, ROLE_ADM, ROLE_USER]):
             return ORJSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content=dict(ResponseBody(
@@ -199,22 +204,9 @@ async def get_all(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER])
         if not auth:
-            response_body = ResponseBody(
-                code=status.HTTP_401_UNAUTHORIZED,
-                message="You are not authorized",
-                body=None,
-                status=False,
-                timestamp=str(datetime.now()),
-                path=None,
-                version=1
-            ).model_dump()
-
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=response_body
-            )
+            return jwt_service.throw_unauthorized("You are not authorized")
 
         jwt_service.valid_credentials(credentials)
 
