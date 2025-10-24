@@ -1,13 +1,8 @@
-import asyncio
-
-from aiokafka import AIOKafkaProducer
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from datetime import datetime
 
 from app.configs.commands.command_linner import CommandLinner
-from app.configs.kafka_configs.kafka_admin import KafkaAdmin, KAFKA_BROKER
 from app.configs.logs.log_config import setup_logging
 from app.controllers import (
     favorite_post_user_controller, auth_controller, user_controller,
