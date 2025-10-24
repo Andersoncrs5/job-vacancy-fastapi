@@ -925,6 +925,40 @@ async def create_and_login_user_without_role() -> UserTestData:
 
     return UserTestData(dto=dto, tokens=tokens, out=out)
 
+async def login_user(user: UserTestData):
+    login_dto = LoginDTO(
+        email=cast(EmailStr, cast(object, user.out.email)),
+        password=str(user.dto.password)
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post("/api/v1/auth/login", json=login_dto.model_dump())
+    assert response.status_code == 200
+
+    data = response.json()["body"]
+
+    assert data["token"] is not None
+    assert data["refresh_token"] is not None
+
+    URL = "/api/v1/user"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get(URL + f"/{login_dto.email}", headers={"Authorization": f"Bearer {data["token"]}"})
+
+    assert response.status_code == 200
+    data_user = response.json()
+
+    tokens = Tokens(
+        token=data["token"],
+        refresh_token=data["refresh_token"],
+        exp_token=data.get("exp_token"),
+        exp_refresh_token=data.get("exp_refresh_token"),
+    )
+
+    out = UserOUT.model_validate(data_user['body'])
+
+    return UserTestData(dto=None, tokens=tokens, out=out)
+
 async def create_and_login_user_with_role_super_adm() -> UserTestData:
     num = random.randint(100000, 100000000000000)
     dto = CreateUserDTO(
