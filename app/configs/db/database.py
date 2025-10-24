@@ -82,7 +82,11 @@ class UserEntity(TimestampMixin, Base):
     address: Mapped["AddressUserEntity"] = relationship("AddressUserEntity", back_populates="owner",uselist=False)
 
     applications: Mapped[List["ApplicationEntity"]] = relationship("ApplicationEntity", back_populates="user")
-    notifications: Mapped[List["NotificationEntity"]] = relationship("NotificationEntity", back_populates="user")
+    notifications: Mapped[List["NotificationEntity"]] = relationship(
+        "NotificationEntity",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
     comment_user_reactions: Mapped[List["ReactionCommentPostUserEntity"]] = relationship(
         "ReactionCommentPostUserEntity",
@@ -1031,21 +1035,7 @@ class CommentPostEnterpriseEntity(TimestampMixin, Base):
     def to_out(self):
         from app.schemas.comment_post_enterprise_schemas import CommentPostEnterpriseOUT
 
-        user_out = self.user.to_user_out() if self.user is not None else None
-        post_out = self.post.to_out() if self.post is not None else None
-
-        return CommentPostEnterpriseOUT(
-            id=self.id,
-            content=self.content,
-            user_id=self.user_id,
-            post_enterprise_id=self.post_enterprise_id,
-            parent_comment_id=self.parent_comment_id,
-            is_edited=self.is_edited,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
-            user=user_out,
-            post=post_out,
-        )
+        return CommentPostEnterpriseOUT.model_validate(self.__dict__)
 
 class CommentPostEnterpriseMetricEntity(TimestampMixin, Base):
     __tablename__ = "metric_comments_posts_enterprise"
@@ -1352,9 +1342,6 @@ class CommentPostUserEntity(TimestampMixin, Base):
 
     def to_out(self):
         from app.schemas.comment_post_user_schemas import CommentPostUserOUT
-
-        user_out = self.user.to_user_out() if self.user is not None else None
-        post_out = self.post.to_out() if self.post is not None else None
 
         return CommentPostUserOUT.model_validate(self.__dict__)
 
