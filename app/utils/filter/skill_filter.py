@@ -5,6 +5,8 @@ from datetime import date, datetime
 from app.configs.db.database import SkillEntity
 
 class SkillFilter(Filter):
+    name__ilike: Optional[str] = Field(None, description="Search by name (case-insensitive).")
+    is_active: Optional[bool] = Field(None)
     created_at__gte: Optional[datetime] = Field(None, description="Filter by creation date, greater than or equal to.")
     created_at__lte: Optional[datetime] = Field(None, description="Filter by creation date, less than or equal to.")
 

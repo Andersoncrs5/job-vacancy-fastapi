@@ -7,6 +7,9 @@ from app.configs.db.enums import NotificationTypeEnum
 
 
 class NotificationFilter(Filter):
+    title__ilike: Optional[str] = Field(None)
+    content__ilike: Optional[str] = Field(None)
+    is_view: Optional[bool] = Field(None)
     user_id: Optional[int] = Field(None, description="Filter by recipient user ID.")
     entity_id: Optional[int] = Field(None, description="Filter by related entity ID (e.g., Post ID, Comment ID).")
     type: Optional[NotificationTypeEnum] = Field(None, description="Filter by notification type.")

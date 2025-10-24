@@ -19,7 +19,6 @@ class CategoryFilter(Filter):
         description="Filters categories with a job count greater than or equal to the specified value."
     )
 
-    # Allows filtering by parent/child categories
     parent_id: Optional[int] = Field(
         None,
         description="Filters for categories that are children of the specified ID."
@@ -28,6 +27,16 @@ class CategoryFilter(Filter):
     name__ilike: Optional[str] = Field(
         None,
         description="Search by name (case-insensitive, LIKE)."
+    )
+
+    slug__ilike: Optional[str] = Field(
+        None,
+        description="Search by slug (case-insensitive, LIKE)."
+    )
+
+    description__ilike: Optional[str] = Field(
+        None,
+        description="Search by description (case-insensitive, LIKE)."
     )
 
     created_at__gte: Optional[datetime] = Field(
