@@ -122,6 +122,38 @@ async def test_get_all():
     assert response.status_code == 200
 
 @pytest.mark.asyncio
+async def test_filter_by_name_get_all():
+    user_data = await create_and_login_user_with_role_super_adm()
+    area_data = await create_area(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.get(
+            f"{URL}?name__ilike={area_data.name}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data['items'][0]['name'] == area_data.name
+
+@pytest.mark.asyncio
+async def test_filter_by_is_active_and_name_get_all():
+    user_data = await create_and_login_user_with_role_super_adm()
+    area_data = await create_area(user_data)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.get(
+            f"{URL}?name__ilike={area_data.name}&is_active={area_data.is_active}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"}
+        )
+
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data['items'][0]['name'] == area_data.name
+
+@pytest.mark.asyncio
 async def test_return_bad_request_toggle_active_area():
     user_data = await create_and_login_user_with_role_super_adm()
 

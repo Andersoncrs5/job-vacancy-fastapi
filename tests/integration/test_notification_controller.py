@@ -1,19 +1,13 @@
-import os
-
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from typing import Final
 
-from app.dependencies.service_dependency import get_follow_service_provider_dependency
-from app.schemas.category_schemas import *
-from app.schemas.follow_schemas import UpdateFollowDTO
-from app.services.providers.follow_service_provider import FollowServiceProvider
+from app.configs.commands.command_linner import ROLE_SUPER_ADM
 from tests.integration.helper import create_and_login_user_with_role_super_adm, create_category, create_post_user, \
     create_follow_user, \
-    create_comment_post_user, create_industry, create_enterprise, create_post_enterprise, create_follow_enterprise, \
+    create_comment_post_user, create_industry, create_enterprise, create_post_enterprise, \
     create_follow_enterprise_user, create_area, create_vacancy, log_in_system, create_and_login_user_without_role
 from main import app
-from app.schemas.post_user_schemas import CreatePostUserDTO, UpdatePostUserDTO
 from httpx import ASGITransport, AsyncClient
 import pytest
 import asyncio
@@ -22,10 +16,6 @@ load_dotenv()
 
 client: Final[TestClient] = TestClient(app)
 URL = "/api/v1/notification"
-
-ROLE_SUPER_ADM: Final[str] = os.getenv("ROLE_SUPER_ADM")
-ROLE_ADM: Final[str] = os.getenv("ROLE_ADM")
-ROLE_MASTER: Final[str] = os.getenv("ROLE_MASTER")
 
 @pytest.mark.asyncio
 async def test_received_notification_about_new_system():
@@ -57,7 +47,7 @@ async def test_received_notification_about_new_system():
 @pytest.mark.asyncio
 async def test_received_notification_about_new_vacancy_enterprise():
     user_owner_enterprise = await create_and_login_user_with_role_super_adm()
-    user_data_2: Final = await create_and_login_user_with_role_super_adm()
+    user_data_2: Final = await create_and_login_user_without_role()
 
     industry_data: Final = await create_industry(user_owner_enterprise)
     enterprise_data: Final = await create_enterprise(user_owner_enterprise, industry_data)
@@ -85,7 +75,7 @@ async def test_received_notification_about_new_vacancy_enterprise():
 @pytest.mark.asyncio
 async def test_received_notification_about_new_post_enterprise():
     user_owner_enterprise = await create_and_login_user_with_role_super_adm()
-    user_data_2 = await create_and_login_user_with_role_super_adm()
+    user_data_2 = await create_and_login_user_without_role()
 
     industry_data = await create_industry(user_owner_enterprise)
     enterprise_data = await create_enterprise(user_owner_enterprise, industry_data)

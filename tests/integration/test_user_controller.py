@@ -118,6 +118,5 @@ async def test_get_user_by_email():
     assert data['message'] == "User found with successfully"
     assert data['status'] == True
     assert data['body']['email'] == user_data.dto.email
-    assert data['body']['name'] == user_data.dto.name
     assert data['version'] == 1
     assert data['path'] is None

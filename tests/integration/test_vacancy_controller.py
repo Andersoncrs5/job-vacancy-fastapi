@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 from typing import Final
 from app.schemas.enterprise_schemas import *
-from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, create_area, create_vacancy
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, \
+    create_area, create_vacancy, create_and_login_user_without_role, login_user
 from main import app
 from httpx import ASGITransport, AsyncClient
 import pytest
@@ -386,10 +387,14 @@ async def test_return_not_found_area_create_vacancy_success():
     
 @pytest.mark.asyncio
 async def test_create_vacancy_success():
-    user_data: Final = await create_and_login_user_with_role_super_adm()
-    industry_data: Final = await create_industry(user_data)
-    enterprise_data: Final = await create_enterprise(user_data, industry_data)
-    area_data = await create_area(user_data)
+    user_data: Final = await create_and_login_user_without_role()
+    adm_data: Final = await create_and_login_user_with_role_super_adm()
+
+    user_data_two = await login_user(user_data)
+
+    industry_data: Final = await create_industry(adm_data)
+    enterprise_data: Final = await create_enterprise(user_data_two, industry_data)
+    area_data = await create_area(adm_data)
 
     dto = CreateVacancyDTO(
         area_id = area_data.id,

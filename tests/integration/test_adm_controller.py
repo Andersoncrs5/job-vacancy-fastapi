@@ -1,20 +1,12 @@
-import os
-from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from typing import Final
+
+from app.configs.commands.command_linner import ROLE_ADM, ROLE_SUPER_ADM
 from tests.integration.helper import create_and_login_user_with_role_super_adm, create_area, log_in_system, \
     impl_role_in_user, create_and_login_user_without_role
 from main import app
 from httpx import ASGITransport, AsyncClient
-from app.schemas.area_schemas import *
 import pytest
-import random
-
-load_dotenv()
-
-ROLE_SUPER_ADM: Final[str] = os.getenv("ROLE_SUPER_ADM")
-ROLE_ADM: Final[str] = os.getenv("ROLE_ADM")
-ROLE_MASTER: Final[str] = os.getenv("ROLE_MASTER")
 
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = '/api/v1/adm'
@@ -142,7 +134,7 @@ async def test_add_role_adm_in_user():
 @pytest.mark.asyncio
 async def test_add_role_super_adm_in_user():
     adm_master = await log_in_system()
-    user = await create_and_login_user_with_role_super_adm()
+    user = await create_and_login_user_without_role()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post(

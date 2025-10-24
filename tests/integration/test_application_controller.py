@@ -7,8 +7,9 @@ from httpx import AsyncClient, ASGITransport
 from app.configs.db.enums import ApplicationStatusEnum
 from app.schemas.application_schemas import UpdateApplicationDTO
 from main import app
-from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, create_area, \
-    create_vacancy, UserTestData, create_application
+from tests.integration.helper import create_and_login_user_with_role_super_adm, create_industry, create_enterprise, \
+    create_area, \
+    create_vacancy, UserTestData, create_application, create_and_login_user_without_role, login_user
 
 client: Final[TestClient] = TestClient(app)
 URL: Final[str] = "/api/v1/application"
@@ -42,12 +43,47 @@ async def test_patch_return_not_found_application():
     assert data["status"] is False
 
 @pytest.mark.asyncio
-async def test_patch_application_successfully():
+async def test_return_unauthorized_patch_application_successfully():
     user_data: UserTestData = await create_and_login_user_with_role_super_adm()
     industry_data: Final = await create_industry(user_data)
     enterprise_data: Final = await create_enterprise(user_data, industry_data)
     area_data = await create_area(user_data)
     vacancy_data = await create_vacancy(user_data, area_data)
+    application = await create_application(user_data, vacancy_data)
+
+    dto = UpdateApplicationDTO(
+        status=ApplicationStatusEnum.REJECTED,
+        is_viewed=None,
+        priority_level=None,
+        rating=1,
+        feedback=None,
+        source=None,
+        notes=None
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
+        response: Final = await acdc.patch(
+            f"{URL}/{application.id}",
+            headers={"Authorization": f"Bearer {user_data.tokens.token}"},
+            json=dict(dto),
+        )
+
+    assert response.status_code == 401
+
+@pytest.mark.asyncio
+async def test_patch_application_successfully():
+    user_data_owen_enterprise: UserTestData = await create_and_login_user_without_role()
+    adm_data: UserTestData = await create_and_login_user_with_role_super_adm()
+
+    industry_data: Final = await create_industry(adm_data)
+    enterprise_data: Final = await create_enterprise(user_data_owen_enterprise, industry_data)
+    area_data = await create_area(adm_data)
+
+    user_data_owen_enterprise = await login_user(user_data_owen_enterprise)
+    user_data = await create_and_login_user_without_role()
+
+    vacancy_data = await create_vacancy(user_data_owen_enterprise, area_data)
+
     application = await create_application(user_data, vacancy_data)
 
     dto = UpdateApplicationDTO(
@@ -63,7 +99,7 @@ async def test_patch_application_successfully():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.patch(
             f"{URL}/{application.id}",
-            headers={"Authorization": f"Bearer {user_data.tokens.token}"},
+            headers={"Authorization": f"Bearer {user_data_owen_enterprise.tokens.token}"},
             json=dict(dto),
         )
 
@@ -113,19 +149,24 @@ async def test_patch_return_bad_request_application():
 
 @pytest.mark.asyncio
 async def test_delete_application():
-    user_data: UserTestData = await create_and_login_user_with_role_super_adm()
-    user_data_two: UserTestData = await create_and_login_user_with_role_super_adm()
+    user_data_owen_enterprise: UserTestData = await create_and_login_user_without_role()
+    adm_data: UserTestData = await create_and_login_user_with_role_super_adm()
 
-    industry_data: Final = await create_industry(user_data)
-    enterprise_data: Final = await create_enterprise(user_data, industry_data)
-    area_data = await create_area(user_data)
-    vacancy_data = await create_vacancy(user_data, area_data)
-    application = await create_application(user_data_two, vacancy_data)
+    industry_data: Final = await create_industry(adm_data)
+    enterprise_data: Final = await create_enterprise(user_data_owen_enterprise, industry_data)
+    area_data = await create_area(adm_data)
+
+    user_data_owen_enterprise = await login_user(user_data_owen_enterprise)
+    user_data = await create_and_login_user_without_role()
+
+    vacancy_data = await create_vacancy(user_data_owen_enterprise, area_data)
+
+    application = await create_application(user_data, vacancy_data)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as acdc:
         response: Final = await acdc.delete(
             f"{URL}/{application.id}",
-            headers={"Authorization": f"Bearer {user_data_two.tokens.token}"}
+            headers={"Authorization": f"Bearer {user_data_owen_enterprise.tokens.token}"}
         )
 
     assert response.status_code == 403
