@@ -1,10 +1,9 @@
-from datetime import datetime
-
 from fastapi import APIRouter, status
 from fastapi.responses import ORJSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_pagination import Page, add_pagination, paginate
 
+from app.configs.commands.command_linner import ROLE_MASTER, ROLE_SUPER_ADM
 from app.configs.db.database import SkillEntity
 from app.dependencies.service_dependency import *
 from app.schemas.skill_schemas import *
@@ -87,22 +86,9 @@ async def toggle_is_active(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
-            response_body = ResponseBody(
-                code=status.HTTP_401_UNAUTHORIZED,
-                message="You are not authorized",
-                body=None,
-                status=False,
-                timestamp=str(datetime.now()),
-                path=None,
-                version=1
-            ).model_dump()
-
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=response_body
-            )
+            return jwt_service.throw_unauthorized("You are not authorized")
         
         skill: Final[SkillEntity | None] = await skill_service.get_by_id(id)
         if skill is None :
@@ -168,22 +154,9 @@ async def update(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
-            response_body = ResponseBody(
-                code=status.HTTP_401_UNAUTHORIZED,
-                message="You are not authorized",
-                body=None,
-                status=False,
-                timestamp=str(datetime.now()),
-                path=None,
-                version=1
-            ).model_dump()
-
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=response_body
-            )
+            return jwt_service.throw_unauthorized("You are not authorized")
         
         skill: Final[SkillEntity | None] = await skill_service.get_by_id(id)
         if skill is None :
@@ -280,22 +253,9 @@ async def delete(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
-            response_body = ResponseBody(
-                code=status.HTTP_401_UNAUTHORIZED,
-                message="You are not authorized",
-                body=None,
-                status=False,
-                timestamp=str(datetime.now()),
-                path=None,
-                version=1
-            ).model_dump()
-
-            return ORJSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=response_body
-            )
+            return jwt_service.throw_unauthorized("You are not authorized")
         
         skill: Final[SkillEntity | None] = await skill_service.get_by_id(id)
         if skill is None :
@@ -420,7 +380,7 @@ async def create(
 ):
     try:
         token: Final[str] = jwt_service.valid_credentials(credentials)
-        auth = jwt_service.check_master_or_super_adm(token=token)
+        auth = jwt_service.check_authorization_boolean_style(token, [ROLE_MASTER, ROLE_SUPER_ADM])
         if not auth:
             response_body = ResponseBody(
                 code=status.HTTP_401_UNAUTHORIZED,
