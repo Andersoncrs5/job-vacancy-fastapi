@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from fastapi import HTTPException
+from fastapi.responses import ORJSONResponse
 
 from app.configs.db.database import UserEntity, UserRolesEntity
 from fastapi.security import HTTPAuthorizationCredentials
@@ -9,19 +10,11 @@ from fastapi.security import HTTPAuthorizationCredentials
 class JwtServiceBase(ABC):
 
     @abstractmethod
-    def check_master_or_super_adm(self, token: str) -> bool:
+    def throw_unauthorized(self, message: str) -> ORJSONResponse:
         pass
 
     @abstractmethod
-    def check_super_adm(self, token: str) -> bool:
-        pass
-
-    @abstractmethod
-    def check_master(self, token: str) -> bool:
-        pass
-
-    @abstractmethod
-    def check_adm(self, token: str) -> bool:
+    def check_authorization_boolean_style(self, token: str, roles: list[str]) -> bool:
         pass
 
     @abstractmethod
@@ -42,14 +35,6 @@ class JwtServiceBase(ABC):
 
     @abstractmethod
     def extract_user_id_v2(self, token: str) -> int:
-        pass
-    
-    @abstractmethod
-    def create_access_token(self, user: UserEntity) -> str:
-        pass
-
-    @abstractmethod
-    def create_refresh_token(self, user: UserEntity) -> str:
         pass
 
     @abstractmethod

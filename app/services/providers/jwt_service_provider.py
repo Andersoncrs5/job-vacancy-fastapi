@@ -1,3 +1,6 @@
+from fastapi.responses import ORJSONResponse
+
+from app.configs.commands.command_linner import ROLE_ADM, ROLE_MASTER, ROLE_SUPER_ADM, ROLE_USER, ROLE_ENTERPRISE
 from app.services.base.jwt_service_base import JwtServiceBase
 import os
 from dotenv import load_dotenv
@@ -16,11 +19,23 @@ ALGORITHM: Final[str | None] = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES: Final[str | None] = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 REFRESH_TOKEN_EXPIRE_MINUTES: Final[str | None] = os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES")
 
-ROLE_SUPER_ADM: Final[str | None] = os.getenv("ROLE_SUPER_ADM")
-ROLE_ADM: Final[str | None] = os.getenv("ROLE_ADM")
-ROLE_MASTER: Final[str | None] = os.getenv("ROLE_MASTER")
-
 class JwtServiceProvider(JwtServiceBase):
+
+    def throw_unauthorized(self, message: str) -> ORJSONResponse:
+        response_body = ResponseBody(
+            code=status.HTTP_401_UNAUTHORIZED,
+            message=message,
+            body=None,
+            status=False,
+            timestamp=str(datetime.now()),
+            path=None,
+            version=1
+        )
+
+        return ORJSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content=response_body.model_dump()
+        )
 
     def _check_required_role(self, token: str, required_role: str):
         if required_role is None or required_role == "":
@@ -38,35 +53,18 @@ class JwtServiceProvider(JwtServiceBase):
 
         return True
 
-    def check_adm(self, token: str) -> bool:
-        return self._check_required_role(token, ROLE_ADM)
+    def check_authorization_boolean_style(self, token: str, roles: list[str]) -> bool:
+        is_authorized = False
 
-    def check_master(self, token: str) -> bool:
-        return self._check_required_role(token, ROLE_MASTER)
+        if len(roles) == 0:
+            return is_authorized
 
-    def check_master_or_super_adm(self, token: str) -> bool:
-        a = self._check_required_role(token, ROLE_MASTER)
-        b = self._check_required_role(token, ROLE_SUPER_ADM)
+        for role in roles:
+            if self._check_required_role(token, role):
+                is_authorized = True
+                break
 
-        return bool(a or b)
-
-    def check_super_adm(self, token: str) -> bool:
-        return self._check_required_role(token, ROLE_SUPER_ADM)
-
-    def create_access_token(self, user: UserEntity) -> str:
-        if ACCESS_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY is None or ALGORITHM is None:
-            raise ValueError("ACCESS_TOKEN_EXPIRE_MINUTES is not defined")
-        
-        payload: Final = {
-            "sub": str(user.id),
-            "email": user.email,
-            "name": user.name,
-            "iat": datetime.now(UTC),
-            "exp": datetime.now(UTC) + timedelta(minutes=float(ACCESS_TOKEN_EXPIRE_MINUTES))
-        }
-
-        token: str = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-        return token
+        return is_authorized
 
     def _create_token_payload(self, user: UserEntity, roles: list[UserRolesEntity], expires_minutes: float) -> dict[str, Any]:
         names_role = [role_association.role.title for role_association in roles]
@@ -97,20 +95,6 @@ class JwtServiceProvider(JwtServiceBase):
             raise ValueError("REFRESH_TOKEN_EXPIRE_MINUTES is not defined or key is missing.")
 
         payload = self._create_token_payload(user, roles, float(REFRESH_TOKEN_EXPIRE_MINUTES))
-
-        return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-    def create_refresh_token(self, user: UserEntity) -> str:
-        if REFRESH_TOKEN_EXPIRE_MINUTES is None or SECRET_KEY is None or ALGORITHM is None:
-            raise ValueError("REFRESH_TOKEN_EXPIRE_MINUTES is not defined")
-
-        payload: Final = {
-            "sub": str(user.id),
-            "email": user.email,
-            "name": user.name,
-            "iat": datetime.now(UTC),
-            "exp": datetime.now(UTC) + timedelta(minutes=float(REFRESH_TOKEN_EXPIRE_MINUTES))
-        }
 
         return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
